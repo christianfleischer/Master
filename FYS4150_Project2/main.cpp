@@ -10,12 +10,12 @@ using namespace arma;
 int main()
 {
     int N = 200;
-    double rhoMin = -10;
-    double rhoMax = 10;
-    double omega_r = 10;
+    double rhoMin = -5;
+    double rhoMax = 5;
+    double omega_r = 5;
 
     vec L = zeros(3);
-    L(0) = 5;
+    L(0) = 2.5;
     mat A = zeros(N-1,N-1);
     mat SaveEigenvector = zeros(N-1, 2);
 
