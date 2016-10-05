@@ -9,7 +9,7 @@ using namespace arma;
 
 int main()
 {
-    int N = 200;
+    int N = 1000;
     double rhoMin = -5;
     double rhoMax = 5;
     double omega_r = 5;
@@ -17,7 +17,9 @@ int main()
     vec L = zeros(3);
     L(0) = 2.5;
     mat A = zeros(N-1,N-1);
-    mat SaveEigenvector = zeros(N-1, 2);
+
+    int numEigvectors = 10;
+    mat SaveEigenvector = zeros(N-1, numEigvectors+1);
 
     //Set initial condtions and set up matrix:
     InitializeOneElectron(N, A, rhoMin, rhoMax, SaveEigenvector, L, omega_r);
@@ -55,22 +57,23 @@ int main()
     finish2 = clock();
     double ComputationTimeJacobi = ((finish2-start2)/(double) CLOCKS_PER_SEC);
 
-    SaveEigenvector.col(1) = Eigenvectors.col(0);
-    SaveEigenvector.save("../PlotAndData/omega0_01norepulsion.dat", raw_ascii);
+
+    for (int i = 0; i < numEigvectors; ++i) {
+        SaveEigenvector.col(i+1) = Eigenvectors.col(i);
+    }
+
+    SaveEigenvector.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
 
     cout << "Eigenvalues, Jacobi:" << endl;
     cout << "1:     " << JacobiEigenvalues(0) << endl;
     cout << "2:     " << JacobiEigenvalues(1) << endl;
     cout << "3:     " << JacobiEigenvalues(2) << endl;
     cout << "Eigenvalues, Armadillo:" << endl;
-    cout << "1:     " << ArmadilloEigenvalues(0) << endl;
-    cout << "2:     " << ArmadilloEigenvalues(1) << endl;
-    cout << "3:     " << ArmadilloEigenvalues(2) << endl;
-    cout << "4:     " << ArmadilloEigenvalues(3) << endl;
-    cout << "5:     " << ArmadilloEigenvalues(4) << endl;
-    cout << "6:     " << ArmadilloEigenvalues(5) << endl;
-    cout << "7:     " << ArmadilloEigenvalues(6) << endl;
-    cout << "8:     " << ArmadilloEigenvalues(7) << endl;
+
+    int displayVals = 15;
+    for (int i = 0; i < displayVals; ++i) {
+        cout << i+1 << ":     " << ArmadilloEigenvalues(i) << endl;
+    }
     cout << endl;
     cout << "Number of similarity transformations: " << NumberOfRotations << endl;
     cout << "Computation time (sec):" << endl;
