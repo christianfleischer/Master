@@ -12,13 +12,7 @@ void InitializeOneElectron (int N, mat &A, double rhoMin, double rhoMax, mat &Sa
     //L(0) = 0;
     //Set up the vector rho and the matrix A:
     vec rho = rhoMin + linspace(0, N, N+1)*h;
-    vec V = 0.5*omega_r*omega_r*(rho%rho - 2*abs(rho)*L(0) + L(0)*L(0));
-    /*
-    for (int i = 0; i < N/2; ++i) {
-        V[i] += 2;
-    }
-    */
-
+    vec V = 12*(rho%rho-2*abs(rho)*L(0)+L(0)*L(0));
 
     SaveEigenvector.col(0) = rho.subvec(1, N-1);    //Saves the rho vector for output.
 
