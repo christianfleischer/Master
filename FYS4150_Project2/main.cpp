@@ -62,7 +62,7 @@ int main()
         SaveEigenvector.col(i+1) = Eigenvectors.col(i);
     }
 
-    SaveEigenvector.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
+    SaveEigenvector.save("../FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
 
     cout << "Eigenvalues, Jacobi:" << endl;
     cout << "1:     " << JacobiEigenvalues(0) << endl;
