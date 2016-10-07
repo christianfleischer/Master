@@ -12,8 +12,7 @@ void InitializeOneElectron (int N, mat &A, double rhoMin, double rhoMax, mat &Sa
     //L(0) = 0;
     //Set up the vector rho and the matrix A:
     vec rho = rhoMin + linspace(0, N, N+1)*h;
-    double C = 12.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    L(0) = 0;
+    double C = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     vec V = C*(rho%rho-2*abs(rho)*L(0)+L(0)*L(0));
 
     SaveEigenvector.col(0) = rho.subvec(1, N-1);    //Saves the rho vector for output.

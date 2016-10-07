@@ -20,9 +20,9 @@ for i in range(numEigFunctions-1):
     psi[i] = table5nr[:,i+1]
 
 # Harmonic oscillator basis functions (for different quantum numbers n):
-omega = 5.#*0.7
+omega = 5.
 def phi(x, n_x):
-    C = 12. # = m*w/hbar
+    C = 1. # = m*w/hbar
     nFac = factorial(n_x)
     pi4 = np.pi**(-0.25)
     const = C**(0.25)*pi4/(np.sqrt(nFac*2**n_x))
@@ -41,7 +41,7 @@ def phi(x, n_x):
 c = np.zeros(numEigFunctions - 1)
 
 # Position of well minimum:
-L = 2.5
+L = 4.
 
 # Super position of the basis functions (for different quantum numbers):
 harOsc_plus0 = phi(x-L,0) + phi(x+L,0)
@@ -49,6 +49,15 @@ harOsc_minus0 = -phi(x-L,0) + phi(x+L,0)
 
 harOsc_plus1 = phi(x-L,1) + phi(x+L,1)
 harOsc_minus1 = -phi(x-L,1) + phi(x+L,1)
+
+harOsc_plus2 = phi(x-L,2) + phi(x+L,2)
+harOsc_minus2 = -phi(x-L,2) + phi(x+L,2)
+
+harOsc_plus3 = phi(x-L,3) + phi(x+L,3)
+harOsc_minus3 = -phi(x-L,3) + phi(x+L,3)
+
+harOsc_plus4 = phi(x-L,4) + phi(x+L,4)
+harOsc_minus4 = -phi(x-L,4) + phi(x+L,4)
 
 # Number of quantum numbers to use:
 nMax = 4 
@@ -66,7 +75,9 @@ supPos = 0
 for n in range(nMax):
     supPos += c[n]*phi(x,n)
 
-plot(x, harOsc_plus0**2/np.dot(harOsc_plus0,harOsc_plus0), x, psi[0]**2)
+# When L=4, rhomin=-8, rhomax=8, this gives good results up to at least nx=4:
+plot(x, harOsc_plus4**2/np.dot(harOsc_plus4,harOsc_plus4), x, psi[8]**2)
+
 # plot(x, (psi[0])**2, x, (supPos)**2)
 # plot(x, phi(x,0),x, phi(x,1),x, phi(x,2),x, phi(x,3), x, supPos**2)
 # hold('on')

@@ -10,12 +10,12 @@ using namespace arma;
 int main()
 {
     int N = 1000;
-    double rhoMin = -5;
-    double rhoMax = 5;
+    double rhoMin = -8;
+    double rhoMax = 8;
     double omega_r = 5;
 
     vec L = zeros(3);
-    L(0) = 2.5;
+    L(0) = 4.;
     mat A = zeros(N-1,N-1);
 
     int numEigvectors = 10;
