@@ -33,7 +33,6 @@ int main()
     mat Eigenvectors;
     eig_sym(ArmadilloEigenvalues, Eigenvectors, A);
 
-
     finish1 = clock();
     double ComputationTimeArma = ((finish1-start1)/(double) CLOCKS_PER_SEC);
 

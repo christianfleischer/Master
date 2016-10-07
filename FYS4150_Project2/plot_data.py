@@ -21,20 +21,21 @@ for i in range(numEigFunctions-1):
     psi[i] = table5nr[:,i+1]
 
 # Harmonic oscillator basis functions (for different quantum numbers n):
+omega = 5.#*0.7
 def phi(x, n_x):
     nFac = factorial(n_x)
     pi4 = np.pi**(-0.25)
     const = pi4/(np.sqrt(nFac*2**n_x))
     if n_x == 0:
-        return const*np.exp(-0.5*x*x)
+        return const*np.exp(-0.5*omega*x*x)
     if n_x == 1:
-        return const*np.exp(-0.5*x*x) * x
+        return const*np.exp(-0.5*omega*x*x) * np.sqrt(omega)*x
 
 # Coefficients for "analytical" super position psi_{i} = c_{ij}phi_{j}:
 c = np.zeros(numEigFunctions - 1)
 
 # Position of well minimum:
-L = 5.
+L = 2.5
 
 # Super position of the basis functions (for different quantum numbers):
 harOsc_plus0 = phi(x-L,0) + phi(x+L,0)
@@ -56,11 +57,13 @@ supPos = 0
 for n in range(2):
     supPos += c[n]*phi(x,n)
 
-# plot(x, harOsc_plus0, x, harOsc_minus0)
-# plot(x, (psi[0])**2, x, (supPos)**2)
-plot(x, psi[2]**2, x, psi[3]**2)
+#plot(x, (harOsc_plus1)**2/53.2 + (harOsc_minus1)**2/53.2, 'r--')
+#plot(x, (harOsc_plus0)**2/213 + (harOsc_minus0)**2/213, 'r--')
+plot(x, (c[0]*harOsc_plus0)**2 + (c[1]*harOsc_minus0)**2, 'r--')
+#plot(x, (psi[0])**2, x, (supPos)**2)
+plot(x, psi[1]**2)#, x, psi[1]**2)
 hold('on')
-# plot(x, harOsc_plus0**2, x, harOsc_minus0**2)
+#plot(x, harOsc_plus0**2, x, harOsc_minus0**2)
 
 title(r'Probability density $|u(\rho)|^2$ for various $\omega_r$ with N=200 and $\rho_{max}$=|5|')
 ylabel(r'$|u(\rho)|^2$')
