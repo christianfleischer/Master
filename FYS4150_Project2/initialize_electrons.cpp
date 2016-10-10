@@ -6,18 +6,9 @@ using namespace std;
 using namespace arma;
 
 
-void InitializeOneElectron (int N, mat &A, double rhoMin, double rhoMax, mat &SaveEigenvector, vec L, double omega_r)
+void InitializeOneElectron (int N, mat &A, double omega, vec V, double h)
 {
-    double h = (rhoMax-rhoMin)/N;
-    //L(0) = 0;
-    //Set up the vector rho and the matrix A:
-    vec rho = rhoMin + linspace(0, N, N+1)*h;
-    double C = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    vec V = C*(rho%rho-2*abs(rho)*L(0)+L(0)*L(0));
-
-    SaveEigenvector.col(0) = rho.subvec(1, N-1);    //Saves the rho vector for output.
-
-    double Constant = 1/(h*h);
+    double Constant = 2*0.5*omega/(h*h);
     A.diag(0)  =  2*Constant + V.subvec(1,N-1);     //Set d_i elements in A
     A.diag(1)  = -Constant*ones(N-2);               //Set e_i elements in A
     A.diag(-1) = A.diag(1);                         //Set e_i elements in A
@@ -25,20 +16,20 @@ void InitializeOneElectron (int N, mat &A, double rhoMin, double rhoMax, mat &Sa
     return;
 }
 
-void InitializeTwoElectrons(int N, mat &A, double rhoMin, double rhoMax, mat &SaveEigenvector, double omega_r)
+void InitializeTwoElectrons(int N, mat &A, double xMin, double xMax, mat &SaveEigenvector, double omega_r)
 {
-    double h = (rhoMax-rhoMin)/N;
+    double h = (xMax-xMin)/N;
 
-    //Set up the vector rho and the matrix A:
-    vec rho = rhoMin + linspace(0, N, N+1)*h;
+    //Set up the vector x and the matrix A:
+    vec x = xMin + linspace(0, N, N+1)*h;
 
     //No repulsion:
-    //vec V = omega_r*omega_r*(rho%rho);
+    //vec V = omega_r*omega_r*(x%x);
 
     //With Repulsion:
-    vec V = omega_r*omega_r*(rho%rho) + 1.0/rho;
+    vec V = omega_r*omega_r*(x%x) + 1.0/x;
 
-    SaveEigenvector.col(0) = rho.subvec(1, N-1);    //Saves the rho vector for output.
+    SaveEigenvector.col(0) = x.subvec(1, N-1);    //Saves the x vector for output.
 
     double Constant = 1/(h*h);
     A.diag(0)  =  2*Constant + V.subvec(1,N-1);     //Set d_i elements in A
