@@ -5,7 +5,7 @@ CONFIG -= qt
 
 SOURCES += main.cpp \
     initialize_electrons.cpp \
-    jacobi_rotations.cpp
+    potential.cpp
 
 LIBS += -llapack -lblas -larmadillo
 
