@@ -10,7 +10,7 @@ using namespace arma;
 
 int main()
 {
-    int N = 2000;
+    int N = 1000;
     double posMin = -10;
     double posMax = 10;
     double omega_r = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
@@ -21,7 +21,7 @@ int main()
     mat Y = zeros(N-1,N-1);
     mat Z = zeros(N-1,N-1);
 
-    int numEigvectors = 200;
+    int numEigvectors = 100;
 
     int nDim = 3;
 
@@ -76,7 +76,7 @@ int main()
     double ComputationTimeArma = ((finish1-start1)/(double) CLOCKS_PER_SEC);
 
     for (int i = 0; i < numEigvectors; ++i) {
-        SaveEigenvector.col(i) = eigvecsX.col(i);
+        SaveEigenvector.col(i) = eigvecsX.col(i)%eigvecsY.col(i)%eigvecsZ.col(i);
     }
 
     SaveConstants.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5constants.dat", raw_ascii);
