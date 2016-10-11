@@ -6,9 +6,9 @@ using namespace std;
 using namespace arma;
 
 
-void InitializeOneElectron (int N, mat &A, double omega, vec V, double h)
+void InitializeOneElectron (int N, mat &A, vec V, double h)
 {
-    double Constant = 2*0.5*omega/(h*h);
+    double Constant = 1./(h*h);
     A.diag(0)  =  2*Constant + V.subvec(1,N-1);     //Set d_i elements in A
     A.diag(1)  = -Constant*ones(N-2);               //Set e_i elements in A
     A.diag(-1) = A.diag(1);                         //Set e_i elements in A
