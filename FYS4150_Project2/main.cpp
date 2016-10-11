@@ -1,8 +1,9 @@
 #include <iostream>
 #include <armadillo>
 #include <time.h>
+#include <potential.cpp>
 #include <initialize_electrons.cpp>
-#include <jacobi_rotations.cpp>
+
 
 using namespace std;
 using namespace arma;
@@ -12,98 +13,84 @@ int main()
     int N = 2000;
     double posMin = -10;
     double posMax = 10;
-    double omega = 1;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
+    double omega_r = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
 
     vec L(3);
-    L.fill(4.);
-    mat A = zeros(N-1,N-1);
+    L.fill(5.);
+    mat X = zeros(N-1,N-1);
+    mat Y = zeros(N-1,N-1);
+    mat Z = zeros(N-1,N-1);
 
     int numEigvectors = 200;
 
-    int nDim = 2;
+    int nDim = 3;
 
     //Set up the vector x and the matrix A:
     double h = (posMax-posMin)/N;
     vec x = posMin + linspace(0, N, N+1)*h;
     vec y = posMin + linspace(0, N, N+1)*h;
-    vec V = 0.5*omega*(x%x + y%y
-                       - 2*abs(x)*L(0) - 2*abs(y)*L(1)
-                       + L(0)*L(0) + L(1)*L(1));
+    vec z = posMin + linspace(0, N, N+1)*h;
+    //vec rho = linspace(0, N, N+1)*h;
+
+    vec rho = sqrt(x%x + y%y + z%z);
+
+    vec Vx, Vy, Vz;
+
+    Potential(Vx, x, L(0), omega_r);
+    Potential(Vy, y, L(1), omega_r);
+    Potential(Vz, z, L(2), omega_r);
+
 
     mat SaveEigenvector = zeros(N-1, numEigvectors);
-    mat SavePositionvector = zeros(N-1, nDim);
+
+    mat SavePositionvector = zeros(N-1, nDim+1);
     SavePositionvector.col(0) = x.subvec(1, N-1);    //Saves the x vector for output.
     SavePositionvector.col(1) = y.subvec(1, N-1);    //Saves the y vector for output.
+    SavePositionvector.col(2) = z.subvec(1, N-1);    //Saves the z vector for output.
+    SavePositionvector.col(3) = rho.subvec(1, N-1);    //Saves the r vector for output.
 
-    vec SaveConstants(5);
-    SaveConstants(0) = omega;
-    SaveConstants(1) = L(0);
-    SaveConstants(2) = L(1);
-    SaveConstants(3) = N;
-    SaveConstants(4) = numEigvectors;
-
+    vec SaveConstants = {omega_r, L(0), L(1), L(2), double(N), double(numEigvectors)};
 
     //Set initial condtions and set up matrix:
-    InitializeOneElectron(N, A, omega, V, h);
-    //InitializeTwoElectrons(N, A, xMin, xMax, SaveEigenvector, omega_r);
+    InitializeOneElectron(N, X, Vx, h);
+    InitializeOneElectron(N, Y, Vy, h);
+    InitializeOneElectron(N, Z, Vz, h);
 
     clock_t start1, finish1;
     start1 = clock();
 
     //Finding eigenvalues and eigenvectors using armadillo:
-    vec ArmadilloEigenvalues;
-    mat Eigenvectors;
-    eig_sym(ArmadilloEigenvalues, Eigenvectors, A);
+    vec eigvalsX;
+    vec eigvalsY;
+    vec eigvalsZ;
 
+    mat eigvecsX;
+    mat eigvecsY;
+    mat eigvecsZ;
+
+    eig_sym(eigvalsX, eigvecsX,  X);
+    eig_sym(eigvalsY, eigvecsY,  Y);
+    eig_sym(eigvalsZ, eigvecsZ,  Z);
 
     finish1 = clock();
     double ComputationTimeArma = ((finish1-start1)/(double) CLOCKS_PER_SEC);
 
-    //Finding eigenvalues using Jacobi rotations:
-    int NumberOfRotations = 0;      //Counter for similarity transformations.
-    //double Tolerance = 1E-8;        //Tolerance for when the matrix should be considered as diagonal.
-    mat absA = abs(A);              //Creating a matrix for finding the max value element in A.
-    absA.diag(0) = zeros(N-1);      //Remove the diagonal elements since we're interested in the max off-diagonal element.
-
-    //uword RowIndexMax;      //Row index for the maximum element.
-    //uword ColIndexMax;      //Column index for the maximum element.
-    //double MaxValue = absA.max(RowIndexMax, ColIndexMax);   //Value of the max element.
-
-    clock_t start2, finish2;
-    start2 = clock();
-
-    //Diagonalize A with Jacobi rotations:
-        //JacobiRotations(MaxValue, A, absA, NumberOfRotations, Tolerance, RowIndexMax, ColIndexMax, N);
-    //Eigenvalues listed on the diagonal of A sorted from smallest to largest:
-    vec JacobiEigenvalues = sort(A.diag(0));
-
-    finish2 = clock();
-    double ComputationTimeJacobi = ((finish2-start2)/(double) CLOCKS_PER_SEC);
-
-
-
     for (int i = 0; i < numEigvectors; ++i) {
-        SaveEigenvector.col(i) = Eigenvectors.col(i);
+        SaveEigenvector.col(i) = eigvecsX.col(i);
     }
 
     SaveConstants.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5constants.dat", raw_ascii);
     SavePositionvector.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5position.dat", raw_ascii);
     SaveEigenvector.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
 
-    cout << "Eigenvalues, Jacobi:" << endl;
-    cout << "1:     " << JacobiEigenvalues(0) << endl;
-    cout << "2:     " << JacobiEigenvalues(1) << endl;
-    cout << "3:     " << JacobiEigenvalues(2) << endl;
-    cout << "Eigenvalues, Armadillo:" << endl;
-
+    cout << "eigvals, Armadillo:" << endl;
     int displayVals = 15;
     for (int i = 0; i < displayVals; ++i) {
-        cout << i+1 << ":     " << ArmadilloEigenvalues(i) << endl;
+        cout << i+1 << ": Ex: " << eigvalsX(i) << " Ey: " << eigvalsY(i) << " Ez: " << eigvalsZ(i) << endl;
     }
     cout << endl;
-    cout << "Number of similarity transformations: " << NumberOfRotations << endl;
     cout << "Computation time (sec):" << endl;
-    cout << "Jacobi: " << ComputationTimeJacobi << "    " << "Aramadillo: " << ComputationTimeArma << endl;
+    cout << "Aramadillo: " << ComputationTimeArma << endl;
 
     return 0;
 }
