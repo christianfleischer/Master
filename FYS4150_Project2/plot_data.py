@@ -21,6 +21,7 @@ psi = np.zeros((numEigFunctions,N))
 for i in range(numEigFunctions):
     psi[i] = table5nr[:,i]
 
+
 def H(r, n_r):
     factor = 2*r*np.sqrt(omega)
     HermitePolynomialPP = 0;                 
@@ -44,12 +45,10 @@ def phi(x, n_x, y, n_y, z, n_z):
 
 
 # Number of quantum numbers to use:
-nMax = 50
+nMax = 20
 
 y = np.zeros(N)
 z = np.zeros(N)
-# n_y = 0
-# n_z = 0
 
 def C(x, n_x, y, n_y, z, n_z):
     return psi[0]*phi(x, n_x, y, n_y, z, n_z)
@@ -62,9 +61,12 @@ for n_x in range(nMax):
         for n_z in range(nMax):
             sup += C(x, n_x, y, n_y, z, n_z)*phi(x, n_x, y, n_y, z, n_z)
 
+# When we set psi = psix*psiy*psiz, we must normalize manually:
+print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
 print("<sup0|sup0>:   ", np.dot(sup,sup))
 
-plot(x, sup**2/np.dot(sup,sup), x, psi[0]**2)
+plot(x, sup**2/np.dot(sup,sup), x, psi[0]**2/np.dot(psi[0],psi[0])
+, 'x')
 
 title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
         $L_, = %.1f$ and $x_{max/min}=\pm %d$''' 
