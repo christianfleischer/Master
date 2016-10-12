@@ -47,8 +47,8 @@ def phi(x, n_x, y, n_y, z, n_z):
 # Number of quantum numbers to use:
 nMax = 20
 
-y = np.zeros(N)
-z = np.zeros(N)
+# y = np.zeros(N)
+# z = np.zeros(N)
 
 def C(x, n_x, y, n_y, z, n_z):
     return psi[0]*phi(x, n_x, y, n_y, z, n_z)
