@@ -6,6 +6,8 @@
 using namespace std;
 using namespace arma;
 
+// Hei paa deg :)
+
 int main() {
     vec L(3);
     L.fill(5.);
