@@ -37,7 +37,6 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
     for (int i = 0; i < numberOfEigstates; i++) {
         for (int d = 0; d < m_numberOfDimensions; d++) {
             saveEigenvector.col(i) %= eigvecs.slice(d).col(i);
-            saveEigenvector.col(i).print();
         }
     }
 

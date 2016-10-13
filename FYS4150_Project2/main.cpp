@@ -40,7 +40,6 @@ int main() {
 
     for (int d = 0; d < numberOfDimensions; d++) {
         SavePositionvector.col(d)   = r.col(d).subvec(1, N-1);    //Saves the y vector for output.
-        SavePositionvector.col(d).print();
 
     }
 
@@ -53,9 +52,9 @@ int main() {
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat, numberOfEigstates, saveEigenvector);
 
-    SaveConstants.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5constants.dat", raw_ascii);
-    SavePositionvector.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5position.dat", raw_ascii);
-    saveEigenvector.save("/home/alexanfl/master/FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
+    SaveConstants.save("../FYS4150_Project2/PlotAndData/omega5constants.dat", raw_ascii);
+    SavePositionvector.save("../FYS4150_Project2/PlotAndData/omega5position.dat", raw_ascii);
+    saveEigenvector.save("../FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
     //saveEigenvector.print();
 
     cout << "eigvals, Armadillo:" << endl;
