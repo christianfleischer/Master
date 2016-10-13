@@ -4,11 +4,13 @@ CONFIG -= app_bundle
 CONFIG -= qt
 
 SOURCES += main.cpp \
-    system.cpp
+    system.cpp \
+    wavefunction.cpp
 
 LIBS += -llapack -lblas -larmadillo
 
 HEADERS += \
     catch.h \
-    system.h
+    system.h \
+    wavefunction.h
 
