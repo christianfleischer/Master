@@ -8,7 +8,7 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 2000;
+    int N                       = 1000;
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.

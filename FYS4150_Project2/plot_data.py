@@ -9,6 +9,7 @@ table5constants = np.loadtxt('PlotAndData/omega5constants.dat', skiprows=0)
 table5position = np.loadtxt('PlotAndData/omega5position.dat', skiprows=0)
 
 omega, nDim, Lx, Ly, Lz, N, numEigFunctions = table5constants
+omega *= 0.05
 
 numEigFunctions = int(numEigFunctions)
 N = int(N)-1
@@ -71,7 +72,7 @@ def C(r, n):
 
 sup = 0
 for n_x in range(nMax):
-    sys.stdout.write('[%.1f %%]\r' % (n_x/nMax*100.))
+    sys.stdout.write('[%.1f %%]\r' % (float(n_x)/nMax*100.))
     sys.stdout.flush()  
     for n_y in range(nMax):
         for n_z in range(nMax):
@@ -83,7 +84,7 @@ print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
 print("<sup0|sup0>:   ", np.dot(sup,sup))
 
 plot(r[0], sup**2/np.dot(sup,sup), r[0], psi[0]**2/np.dot(psi[0],psi[0])
-, 'x')
+, '-')
 
 title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
         $L_, = %.1f$ and $x_{max/min}=\pm %d$''' 
