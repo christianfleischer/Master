@@ -9,7 +9,7 @@ table5constants = np.loadtxt('PlotAndData/omega5constants.dat', skiprows=0)
 table5position = np.loadtxt('PlotAndData/omega5position.dat', skiprows=0)
 
 omega, nDim, Lx, Ly, Lz, N, numEigFunctions = table5constants
-omega *= 0.05
+omega = omega**2
 
 numEigFunctions = int(numEigFunctions)
 N = int(N)-1
@@ -62,7 +62,7 @@ def phi(r, n):
 
 
 # Number of quantum numbers to use:
-nMax = 20
+nMax = 3
 
 r[1] = np.zeros(N)
 r[2] = np.zeros(N)
@@ -84,11 +84,12 @@ print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
 print("<sup0|sup0>:   ", np.dot(sup,sup))
 
 plot(r[0], sup**2/np.dot(sup,sup), r[0], psi[0]**2/np.dot(psi[0],psi[0])
-, '-')
+, '+')
 
 title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
-        $L_, = %.1f$ and $x_{max/min}=\pm %d$''' 
-        %(N+1, Lx, Ly, r[0,-1]+1))
+        $L_, = %.1f$ and $x_{max/min}=\pm %d$. Number of
+        double-dot harmonic oscillator functions: $%d$''' 
+        %(N+1, Lx, Ly, r[0,-1]+1, nMax))
 ylabel(r'$|u(\rho)|^2$')
 legend([r'Analytical solution', r'Numerical solution', r'Basis function solution'] 
         ,prop={'size':10})
