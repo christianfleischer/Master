@@ -35,9 +35,8 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
     }
 
     for (int i = 0; i < numberOfEigstates; i++) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
+        for (int d = 0; d < 1; d++) {
             saveEigenvector.col(i) %= eigvecs.slice(d).col(i);
-            saveEigenvector.col(i).print();
         }
     }
 
@@ -46,6 +45,11 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
 
     return;
 }
+
+//void System::findCoefficients(mat r, mat *waveFunction, vec qNumbers, mat &C){
+//    C = waveFunction.col(0)
+//}
+
 
 void System::setStepLength(double h) { m_h = h; }
 void System::setNumberOfDimensions(int numberOfDimensions) { m_numberOfDimensions = numberOfDimensions; }

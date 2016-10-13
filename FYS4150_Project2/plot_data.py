@@ -8,13 +8,16 @@ table5nr = np.loadtxt('PlotAndData/omega5norepulsion.dat', skiprows=0)
 table5constants = np.loadtxt('PlotAndData/omega5constants.dat', skiprows=0)
 table5position = np.loadtxt('PlotAndData/omega5position.dat', skiprows=0)
 
-omega, Lx, Ly, Lz, N, numEigFunctions = table5constants
+omega, nDim, Lx, Ly, Lz, N, numEigFunctions = table5constants
 
 numEigFunctions = int(numEigFunctions)
 N = int(N)-1
+nDim = int(nDim)
 
 # Position vector:
-x,y,z = table5position[:,0], table5position[:,1], table5position[:,2]
+r = np.zeros((nDim, N))
+for d in range(nDim):
+    r[d] = table5position[:,d]
 
 # Numerically calculated eigenvector(2) (for different quantum numbers n):
 psi = np.zeros((numEigFunctions,N))
@@ -34,24 +37,37 @@ def H(r, n_r):
     return HermitePolynomial
 
 # Harmonic oscillator basis functions (for different quantum numbers n):
-def phi(x, n_x, y, n_y, z, n_z):
-    nFac = factorial(n_x)*factorial(n_y)*factorial(n_z)
-    n2 = 2.**(n_x + n_y + n_z)
+def phi(r, n):
+    nFac = 1
+    for i in n:
+        nFac *= factorial(i)
+    
+    n2 = 2.**sum(n)
+    
     pi4 = np.pi**(-0.25)
-    const = omega**(0.25)*pi4/(np.sqrt(nFac*2.**n_x))
-    wavefunc = np.exp(-0.5*omega*(x*x + y*y + z*z))
+    const = omega**(0.25)*pi4/(np.sqrt(nFac*n2))
+    rAbs2 = 0
+    for i in r:
+        rAbs2 += i*i
 
-    return const*H(x, n_x)*H(y, n_y)*H(z, n_z)*wavefunc
+    wavefunc = np.exp(-0.5*omega*(rAbs2))
+    
+
+    phi = 1
+    for d in range(nDim):
+        phi *= H(r[d], n[d])
+
+    return const*wavefunc*phi
 
 
 # Number of quantum numbers to use:
 nMax = 20
 
-# y = np.zeros(N)
-# z = np.zeros(N)
+r[1] = np.zeros(N)
+r[2] = np.zeros(N)
 
-def C(x, n_x, y, n_y, z, n_z):
-    return psi[0]*phi(x, n_x, y, n_y, z, n_z)
+def C(r, n):
+    return psi[0]*phi(r, n)
 
 sup = 0
 for n_x in range(nMax):
@@ -59,18 +75,19 @@ for n_x in range(nMax):
     sys.stdout.flush()  
     for n_y in range(nMax):
         for n_z in range(nMax):
-            sup += C(x, n_x, y, n_y, z, n_z)*phi(x, n_x, y, n_y, z, n_z)
+            n = [n_x, n_y, n_z]
+            sup += C(r, n)*phi(r, n)
 
 # When we set psi = psix*psiy*psiz, we must normalize manually:
 print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
 print("<sup0|sup0>:   ", np.dot(sup,sup))
 
-plot(x, sup**2/np.dot(sup,sup), x, psi[0]**2/np.dot(psi[0],psi[0])
+plot(r[0], sup**2/np.dot(sup,sup), r[0], psi[0]**2/np.dot(psi[0],psi[0])
 , 'x')
 
 title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
         $L_, = %.1f$ and $x_{max/min}=\pm %d$''' 
-        %(N+1, Lx, Ly, x[-1]+1))
+        %(N+1, Lx, Ly, r[0,-1]+1))
 ylabel(r'$|u(\rho)|^2$')
 legend([r'Analytical solution', r'Numerical solution', r'Basis function solution'] 
         ,prop={'size':10})
