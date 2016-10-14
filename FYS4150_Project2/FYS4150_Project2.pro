@@ -5,12 +5,15 @@ CONFIG -= qt
 
 SOURCES += main.cpp \
     system.cpp \
-    wavefunction.cpp
+    WaveFunctions/wavefunction.cpp \
+    initialize_electrons.cpp \
+    WaveFunctions/doublewell.cpp
 
 LIBS += -llapack -lblas -larmadillo
 
 HEADERS += \
     catch.h \
     system.h \
-    wavefunction.h
+    WaveFunctions/wavefunction.h \
+    WaveFunctions/doublewell.h
 

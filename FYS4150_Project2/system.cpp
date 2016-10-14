@@ -1,20 +1,18 @@
 #include "system.h"
+#include "WaveFunctions/wavefunction.h"
 
-System::System(double omega, int numberOfDimensions, double h) {
+System::System(double omega, int numberOfDimensions, double h, int N) {
     m_omega = omega;
     setNumberOfDimensions(numberOfDimensions);
+    setN(N);
     setStepLength(h);
-}
-
-vec System::potential (vec r, double L) {
-    return m_omega*m_omega*(r%r - 2*abs(r)*L + L*L);
 }
 
 void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat) {
     double Constant = 1./(m_h*m_h);
     mat V(N+1, m_numberOfDimensions);
     for (int d = 0; d < m_numberOfDimensions; d++) {
-        V.col(d) = potential(r.col(d), L(d));
+        V.col(d) = m_waveFunction->potential(r.col(d), L(d));
         diagMat.slice(d).diag(0)  =  2*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
         diagMat.slice(d).diag(1)  = -Constant*ones(N-2);               //Set e_i elements in A
         diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
@@ -40,17 +38,21 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
         }
     }
 
+    //m_waveFunction.setWaveFunction(saveEigenvector);
+
     finish1 = clock();
     m_computationTime = ((finish1-start1)/(double) CLOCKS_PER_SEC);
 
     return;
 }
 
-//void System::findCoefficients(mat r, mat *waveFunction, vec qNumbers, mat &C){
-//    C = waveFunction.col(0)
-//}
+void System::findCoefficients(mat r, vec qNumbers, mat &C){
+    //C = waveFunction.getWaveFunction().col(0)%waveFunction.harmonicOscillatorBasis(r, qNumbers);
+}
 
 
+void System::setWaveFunction(WaveFunction *waveFunction) { m_waveFunction = waveFunction; }
+void System::setN(double N) {m_N = N; }
 void System::setStepLength(double h) { m_h = h; }
 void System::setNumberOfDimensions(int numberOfDimensions) { m_numberOfDimensions = numberOfDimensions; }
 void System::setNumberOfParticles(int numberOfParticles) { m_numberOfParticles = numberOfParticles; }

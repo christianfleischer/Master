@@ -2,6 +2,8 @@
 #include <armadillo>
 #include <time.h>
 #include "system.h"
+#include "WaveFunctions/wavefunction.h"
+#include "WaveFunctions/doublewell.h"
 
 using namespace std;
 using namespace arma;
@@ -46,10 +48,13 @@ int main() {
 
     SavePositionvector.col(numberOfDimensions) = rAbs.subvec(1, N-1);    //Saves the r vector for output.
 
-    vec SaveConstants           = {omega_r, numberOfDimensions, L(0), L(1), L(2), double(N), double(numberOfEigstates)};
+    vec SaveConstants           = {omega_r, double(numberOfDimensions), L(0), L(1), L(2), double(N), double(numberOfEigstates)};
 
     //Init system
-    System* system = new System(omega_r, numberOfDimensions, h);
+    System* system = new System(omega_r, numberOfDimensions, h, N);
+
+    system->setWaveFunction(new DoubleWell(system, omega_r));
+
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat, numberOfEigstates, saveEigenvector);
 
