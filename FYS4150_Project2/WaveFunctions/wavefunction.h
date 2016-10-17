@@ -9,9 +9,9 @@ class WaveFunction
 {
 public:
     WaveFunction(class System* system, double omega);
-    virtual void harmonicOscillatorBasis(mat r, int n) = 0;
+    virtual vec harmonicOscillatorBasis(mat r, vec n) = 0;
     virtual vec potential (vec r, double L) = 0;
-    double computeHermitePolynomial(int nValue, vec position);
+    vec computeHermitePolynomial(int nValue, vec position);
 
 protected:
     double          m_omega = 0;

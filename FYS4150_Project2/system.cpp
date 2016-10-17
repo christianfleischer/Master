@@ -38,7 +38,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
         }
     }
 
-    //m_waveFunction.setWaveFunction(saveEigenvector);
+    m_psi = saveEigenvector;
 
     finish1 = clock();
     m_computationTime = ((finish1-start1)/(double) CLOCKS_PER_SEC);
@@ -47,7 +47,35 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
 }
 
 void System::findCoefficients(mat r, vec qNumbers, mat &C){
-    //C = waveFunction.getWaveFunction().col(0)%waveFunction.harmonicOscillatorBasis(r, qNumbers);
+    C = m_psi.col(0)%m_waveFunction->harmonicOscillatorBasis(r, qNumbers);
+}
+
+vec System::findSuperPos(mat r, int nMax) {
+    mat rCut = zeros(m_N-1, 3);
+
+    for (int d=0; d < m_numberOfDimensions; d++) {
+        rCut.col(d) = r.col(d).subvec(1,m_N-1);
+    }
+
+    //rCut.col(1) = zeros(m_N-1);
+    //rCut.col(2) = zeros(m_N-1);
+
+    vec C = zeros(m_N-1);
+    vec supPos = zeros(m_N-1);
+    cout << "Starting supPos calculation." << endl;
+    for (int nx = 0; nx < nMax; nx++) {
+        for (int ny = 0; ny < nMax; ny++) {
+            for (int nz = 0; nz < nMax; nz++) {
+                vec qNumbers = {double(nx), double(ny), double(nz)};
+                findCoefficients(rCut, qNumbers, C);
+                vec plusTerm = C%m_waveFunction->harmonicOscillatorBasis(rCut, qNumbers);
+                //cout << plusTerm(0) << endl;
+                supPos += plusTerm;
+                cout << supPos(0) << endl;
+            }
+        }
+    }
+    return supPos;
 }
 
 

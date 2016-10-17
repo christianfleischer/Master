@@ -7,9 +7,10 @@ import sys
 table5nr = np.loadtxt('PlotAndData/omega5norepulsion.dat', skiprows=0)
 table5constants = np.loadtxt('PlotAndData/omega5constants.dat', skiprows=0)
 table5position = np.loadtxt('PlotAndData/omega5position.dat', skiprows=0)
+supCpp = np.loadtxt('PlotAndData/supPos.dat', skiprows=0)
 
 omega, nDim, Lx, Ly, Lz, N, numEigFunctions = table5constants
-omega = omega**2
+#omega = omega**2
 
 numEigFunctions = int(numEigFunctions)
 N = int(N)-1
@@ -62,10 +63,10 @@ def phi(r, n):
 
 
 # Number of quantum numbers to use:
-nMax = 3
+nMax = 8
 
-r[1] = np.zeros(N)
-r[2] = np.zeros(N)
+#r[1] = np.zeros(N)
+#r[2] = np.zeros(N)
 
 def C(r, n):
     return psi[0]*phi(r, n)
@@ -83,8 +84,10 @@ for n_x in range(nMax):
 print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
 print("<sup0|sup0>:   ", np.dot(sup,sup))
 
-plot(r[0], sup**2/np.dot(sup,sup), r[0], psi[0]**2/np.dot(psi[0],psi[0])
-, '+')
+#plot(r[0], sup**2/np.dot(sup,sup), r[0], psi[0]**2/np.dot(psi[0],psi[0])
+#, '+')
+plot(r[0], sup**2/np.dot(sup,sup), r[0], supCpp**2/np.dot(supCpp,supCpp), '+')
+#,r[0], psi[0]**2/np.dot(psi[0],psi[0]))
 
 title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
         $L_, = %.1f$ and $x_{max/min}=\pm %d$. Number of

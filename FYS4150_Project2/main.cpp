@@ -57,10 +57,20 @@ int main() {
 
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat, numberOfEigstates, saveEigenvector);
+    int nMax = 8;
+    vec supPos = system->findSuperPos(r, nMax);
+
+//    for (int i=0; i < N-1; i++) {
+//        if (isnan(supPos(i))) { supPos(i) = 0; }
+//        cout << supPos << endl;
+//    }
+
+    //replace_if(supPos.begin(), supPos.end(), isnan, 0);
 
     SaveConstants.save("../FYS4150_Project2/PlotAndData/omega5constants.dat", raw_ascii);
     SavePositionvector.save("../FYS4150_Project2/PlotAndData/omega5position.dat", raw_ascii);
     saveEigenvector.save("../FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
+    supPos.save("../FYS4150_Project2/PlotAndData/supPos.dat", raw_ascii);
     //saveEigenvector.print();
 
     cout << "eigvals, Armadillo:" << endl;
