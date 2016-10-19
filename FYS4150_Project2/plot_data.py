@@ -10,7 +10,6 @@ table5position = np.loadtxt('PlotAndData/omega5position.dat', skiprows=0)
 supCpp = np.loadtxt('PlotAndData/supPos.dat', skiprows=0)
 
 omega, nDim, Lx, Ly, Lz, N, numEigFunctions = table5constants
-#omega = omega**2
 
 numEigFunctions = int(numEigFunctions)
 N = int(N)-1
@@ -46,8 +45,8 @@ def phi(r, n):
     
     n2 = 2.**sum(n)
     
-    pi4 = np.pi**(-0.25)
-    const = omega**(0.25)*pi4/(np.sqrt(nFac*n2))
+    pi4 = np.pi**(-0.75)
+    const = omega**(0.75)*pi4/(np.sqrt(nFac*n2))
     rAbs2 = 0
     for i in r:
         rAbs2 += i*i
@@ -63,7 +62,7 @@ def phi(r, n):
 
 
 # Number of quantum numbers to use:
-nMax = 8
+nMax = 1
 
 #r[1] = np.zeros(N)
 #r[2] = np.zeros(N)
@@ -82,13 +81,14 @@ for n_x in range(nMax):
 
 # When we set psi = psix*psiy*psiz, we must normalize manually:
 print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
-print("<sup0|sup0>:   ", np.dot(sup,sup))
+print("<supCpp0|supCpp0>:   ", np.dot(supCpp,supCpp))
 
-#plot(r[0], sup**2/np.dot(sup,sup), r[0], psi[0]**2/np.dot(psi[0],psi[0])
-#, '+')
-plot(r[0], sup**2/np.dot(sup,sup), r[0], supCpp**2/np.dot(supCpp,supCpp), '+')
-#,r[0], psi[0]**2/np.dot(psi[0],psi[0]))
+plot(r[0], supCpp**2/np.dot(supCpp,supCpp), r[0], psi[0]**2/np.dot(psi[0],psi[0]), '+')
 
+
+# plot(r[0], sup**2/np.dot(sup,sup), r[0], supCpp**2/np.dot(supCpp,supCpp), '+')
+# hold('on')
+# plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]))
 title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
         $L_, = %.1f$ and $x_{max/min}=\pm %d$. Number of
         double-dot harmonic oscillator functions: $%d$''' 

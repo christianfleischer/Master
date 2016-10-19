@@ -12,7 +12,7 @@ vec DoubleWell::harmonicOscillatorBasis(mat r, vec n) {
     int numberOfDimensions = m_system->getNumberOfDimensions();
     int N = m_system->getN();
 
-    int nFac = 1;
+    double nFac = 1.;
     int nSum = 0;
 
     for (int d = 0; d < numberOfDimensions; d++) {
@@ -21,8 +21,8 @@ vec DoubleWell::harmonicOscillatorBasis(mat r, vec n) {
     }
 
     double n2 = pow(2., nSum);
-    double pi4 = pow(M_PI, -0.25);
-    double omega4 = pow(m_omega, 0.25);
+    double pi4 = pow(M_PI, -0.75);
+    double omega4 = pow(m_omega, 0.75);
     double constant = omega4*pi4/sqrt(nFac*n2);
 
     vec rAbs2 = zeros(N-1);
@@ -39,11 +39,6 @@ vec DoubleWell::harmonicOscillatorBasis(mat r, vec n) {
     }
 
     return constant*wavefunc%phi;
-
-//    mat H = zeros(N-1, numberOfDimensions);
-//    for (int d = 0; d < numberOfDimensions; d++) {
-//        H.col(d) = computeHermitePolynomial(n, r.col(d));
-//    }
 }
 
 vec DoubleWell::potential (vec r, double L) {

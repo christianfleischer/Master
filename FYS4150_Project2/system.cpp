@@ -46,12 +46,21 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
     return;
 }
 
-void System::findCoefficients(mat r, vec qNumbers, mat &C){
-    C = m_psi.col(0)%m_waveFunction->harmonicOscillatorBasis(r, qNumbers);
+void System::findCoefficients(mat r, vec qNumbers, vec &C){
+    int nMax = 10;
+    for (int nx = 0; nx < nMax; nx++) {
+        double innerprod = 0;
+        vec promp = {nx,0,0};
+        for (int i = 0; i < m_N-1; i++) {
+            innerprod += m_h*m_psi.col(0)(i)*m_waveFunction->harmonicOscillatorBasis(r, promp)(i);
+        }
+        C(nx) = innerprod;
+    }
+    //C = m_psi.col(0)%m_waveFunction->harmonicOscillatorBasis(r, qNumbers);
 }
 
 vec System::findSuperPos(mat r, int nMax) {
-    mat rCut = zeros(m_N-1, 3);
+    mat rCut = zeros(m_N-1, m_numberOfDimensions);
 
     for (int d=0; d < m_numberOfDimensions; d++) {
         rCut.col(d) = r.col(d).subvec(1,m_N-1);
@@ -60,21 +69,29 @@ vec System::findSuperPos(mat r, int nMax) {
     //rCut.col(1) = zeros(m_N-1);
     //rCut.col(2) = zeros(m_N-1);
 
-    vec C = zeros(m_N-1);
+    vec C = zeros(nMax);
     vec supPos = zeros(m_N-1);
-    cout << "Starting supPos calculation." << endl;
+  //  cout << "Starting supPos calculation." << endl;
+  //  for (int nx = 0; nx < nMax; nx++) {
+  //      cout << double(nx)/nMax*100 << endl;
+  //      for (int ny = 0; ny < nMax; ny++) {
+  //          for (int nz = 0; nz < nMax; nz++) {
+  //              vec qNumbers = {double(nx), double(ny), double(nz)};
+  //              findCoefficients(rCut, qNumbers, C);
+  //              vec plusTerm = C%m_waveFunction->harmonicOscillatorBasis(rCut, qNumbers);
+  //              supPos += plusTerm;
+  //          }
+  //      }
+  //  }
+
+
+    findCoefficients(rCut, {0,0,0}, C);
     for (int nx = 0; nx < nMax; nx++) {
-        for (int ny = 0; ny < nMax; ny++) {
-            for (int nz = 0; nz < nMax; nz++) {
-                vec qNumbers = {double(nx), double(ny), double(nz)};
-                findCoefficients(rCut, qNumbers, C);
-                vec plusTerm = C%m_waveFunction->harmonicOscillatorBasis(rCut, qNumbers);
-                //cout << plusTerm(0) << endl;
-                supPos += plusTerm;
-                cout << supPos(0) << endl;
-            }
-        }
+        vec qNumbers = {double(nx),0,0};
+        vec plusTerm = C(nx)*m_waveFunction->harmonicOscillatorBasis(rCut, qNumbers);
+        supPos += plusTerm;
     }
+
     return supPos;
 }
 
