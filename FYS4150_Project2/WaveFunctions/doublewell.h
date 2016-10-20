@@ -6,7 +6,7 @@
 class DoubleWell : public WaveFunction {
 public:
     DoubleWell(class System* system, double omega);
-    vec harmonicOscillatorBasis(mat r, vec n);
+    vec harmonicOscillatorBasis(mat x, int n);
     vec potential (vec r, double L);
 };
 

@@ -14,9 +14,10 @@ int main() {
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 18;
+    int nMax 					= 25;
+    int nPrimeMax               = 3;
 
-    int numberOfEigstates       = 100;
+    int numberOfEigstates       = 10;
     int numberOfDimensions      = 1;
 
     vec L(3);
@@ -58,7 +59,7 @@ int main() {
 
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat, numberOfEigstates, saveEigenvector);
-    vec supPos = system->findSuperPos(r, nMax);
+    mat supPos = system->findSuperPos(r, nMax, nPrimeMax);
 
     SaveConstants.save("../FYS4150_Project2/PlotAndData/omega5constants.dat", raw_ascii);
     SavePositionvector.save("../FYS4150_Project2/PlotAndData/omega5position.dat", raw_ascii);

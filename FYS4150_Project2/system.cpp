@@ -46,20 +46,22 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
     return;
 }
 
-void System::findCoefficients(mat r, vec qNumbers, vec &C){
-    int nMax = 18;
-    for (int nx = 0; nx < nMax; nx++) {
-        double innerprod = 0;
-        vec promp = {nx,0,0};
-        for (int i = 0; i < m_N-1; i++) {
-            innerprod += m_h*m_psi.col(0)(i)*m_waveFunction->harmonicOscillatorBasis(r, promp)(i);
+void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C){
+
+    for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+        for (int nx = 0; nx < nMax; nx++) {
+            double innerprod = 0;
+            for (int i = 0; i < m_N-1; i++) {
+                innerprod += m_psi.col(nPrime)(i)*m_waveFunction->harmonicOscillatorBasis(x, nx)(i);
+            }
+            C(nx, nPrime) = innerprod;
         }
-        C(nx) = innerprod;
+        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }
-    //C = m_psi.col(0)%m_waveFunction->harmonicOscillatorBasis(r, qNumbers);
+    C *= m_h;
 }
 
-vec System::findSuperPos(mat r, int nMax) {
+mat System::findSuperPos(mat r, int nMax, int nPrimeMax) {
     mat rCut = zeros(m_N-1, m_numberOfDimensions);
 
     for (int d=0; d < m_numberOfDimensions; d++) {
@@ -69,27 +71,22 @@ vec System::findSuperPos(mat r, int nMax) {
     //rCut.col(1) = zeros(m_N-1);
     //rCut.col(2) = zeros(m_N-1);
 
-    vec C = zeros(nMax);
-    vec supPos = zeros(m_N-1);
-  //  cout << "Starting supPos calculation." << endl;
-  //  for (int nx = 0; nx < nMax; nx++) {
-  //      cout << double(nx)/nMax*100 << endl;
-  //      for (int ny = 0; ny < nMax; ny++) {
-  //          for (int nz = 0; nz < nMax; nz++) {
-  //              vec qNumbers = {double(nx), double(ny), double(nz)};
-  //              findCoefficients(rCut, qNumbers, C);
-  //              vec plusTerm = C%m_waveFunction->harmonicOscillatorBasis(rCut, qNumbers);
-  //              supPos += plusTerm;
-  //          }
-  //      }
-  //  }
+    cube C = zeros(nMax, nPrimeMax, m_numberOfDimensions);
+    mat supPos = zeros(m_N-1, nPrimeMax);
 
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d));
+    }
 
-    findCoefficients(rCut, {0,0,0}, C);
-    for (int nx = 0; nx < nMax; nx++) {
-        vec qNumbers = {double(nx),0,0};
-        vec plusTerm = C(nx)*m_waveFunction->harmonicOscillatorBasis(rCut, qNumbers);
-        supPos += plusTerm;
+    for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+        for (int n = 0; n < nMax; n++) {
+            vec plusTerm = ones(m_N-1);
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                plusTerm %= C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
+            }
+            supPos.col(nPrime) += plusTerm;
+        }
+        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }
 
     return supPos;

@@ -10,8 +10,8 @@ public:
     System(double omega, int numberOfDimensions, double h, int N);
     void diagonalizeMatrix(mat r, vec L, int N, cube &diagMat);
     void findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int numberOfEigstates, mat &saveEigenvector);
-    void findCoefficients(mat r, vec qNumbers, vec &C);
-    vec findSuperPos(mat r, int nMax);
+    void findCoefficients(int nMax, int nPrimeMax, vec x, mat &C);
+    mat findSuperPos(mat r, int nMax, int nPrimeMax);
 
     void setN(double N);
     void setStepLength(double h);
