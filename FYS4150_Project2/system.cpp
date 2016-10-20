@@ -47,7 +47,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
 }
 
 void System::findCoefficients(mat r, vec qNumbers, vec &C){
-    int nMax = 10;
+    int nMax = 18;
     for (int nx = 0; nx < nMax; nx++) {
         double innerprod = 0;
         vec promp = {nx,0,0};

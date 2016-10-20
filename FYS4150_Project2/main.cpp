@@ -14,7 +14,7 @@ int main() {
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 100;
+    int nMax 					= 18;
 
     int numberOfEigstates       = 100;
     int numberOfDimensions      = 1;
@@ -49,7 +49,7 @@ int main() {
 
     SavePositionvector.col(numberOfDimensions) = rAbs.subvec(1, N-1);    //Saves the r vector for output.
 
-    vec SaveConstants           = {omega_r, double(numberOfDimensions), L(0), L(1), L(2), double(N), double(numberOfEigstates)};
+    vec SaveConstants           = {omega_r, double(numberOfDimensions), L(0), L(1), L(2), double(N), double(numberOfEigstates), h};
 
     //Init system
     System* system = new System(omega_r, numberOfDimensions, h, N);
