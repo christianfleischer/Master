@@ -4,12 +4,15 @@ from math import factorial
 import sys
 
 # Position in first column(s), eigenfunction in the remainder:
-table5nr = np.loadtxt('PlotAndData/omega5norepulsion.dat', skiprows=0)
-table5constants = np.loadtxt('PlotAndData/omega5constants.dat', skiprows=0)
-table5position = np.loadtxt('PlotAndData/omega5position.dat', skiprows=0)
-supCpp = np.loadtxt('PlotAndData/supPos.dat', skiprows=0)
 
-omega, nDim, Lx, Ly, Lz, N, numEigFunctions, h = table5constants
+eigenvectors = np.loadtxt('PlotAndData/Eigenvectors.dat')
+
+constants = np.loadtxt('PlotAndData/Constants.dat')
+positionvectors = np.loadtxt('PlotAndData/Positionvectors.dat')
+
+supCpp = np.loadtxt('PlotAndData/Superpositions.dat', skiprows=0)
+
+omega, nDim, Lx, Ly, Lz, N, numEigFunctions, h = constants
 
 numEigFunctions = int(numEigFunctions)
 N = int(N)-1
@@ -18,12 +21,12 @@ nDim = int(nDim)
 # Position vector:
 r = np.zeros((nDim, N))
 for d in range(nDim):
-    r[d] = table5position[:,d]
+    r[d] = positionvectors[:,d]
 
 # Numerically calculated eigenvector(2) (for different quantum numbers n):
 psi = np.zeros((numEigFunctions,N))
 for i in range(numEigFunctions):
-    psi[i] = table5nr[:,i]
+    psi[i] = eigenvectors[:,i]
 
 
 def H(r, n_r):
@@ -116,9 +119,8 @@ nVec = range(nMax)
 # plot(r[0], psi[0,:]**2, r[0], phi(r,[0]))
 
 title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
-        $L_, = %.1f$ and $x_{max/min}=\pm %d$. Number of
-        double-dot harmonic oscillator functions: $%d$''' 
-        %(N+1, Lx, Ly, r[0,-1]+1, nMax))
+        $L_, = %.1f$ and $x_{max/min}=\pm %d$. ''' 
+        %(N+1, Lx, Ly, r[0,-1]+1))
 ylabel(r'$|u(\rho)|^2$')
 legend([r'Analytical solution', r'Numerical solution', r'Basis function solution'] 
         ,prop={'size':10})

@@ -9,9 +9,9 @@ class System {
 public:
     System(double omega, int numberOfDimensions, double h, int N);
     void diagonalizeMatrix(mat r, vec L, int N, cube &diagMat);
-    void findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int numberOfEigstates, mat &saveEigenvector);
-    void findCoefficients(int nMax, int nPrimeMax, vec x, mat &C);
-    mat findSuperPos(mat r, int nMax, int nPrimeMax);
+    void findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, mat &saveEigenvector, cube &saveSeparateEigenvector, int numberOfEigstates);
+    void findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim);
+    mat findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep);
 
     void setN(double N);
     void setStepLength(double h);
@@ -34,7 +34,7 @@ private:
     int                     m_numberOfParticles      = 0;
     double                  m_computationTime        = 0;
     double                  m_omega                  = 0;
-    mat                     m_psi;
+    cube                    m_psi;
     class WaveFunction*     m_waveFunction           = nullptr;
 };
 

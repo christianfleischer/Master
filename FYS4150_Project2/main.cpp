@@ -14,14 +14,14 @@ int main() {
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 10;
+    int nMax 					= 20;
     int nPrimeMax               = 3;
 
-    int numberOfEigstates       = 18;
-    int numberOfDimensions      = 3;
+    int numberOfEigstates       = 100;
+    int numberOfDimensions      = 2;
 
     vec L(3);
-    L.fill(0.);
+    L.fill(5.);
     L(0) = 5.;
 
     //Set up the vector x and the matrix A:
@@ -42,7 +42,9 @@ int main() {
     mat  eigvals(N-1, numberOfDimensions);
 
     mat saveEigenvector         = ones(N-1, numberOfEigstates);
+    cube saveSepEigenvector		= zeros(N-1, numberOfEigstates, numberOfDimensions);
     mat SavePositionvector      = zeros(N-1, numberOfDimensions+1);
+    cube supPosSep				= zeros(N-1, nPrimeMax, numberOfDimensions);
 
     for (int d = 0; d < numberOfDimensions; d++) {
         SavePositionvector.col(d)   = r.col(d).subvec(1, N-1);    //Saves the y vector for output.
@@ -58,13 +60,19 @@ int main() {
     system->setWaveFunction(new DoubleWell(system, omega_r));
 
     system->diagonalizeMatrix(r, L, N, diagMat);
-    system->findEigenstate(eigvals, eigvecs, diagMat, numberOfEigstates, saveEigenvector);
-    mat supPos = system->findSuperPos(r, nMax, nPrimeMax);
+    system->findEigenstate(eigvals, eigvecs, diagMat,
+                           saveEigenvector, saveSepEigenvector,
+                           numberOfEigstates);
+    mat supPos = system->findSuperPos(r, nMax, nPrimeMax, supPosSep);
 
-    SaveConstants.save("../FYS4150_Project2/PlotAndData/omega5constants.dat", raw_ascii);
-    SavePositionvector.save("../FYS4150_Project2/PlotAndData/omega5position.dat", raw_ascii);
-    saveEigenvector.save("../FYS4150_Project2/PlotAndData/omega5norepulsion.dat", raw_ascii);
-    supPos.save("../FYS4150_Project2/PlotAndData/supPos.dat", raw_ascii);
+    SaveConstants.save("../FYS4150_Project2/PlotAndData/Constants.dat", raw_ascii);
+    SavePositionvector.save("../FYS4150_Project2/PlotAndData/Positionvectors.dat", raw_ascii);
+    saveEigenvector.save("../FYS4150_Project2/PlotAndData/Eigenvectors.dat", raw_ascii);
+    saveSepEigenvector.slice(0).save("../FYS4150_Project2/PlotAndData/SeparateEigenvectorsX.dat", raw_ascii);
+    if (numberOfDimensions>1) saveSepEigenvector.slice(1).save("../FYS4150_Project2/PlotAndData/SeparateEigenvectorsY.dat", raw_ascii);
+    supPos.save("../FYS4150_Project2/PlotAndData/Superpositions.dat", raw_ascii);
+    supPosSep.slice(0).save("../FYS4150_Project2/PlotAndData/SeparateSuperpositionsX.dat", raw_ascii);
+    if (numberOfDimensions>1) supPosSep.slice(1).save("../FYS4150_Project2/PlotAndData/SeparateSuperpositionsY.dat", raw_ascii);
     //saveEigenvector.print();
 
     cout << "eigvals, Armadillo:" << endl;

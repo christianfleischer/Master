@@ -21,7 +21,10 @@ void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat) {
     return;
 }
 
-void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int numberOfEigstates, mat &saveEigenvector) {
+void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
+                            mat &saveEigenvector,
+                            cube &saveSepEigenvector,
+                            int numberOfEigstates) {
     clock_t start1, finish1;
     start1 = clock();
 
@@ -32,13 +35,14 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
         eigvals.col(d) = eigvalsTemp;
     }
 
-    for (int i = 0; i < numberOfEigstates; i++) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {    // !!!!!!!
-            saveEigenvector.col(i) %= eigvecs.slice(d).col(i);
-        }
+    cube eigVecsTemp = zeros(m_N-1, numberOfEigstates, m_numberOfDimensions);
+    for (int d = 0; d < m_numberOfDimensions; d++) {    // !!!!!!!
+        eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+        saveEigenvector %= eigVecsTemp.slice(d);
+        saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
     }
 
-    m_psi = saveEigenvector;
+    m_psi = saveSepEigenvector;
 
     finish1 = clock();
     m_computationTime = ((finish1-start1)/(double) CLOCKS_PER_SEC);
@@ -46,36 +50,36 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
     return;
 }
 
-void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C){
+void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim){
 
     for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
         for (int nx = 0; nx < nMax; nx++) {
             double innerprod = 0;
             for (int i = 0; i < m_N-1; i++) {
-                innerprod += m_psi.col(nPrime)(i)*m_waveFunction->harmonicOscillatorBasis(x, nx)(i);
+                innerprod += m_psi.slice(currentDim).col(nPrime)(i)*m_waveFunction->harmonicOscillatorBasis(x, nx)(i);
             }
             C(nx, nPrime) = innerprod;
         }
-        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
+        //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }
     C *= m_h;
 }
 
-mat System::findSuperPos(mat r, int nMax, int nPrimeMax) {
+mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep) {
     mat rCut = zeros(m_N-1, m_numberOfDimensions);
 
     for (int d=0; d < m_numberOfDimensions; d++) {
         rCut.col(d) = r.col(d).subvec(1,m_N-1);
     }
 
-    rCut.col(1) = zeros(m_N-1);
-    rCut.col(2) = zeros(m_N-1);
+    //rCut.col(1) = zeros(m_N-1);
+    //rCut.col(2) = zeros(m_N-1);
 
     cube C = zeros(nMax, nPrimeMax, m_numberOfDimensions);
     mat supPos = ones(m_N-1, nPrimeMax);
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
-        findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d));
+        findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d), d);
     }
 
 //    for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
@@ -96,8 +100,9 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax) {
                 plusTerm += C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
             }
             supPos.col(nPrime) %= plusTerm;
+            supPosSep.slice(d).col(nPrime) = plusTerm;
         }
-        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
+        //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }
 
     return supPos;
