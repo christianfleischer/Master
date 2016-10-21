@@ -14,7 +14,7 @@ int main() {
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 20;
+    int nMax 					= 30;
     int nPrimeMax               = 3;
 
     int numberOfEigstates       = 100;
