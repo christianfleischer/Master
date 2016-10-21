@@ -33,7 +33,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, int number
     }
 
     for (int i = 0; i < numberOfEigstates; i++) {
-        for (int d = 0; d < 1; d++) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {    // !!!!!!!
             saveEigenvector.col(i) %= eigvecs.slice(d).col(i);
         }
     }
@@ -68,23 +68,34 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax) {
         rCut.col(d) = r.col(d).subvec(1,m_N-1);
     }
 
-    //rCut.col(1) = zeros(m_N-1);
-    //rCut.col(2) = zeros(m_N-1);
+    rCut.col(1) = zeros(m_N-1);
+    rCut.col(2) = zeros(m_N-1);
 
     cube C = zeros(nMax, nPrimeMax, m_numberOfDimensions);
-    mat supPos = zeros(m_N-1, nPrimeMax);
+    mat supPos = ones(m_N-1, nPrimeMax);
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
         findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d));
     }
 
+//    for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+//        for (int n = 0; n < nMax; n++) {
+//            vec plusTerm = ones(m_N-1);
+//            for (int d = 0; d < m_numberOfDimensions; d++) {
+//                plusTerm %= C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
+//            }
+//            supPos.col(nPrime) += plusTerm;
+//        }
+//        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
+//    }
+
     for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
-        for (int n = 0; n < nMax; n++) {
-            vec plusTerm = ones(m_N-1);
-            for (int d = 0; d < m_numberOfDimensions; d++) {
-                plusTerm %= C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            vec plusTerm = zeros(m_N-1);
+            for (int n = 0; n < nMax; n++) {
+                plusTerm += C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
             }
-            supPos.col(nPrime) += plusTerm;
+            supPos.col(nPrime) %= plusTerm;
         }
         nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }

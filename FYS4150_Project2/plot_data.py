@@ -83,18 +83,18 @@ def C(r):
 def cOld(r,n):
     return psi[0]*phi(r, n)
 
-Cmat = C(r)
+#Cmat = C(r)
 
-a = []
-sup = 0
-for n_x in range(nMax):
-    sys.stdout.write('[%.1f %%]\r' % (float(n_x)/nMax*100.))
-    sys.stdout.flush()  
-    sup += Cmat[n_x,0]*phi(r, [n_x])
+#a = []
+#sup = 0
+#for n_x in range(nMax):
+#    sys.stdout.write('[%.1f %%]\r' % (float(n_x)/nMax*100.))
+#    sys.stdout.flush()  
+#    sup += Cmat[n_x,0]*phi(r, [n_x])
 
-    tmp1 = sup**2/np.dot(sup,sup) - psi[0]**2/np.dot(psi[0],psi[0])
+#    tmp1 = sup**2/np.dot(sup,sup) - psi[0]**2/np.dot(psi[0],psi[0])
 
-    a.append(np.sqrt(np.dot(tmp1, tmp1)))
+#    a.append(np.sqrt(np.dot(tmp1, tmp1)))
 
 # When we set psi = psix*psiy*psiz, we must normalize manually:
 print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
@@ -103,7 +103,7 @@ print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
 # plot(r[0], supCpp**2/np.dot(supCpp,supCpp), r[0], psi[0]**2/np.dot(psi[0],psi[0]), '+')
 
 
-plot(r[0], psi[2]**2/np.dot(psi[2],psi[2]), r[0], supCpp[:,2]**2/np.dot(supCpp[:,2],supCpp[:,2]), '+')
+plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]), '+')
 
 
 nVec = range(nMax)
