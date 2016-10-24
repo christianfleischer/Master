@@ -52,13 +52,13 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
 
 void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim){
     cout << "Finding coefficients for dimension " << currentDim+1 << " of " <<  m_numberOfDimensions << endl;
-    std::cout.flush();
+    cout.flush();
     std::string upLine = "\033[F";
     for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
         cout << "nPrime = " << nPrime << " of " << nPrimeMax-1 << endl;
         for (int nx = 0; nx < nMax; nx++) {
-            std::cout << "[" << int(double(nx)/nMax * 100.0) << " %]\r";
-            std::cout.flush();
+            cout << "[" << int(double(nx)/nMax * 100.0) << " %]\r";
+            cout.flush();
             double innerprod = 0;
             for (int i = 0; i < m_N-1; i++) {
                 innerprod += m_psi.slice(currentDim).col(nPrime)(i)*m_waveFunction->harmonicOscillatorBasis(x, nx)(i);
@@ -72,7 +72,7 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
     C *= m_h;
 }
 
-mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep) {
+mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &saveC) {
     mat rCut = zeros(m_N-1, m_numberOfDimensions);
 
     for (int d=0; d < m_numberOfDimensions; d++) {
@@ -87,6 +87,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep) {
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
         findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d), d);
+        saveC %= C.slice(d);
     }
 
 //    for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {

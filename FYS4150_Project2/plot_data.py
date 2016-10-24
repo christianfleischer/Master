@@ -106,7 +106,7 @@ print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
 # plot(r[0], supCpp**2/np.dot(supCpp,supCpp), r[0], psi[0]**2/np.dot(psi[0],psi[0]), '+')
 
 
-plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]), '+')
+plot(r[0], psi[8]**2/np.dot(psi[8],psi[8]), r[0], supCpp[:,8]**2/np.dot(supCpp[:,8],supCpp[:,8]), '+')
 
 
 nVec = range(nMax)

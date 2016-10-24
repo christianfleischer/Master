@@ -23,6 +23,10 @@ psiX[:,0] = psiX[:,0]/np.sqrt(np.dot(psiX[:,0],psiX[:,0]))
 psiY[:,0] = psiY[:,0]/np.sqrt(np.dot(psiY[:,0],psiY[:,0]))
 
 
+print(np.dot(supX[:,0],supX[:,0]))
+print(np.dot(supY[:,0],supY[:,0]))
+print(np.dot(supX[:,0]*supY[:,0],supX[:,0]*supY[:,0]))
+
 omega, nDim, Lx, Ly, Lz, N, numEigFunctions, h = constants
 
 numEigFunctions = int(numEigFunctions)

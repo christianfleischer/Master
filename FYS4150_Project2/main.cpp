@@ -21,8 +21,8 @@ int main() {
     int numberOfDimensions      = 2;
 
     vec L(3);
-    L.fill(5.);
-    L(0) = 5.;
+    L.fill(0.);
+    L(0) = 0.;
 
     //Set up the vector x and the matrix A:
     double h                    = (posMax-posMin)/N;
@@ -45,6 +45,7 @@ int main() {
     cube saveSepEigenvector		= zeros(N-1, numberOfEigstates, numberOfDimensions);
     mat SavePositionvector      = zeros(N-1, numberOfDimensions+1);
     cube supPosSep				= zeros(N-1, nPrimeMax, numberOfDimensions);
+    mat saveC = ones(nMax, nPrimeMax);
 
     for (int d = 0; d < numberOfDimensions; d++) {
         SavePositionvector.col(d)   = r.col(d).subvec(1, N-1);    //Saves the y vector for output.
@@ -63,7 +64,7 @@ int main() {
     system->findEigenstate(eigvals, eigvecs, diagMat,
                            saveEigenvector, saveSepEigenvector,
                            numberOfEigstates);
-    mat supPos = system->findSuperPos(r, nMax, nPrimeMax, supPosSep);
+    mat supPos = system->findSuperPos(r, nMax, nPrimeMax, supPosSep, saveC);
 
     SaveConstants.save("../FYS4150_Project2/PlotAndData/Constants.dat", raw_ascii);
     SavePositionvector.save("../FYS4150_Project2/PlotAndData/Positionvectors.dat", raw_ascii);
@@ -73,9 +74,10 @@ int main() {
     supPos.save("../FYS4150_Project2/PlotAndData/Superpositions.dat", raw_ascii);
     supPosSep.slice(0).save("../FYS4150_Project2/PlotAndData/SeparateSuperpositionsX.dat", raw_ascii);
     if (numberOfDimensions>1) supPosSep.slice(1).save("../FYS4150_Project2/PlotAndData/SeparateSuperpositionsY.dat", raw_ascii);
+    saveC.save("../FYS4150_Project2/PlotAndData/Coefficients.dat", raw_ascii);
     //saveEigenvector.print();
 
-    cout << "eigvals, Armadillo:" << endl;
+    cout << endl << "eigvals, Armadillo:" << endl;
     int displayVals = 15;
     for (int i = 0; i < displayVals; ++i) {
         for (int d = 0; d < numberOfDimensions; d++) {
