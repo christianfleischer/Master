@@ -53,6 +53,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
 void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim){
     cout << "Finding coefficients for dimension " << currentDim+1 << " of " <<  m_numberOfDimensions << endl;
     std::cout.flush();
+    std::string upLine = "\033[F";
     for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
         cout << "nPrime = " << nPrime << " of " << nPrimeMax-1 << endl;
         for (int nx = 0; nx < nMax; nx++) {
@@ -64,8 +65,10 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
             }
             C(nx, nPrime) = innerprod;
         }
+        cout << upLine;
         //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }
+    cout << upLine;
     C *= m_h;
 }
 
