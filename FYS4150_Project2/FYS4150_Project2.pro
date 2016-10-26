@@ -12,9 +12,7 @@ SOURCES += main.cpp \
 
 LIBS += -llapack -lblas -larmadillo
 
-HEADERS += \
-    catch.h \
-    system.h \
+HEADERS += system.h \
     WaveFunctions/wavefunction.h \
     WaveFunctions/doublewell.h \
     Math/factorial.h

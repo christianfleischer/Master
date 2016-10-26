@@ -1,6 +1,7 @@
 #include "system.h"
 #include "WaveFunctions/wavefunction.h"
 
+
 System::System(double omega, int numberOfDimensions, double h, int N) {
     m_omega = omega;
     setNumberOfDimensions(numberOfDimensions);
@@ -39,6 +40,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     for (int d = 0; d < m_numberOfDimensions; d++) {    // !!!!!!!
         eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
         saveEigenvector %= eigVecsTemp.slice(d);
+        cout << dot(eigVecsTemp.slice(d).col(0), eigVecsTemp.slice(d).col(0)) << endl;
         saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
     }
 
@@ -85,6 +87,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
     cube C = zeros(nMax, nPrimeMax, m_numberOfDimensions);
     mat supPos = ones(m_N-1, nPrimeMax);
 
+    //This is wrong!:
     for (int d = 0; d < m_numberOfDimensions; d++) {
         findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d), d);
         saveC %= C.slice(d);

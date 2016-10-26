@@ -34,9 +34,9 @@ int main(int nargs, char* args[]) {
     timeStart = MPI_Wtime();
 
     int numberOfDimensions  = 2;
-    int numberOfParticles   = 6;
+    int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;              // Monte Carlo cycles
-    double omega            = .5;                     // Oscillator frequency.
+    double omega            = 1.;                     // Oscillator frequency.
     double alpha            = 0.98456;//0.7;          // Variational parameter.
     double beta             = 0.40691;//2.82843;      // Variational parameter.
     double gamma            = 2.82843;
@@ -48,10 +48,10 @@ int main(int nargs, char* args[]) {
     double C                = 1.;                     // Norm constant.
     bool analyticalKinetic  = true;
     bool importanceSampling = true;
-    bool repulsion          = true;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
+    bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
-    bool Jastrow            = true;                   // Switch for Jastrow factor. (manybody qdot)
+    bool Jastrow            = false;                   // Switch for Jastrow factor. (manybody qdot)
     bool optimizeParameters = false;                  // Switch for optimizing variational parameters.
     bool saveEnergies       = false;
     bool savePositions      = false;

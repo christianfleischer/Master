@@ -72,11 +72,29 @@ double ManyElectrons::evaluate(std::vector<class Particle*> particles) {
 
 double ManyElectrons::evaluateSingleParticleWF(int nx, int ny, double x, double y) {
     // Calculates the single particle wave function.
-    //double alpha = m_parameters[0];
+    double alpha = m_parameters[0];
+
+    double c1 = pow(7.75796672520960, -5);
+    double c2 = pow(3.89291154509594, -26);
+    double c3 = pow(1.50813471554841, -3);
+    double c4 = pow(2.44490587821256, -25);
+    vec c = {c1, c2, c3, c4};
 
     double waveFunction = computeHermitePolynomial(nx, x)
                          *computeHermitePolynomial(ny, y)
                          *m_expFactor;//exp(-m_omega*alpha*(x*x + y*y)*0.5);
+
+    // Test to see if coefficients from double well give better results:
+    double psiX = 0;
+    double psiY = 0;
+    for (int i = 0; i < 4; i++) {
+        psiX += c(i)*computeHermitePolynomial(i, x)*exp(-m_omega*alpha*x*x*0.5);
+        psiY += c(i)*computeHermitePolynomial(i, y)*exp(-m_omega*alpha*y*y*0.5);
+    }
+
+    double waveFunction = psiX*psiY;
+
+
     return waveFunction;
 }
 
