@@ -25,7 +25,7 @@ void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat) {
 void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
                             mat &saveEigenvector,
                             cube &saveSepEigenvector,
-                            int numberOfEigstates) {
+                            int numberOfEigstates, int nMax) {
     clock_t start1, finish1;
     start1 = clock();
 
@@ -37,12 +37,59 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     }
 
     cube eigVecsTemp = zeros(m_N-1, numberOfEigstates, m_numberOfDimensions);
-    for (int d = 0; d < m_numberOfDimensions; d++) {    // !!!!!!!
+    m_qNumbers = zeros(numberOfEigstates, m_numberOfDimensions);
+
+    if (m_numberOfDimensions == 1) {
+        for (int n = 0; n < numberOfEigstates; n++) {
+            m_qNumbers(n, 0) = n;
+        }
+        int d = 0;
         eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
-        saveEigenvector %= eigVecsTemp.slice(d);
-        cout << dot(eigVecsTemp.slice(d).col(0), eigVecsTemp.slice(d).col(0)) << endl;
+        saveEigenvector = eigVecsTemp.slice(d);
         saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
     }
+
+
+    else if (m_numberOfDimensions == 2) {
+        int nx 	= 0;
+        int ny 	= 0;
+        int n 	= 0;
+        int i 	= 0;
+
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+            saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
+        }
+
+        while (n < nMax) {
+            m_qNumbers(i, 0) = nx;
+            m_qNumbers(i, 1) = ny;
+            saveEigenvector.col(i) = eigVecsTemp.slice(0).col(nx)%eigVecsTemp.slice(1).col(ny);
+
+            cout << "i: " << i << " nx: " << nx << " ny: " << ny << " n: " << n << endl;
+
+            if (ny == n) {
+                n++;
+                nx = n;
+                ny = 0;
+            }
+            else {
+                nx--;
+                ny++;
+            }
+
+            i++;
+        }
+    }
+
+    else if (m_numberOfDimensions == 3) {
+        cout << m_numberOfDimensions << ". dim not implemented yet." << endl;
+    }
+
+    else {
+        cout << "Number of dimensions must be 1, 2 or 3." << endl;
+    }
+
 
     m_psi = saveSepEigenvector;
 
@@ -104,16 +151,55 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
 //        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
 //    }
 
-    for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            vec plusTerm = zeros(m_N-1);
-            for (int n = 0; n < nMax; n++) {
-                plusTerm += C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
+    if (m_numberOfDimensions == 1) {
+        for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                vec plusTerm = zeros(m_N-1);
+                for (int n = 0; n < nMax; n++) {
+                    plusTerm += C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
+                }
+                supPos.col(nPrime) %= plusTerm;
+                supPosSep.slice(d).col(nPrime) = plusTerm;
             }
-            supPos.col(nPrime) %= plusTerm;
-            supPosSep.slice(d).col(nPrime) = plusTerm;
+            //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
         }
-        //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
+    }
+
+    else if (m_numberOfDimensions == 2) {
+        int nPrime = 0;
+        int nx 	= 0;
+        int ny 	= 0;
+        int n 	= 0;
+        int i 	= 0;
+
+        vec plusTermX = zeros(m_N-1);
+        vec plusTermY = zeros(m_N-1);
+        while (n < nMax) {
+            plusTermX += C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+            plusTermY += C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+
+            cout << "i: " << i << " nx: " << nx << " ny: " << ny << " n: " << n << endl;
+
+            if (ny == n) {
+                n++;
+                nx = n;
+                ny = 0;
+            }
+            else {
+                nx--;
+                ny++;
+            }
+
+            i++;
+        }
+    }
+
+    else if (m_numberOfDimensions == 3) {
+        cout << m_numberOfDimensions << ". dim not implemented yet." << endl;
+    }
+
+    else {
+        cout << "Number of dimensions must be 1, 2 or 3." << endl;
     }
 
     return supPos;

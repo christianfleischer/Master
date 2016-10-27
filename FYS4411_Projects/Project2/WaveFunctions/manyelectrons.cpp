@@ -85,14 +85,14 @@ double ManyElectrons::evaluateSingleParticleWF(int nx, int ny, double x, double 
                          *m_expFactor;//exp(-m_omega*alpha*(x*x + y*y)*0.5);
 
     // Test to see if coefficients from double well give better results:
-    double psiX = 0;
-    double psiY = 0;
-    for (int i = 0; i < 4; i++) {
-        psiX += c(i)*computeHermitePolynomial(i, x)*exp(-m_omega*alpha*x*x*0.5);
-        psiY += c(i)*computeHermitePolynomial(i, y)*exp(-m_omega*alpha*y*y*0.5);
-    }
+    //double psiX = 0;
+    //double psiY = 0;
+    //for (int i = 0; i < 4; i++) {
+    //    psiX += c(i)*computeHermitePolynomial(i, x)*exp(-m_omega*alpha*x*x*0.5);
+    //    psiY += c(i)*computeHermitePolynomial(i, y)*exp(-m_omega*alpha*y*y*0.5);
+    //}
 
-    double waveFunction = psiX*psiY;
+    //double waveFunction = psiX*psiY;
 
 
     return waveFunction;
