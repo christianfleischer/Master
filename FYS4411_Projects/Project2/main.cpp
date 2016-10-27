@@ -48,10 +48,10 @@ int main(int nargs, char* args[]) {
     double C                = 1.;                     // Norm constant.
     bool analyticalKinetic  = true;
     bool importanceSampling = true;
-    bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
+    bool repulsion          = true;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
-    bool Jastrow            = false;                   // Switch for Jastrow factor. (manybody qdot)
+    bool Jastrow            = true;                   // Switch for Jastrow factor. (manybody qdot)
     bool optimizeParameters = false;                  // Switch for optimizing variational parameters.
     bool saveEnergies       = false;
     bool savePositions      = false;

@@ -74,25 +74,25 @@ double ManyElectrons::evaluateSingleParticleWF(int nx, int ny, double x, double 
     // Calculates the single particle wave function.
     double alpha = m_parameters[0];
 
-    double c1 = pow(7.75796672520960, -5);
-    double c2 = pow(3.89291154509594, -26);
-    double c3 = pow(1.50813471554841, -3);
-    double c4 = pow(2.44490587821256, -25);
-    vec c = {c1, c2, c3, c4};
+//    double c1 = pow(7.75796672520960, -5);
+//    double c2 = pow(3.89291154509594, -26);
+//    double c3 = pow(1.50813471554841, -3);
+//    double c4 = pow(2.44490587821256, -25);
+//    vec c = {c1, c2, c3, c4};
 
     double waveFunction = computeHermitePolynomial(nx, x)
                          *computeHermitePolynomial(ny, y)
                          *m_expFactor;//exp(-m_omega*alpha*(x*x + y*y)*0.5);
 
-    // Test to see if coefficients from double well give better results:
-    //double psiX = 0;
-    //double psiY = 0;
-    //for (int i = 0; i < 4; i++) {
-    //    psiX += c(i)*computeHermitePolynomial(i, x)*exp(-m_omega*alpha*x*x*0.5);
-    //    psiY += c(i)*computeHermitePolynomial(i, y)*exp(-m_omega*alpha*y*y*0.5);
-    //}
+//    // Test to see if coefficients from double well give better results:
+//    double psiX = 0;
+//    double psiY = 0;
+//    for (int i = 0; i < 4; i++) {
+//        psiX += c(i)*computeHermitePolynomial(i, x)*exp(-m_omega*alpha*x*x*0.5);
+//        psiY += c(i)*computeHermitePolynomial(i, y)*exp(-m_omega*alpha*y*y*0.5);
+//    }
 
-    //double waveFunction = psiX*psiY;
+//    double waveFunction = psiX*psiY;
 
 
     return waveFunction;
@@ -110,8 +110,10 @@ std::vector<double> ManyElectrons::computeDerivative(std::vector<class Particle*
     derivative[i*numberOfDimensions+1] = computeSlaterGradient(i)[1]
                                           ;//+computeJastrowGradient(particles, i)[1];
     if (m_Jastrow) {
-        derivative[i*numberOfDimensions] += m_JastrowGrad(i,0);//computeJastrowGradient(particles, i)[0];
-        derivative[i*numberOfDimensions+1] += m_JastrowGrad(i,1);//computeJastrowGradient(particles, i)[1];
+        for (int d = 0; d < numberOfDimensions; d++) {
+            derivative[i*numberOfDimensions+d] += m_JastrowGrad(i,d);//computeJastrowGradient(particles, i)[0];
+            //derivative[i*numberOfDimensions+1] += m_JastrowGrad(i,1);//computeJastrowGradient(particles, i)[1];
+        }
     }
     return derivative;
     //return 0;
@@ -699,21 +701,27 @@ void ManyElectrons::setUpJastrowMat() {
             std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
-            m_JastrowGrad(i,0) += (r_i[0]-r_j[0])/r_ij * m_a(i, j)/(denom*denom);
-            m_JastrowGrad(i,1) += (r_i[1]-r_j[1])/r_ij * m_a(i, j)/(denom*denom);
+
+            for (int d = 0; d < numberOfDimensions; d++) {
+                m_JastrowGrad(i,d) += (r_i[d]-r_j[d])/r_ij * m_a(i, j)/(denom*denom);
+                //m_JastrowGrad(i,1) += (r_i[1]-r_j[1])/r_ij * m_a(i, j)/(denom*denom);
+            }
         }
 
         for (int j=i+1; j < m_numberOfParticles; j++) {
             std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
-            m_JastrowMat(i,j,0) = (r_i[0]-r_j[0])/r_ij * m_a(i, j)/(denom*denom);
-            m_JastrowMat(i,j,1) = (r_i[1]-r_j[1])/r_ij * m_a(i, j)/(denom*denom);
-            m_JastrowMat(j,i,0) = -m_JastrowMat(i,j,0);
-            m_JastrowMat(j,i,1) = -m_JastrowMat(i,j,1);
 
-            m_JastrowGrad(i,0) += m_JastrowMat(i,j,0);
-            m_JastrowGrad(i,1) += m_JastrowMat(i,j,1);
+            for (int d = 0; d < numberOfDimensions; d++) {
+                m_JastrowMat(i,j,d) = (r_i[d]-r_j[d])/r_ij * m_a(i, j)/(denom*denom);
+                //m_JastrowMat(i,j,1) = (r_i[1]-r_j[1])/r_ij * m_a(i, j)/(denom*denom);
+                m_JastrowMat(j,i,d) = -m_JastrowMat(i,j,d);
+                //m_JastrowMat(j,i,1) = -m_JastrowMat(i,j,1);
+
+                m_JastrowGrad(i,d) += m_JastrowMat(i,j,d);
+                //m_JastrowGrad(i,1) += m_JastrowMat(i,j,1);
+            }
         }
     }
 }
@@ -828,9 +836,16 @@ void ManyElectrons::updateDistances(int randomParticle) {
 void ManyElectrons::updateSPWFMat(int randomParticle) {
 
     int i = randomParticle;
+    int numberOfDimensions = m_system->getNumberOfDimensions();
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
     double alpha = m_parameters[0];
-    m_expFactor = exp(-alpha*m_omega*(r_i[0]*r_i[0] + r_i[1]*r_i[1])*0.5);
+
+    double r2 = 0;
+    for (int d = 0; d < numberOfDimensions; d++) {
+        r2 += r_i[d]*r_i[d];
+    }
+
+    m_expFactor = exp(-alpha*m_omega*r2*0.5);
 
     for (int j=0; j<m_halfNumberOfParticles; j++) {
         int nx = m_quantumNumbers(j, 0);
@@ -846,6 +861,7 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
 void ManyElectrons::updateJastrow(int randomParticle) {
 
     int p = randomParticle;
+    int numberOfDimensions = m_system->getNumberOfDimensions();
     std::vector<double> r_p = m_system->getParticles()[p]->getPosition();
     double beta = m_parameters[1];
     m_JastrowMatOld = m_JastrowMat;
@@ -854,39 +870,46 @@ void ManyElectrons::updateJastrow(int randomParticle) {
         std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
         double r_pj = m_distances(p,j);
         double denom = 1 + beta*r_pj;
-        m_JastrowMat(p,j,0) = (r_p[0]-r_j[0])/r_pj * m_a(p, j)/(denom*denom);
-        m_JastrowMat(p,j,1) = (r_p[1]-r_j[1])/r_pj * m_a(p, j)/(denom*denom);
-        m_JastrowMat(j,p,0) = -m_JastrowMat(p,j,0);
-        m_JastrowMat(j,p,1) = -m_JastrowMat(p,j,1);
+        for (int d = 0; d < numberOfDimensions; d++) {
+            m_JastrowMat(p,j,d) = (r_p[d]-r_j[d])/r_pj * m_a(p, j)/(denom*denom);
+            //m_JastrowMat(p,j,1) = (r_p[1]-r_j[1])/r_pj * m_a(p, j)/(denom*denom);
+            m_JastrowMat(j,p,d) = -m_JastrowMat(p,j,d);
+            //m_JastrowMat(j,p,1) = -m_JastrowMat(p,j,1);
+        }
     }
     for (int j=p+1; j<m_numberOfParticles; j++) {
         std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
         double r_pj = m_distances(p,j);
         double denom = 1 + beta*r_pj;
-        m_JastrowMat(p,j,0) = (r_p[0]-r_j[0])/r_pj * m_a(p, j)/(denom*denom);
-        m_JastrowMat(p,j,1) = (r_p[1]-r_j[1])/r_pj * m_a(p, j)/(denom*denom);
-        m_JastrowMat(j,p,0) = -m_JastrowMat(p,j,0);
-        m_JastrowMat(j,p,1) = -m_JastrowMat(p,j,1);
+        for (int d = 0; d < numberOfDimensions; d++) {
+            m_JastrowMat(p,j,d) = (r_p[d]-r_j[d])/r_pj * m_a(p, j)/(denom*denom);
+            //m_JastrowMat(p,j,1) = (r_p[1]-r_j[1])/r_pj * m_a(p, j)/(denom*denom);
+            m_JastrowMat(j,p,d) = -m_JastrowMat(p,j,d);
+            //m_JastrowMat(j,p,1) = -m_JastrowMat(p,j,1);
+        }
     }
 
     m_JastrowGradOld = m_JastrowGrad;
-    m_JastrowGrad(p, 0) = 0;
-    m_JastrowGrad(p, 1) = 0;
 
-    for (int j=0; j<p; j++) {
-        m_JastrowGrad(p, 0) += m_JastrowMat(p,j,0);
-        m_JastrowGrad(p, 1) += m_JastrowMat(p,j,1);
-    }
-    for (int j=p+1; j<m_numberOfParticles; j++) {
-        m_JastrowGrad(p, 0) += m_JastrowMat(p,j,0);
-        m_JastrowGrad(p, 1) += m_JastrowMat(p,j,1);
-    }
-    for (int i=0; i<p; i++) {
-        m_JastrowGrad(i, 0) = m_JastrowGradOld(i,0) - m_JastrowMatOld(i,p,0) + m_JastrowMat(i,p,0);
-        m_JastrowGrad(i, 1) = m_JastrowGradOld(i,1) - m_JastrowMatOld(i,p,1) + m_JastrowMat(i,p,1);
-    }
-    for (int i=p+1; i<m_numberOfParticles; i++) {
-        m_JastrowGrad(i, 0) = m_JastrowGradOld(i,0) - m_JastrowMatOld(i,p,0) + m_JastrowMat(i,p,0);
-        m_JastrowGrad(i, 1) = m_JastrowGradOld(i,1) - m_JastrowMatOld(i,p,1) + m_JastrowMat(i,p,1);
+    for (int d = 0; d < numberOfDimensions; d++) {
+        m_JastrowGrad(p, d) = 0;
+        //m_JastrowGrad(p, 1) = 0;
+
+        for (int j=0; j<p; j++) {
+            m_JastrowGrad(p, d) += m_JastrowMat(p,j,d);
+            //m_JastrowGrad(p, 1) += m_JastrowMat(p,j,1);
+        }
+        for (int j=p+1; j<m_numberOfParticles; j++) {
+            m_JastrowGrad(p, d) += m_JastrowMat(p,j,d);
+            //m_JastrowGrad(p, 1) += m_JastrowMat(p,j,1);
+        }
+        for (int i=0; i<p; i++) {
+            m_JastrowGrad(i, d) = m_JastrowGradOld(i,d) - m_JastrowMatOld(i,p,d) + m_JastrowMat(i,p,d);
+            //m_JastrowGrad(i, 1) = m_JastrowGradOld(i,1) - m_JastrowMatOld(i,p,1) + m_JastrowMat(i,p,1);
+        }
+        for (int i=p+1; i<m_numberOfParticles; i++) {
+            m_JastrowGrad(i, d) = m_JastrowGradOld(i,d) - m_JastrowMatOld(i,p,d) + m_JastrowMat(i,p,d);
+            //m_JastrowGrad(i, 1) = m_JastrowGradOld(i,1) - m_JastrowMatOld(i,p,1) + m_JastrowMat(i,p,1);
+        }
     }
 }
