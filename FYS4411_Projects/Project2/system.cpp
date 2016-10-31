@@ -9,11 +9,13 @@
 #include "Math/random.h"
 #include <iostream>
 #include <fstream>
+#include <armadillo>
 #include <cmath>
 #include <time.h>
 #include <mpi.h>
 
 using namespace std;
+using namespace arma;
 
 bool System::metropolisStep() {
     /* Perform the actual Metropolis step: Choose a particle at random and
@@ -372,3 +374,8 @@ void System::setSavePositions(bool savePositions) {
     }
 }
 
+
+void System::retrieveFromFile(string fileName, mat &loadCoefficients) {
+    loadCoefficients.load(fileName, raw_ascii);
+    return;
+}

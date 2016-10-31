@@ -57,6 +57,7 @@ int main(int nargs, char* args[]) {
     bool savePositions      = false;
     bool showProgress       = true;
     bool printToTerminal    = true;
+    bool use2WellCoeff 		= false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
 
     int numMyCycles = numberOfSteps/numprocs;
 

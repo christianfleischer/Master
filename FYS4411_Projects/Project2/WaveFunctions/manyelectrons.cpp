@@ -318,6 +318,9 @@ double ManyElectrons::computeDoubleDerivative(std::vector<class Particle*> parti
     //return 0;
 }
 
+
+
+
 double ManyElectrons::computeSPWFDoubleDerivative(int nx, int ny, double x, double y) {
     // Calculates the single particle wave function twice differentiated w.r.t. position.
     double doubleDerivative = 0;
