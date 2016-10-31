@@ -15,14 +15,14 @@ public:
     double computeHermitePolynomialDerivative(int nValue, double position);
     double computeHermitePolynomialDoubleDerivative(int nValue, double position);
     double computeHermitePolynomialAlphaDerivative(int nValue, double position);
-    double evaluateSingleParticleWF(int nx, int ny, double x, double y);
-    double computeSPWFDoubleDerivative(int nx, int ny, double x, double y);
-    double computeSPWFAlphaDerivative(int nx, int ny, double x, double y);
+    double evaluateSingleParticleWF(vec n, std::vector<double> r);
+    double computeSPWFDoubleDerivative(vec n, std::vector<double> r);
+    double computeSPWFAlphaDerivative(vec n, std::vector<double> r);
     std::vector<double> computeDerivative(std::vector<class Particle*> particles);
     std::vector<double> computeDerivativeWrtParameters(std::vector<Particle *> particles);
     std::vector<double> computeSlaterGradient(/*std::vector<Particle *> particles, */int i);
     std::vector<double> computeJastrowGradient(std::vector<Particle *> particles, int i);
-    std::vector<double> computeSPWFDerivative(int nx, int ny, double x, double y);
+    std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r);
     void setUpSlaterDet();
     void setUpDistances();
     void setUpJastrowMat();
