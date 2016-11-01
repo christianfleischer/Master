@@ -780,18 +780,31 @@ void ManyElectrons::setUpSlaterDet() {
             }
 
             m_expFactor = exp(-alpha*m_omega*(r2SpinUp)*0.5);
-            m_spinUpSlater(i,j) = evaluateSingleParticleWF(n, rSpinUp);
+            mat cCoefficients;
+            m_system->retrieveFromFile("../../FYS4150_Project2/PlotAndData/Coefficients.dat", cCoefficients);
+
+            m_cDeterminant = det(cCoefficients);
+            cout << m_cDeterminant << endl;
+
+            m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
 
             m_SPWFMat(i,j) = m_spinUpSlater(i,j);
+
             m_SPWFDMat(i,j) = computeSPWFDerivative(n, rSpinUp);
+            m_SPWFDMat(i,j) *= m_cDeterminant;
+
             m_SPWFDDMat(i,j) = computeSPWFDoubleDerivative(n, rSpinUp);
+            m_SPWFDDMat(i,j) *= m_cDeterminant;
 
             m_expFactor = exp(-alpha*m_omega*(r2SpinDown)*0.5);
-            m_spinDownSlater(i,j) = evaluateSingleParticleWF(n, rSpinDown);
+            m_spinDownSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinDown);
 
             m_SPWFMat(i+m_halfNumberOfParticles, j) = m_spinDownSlater(i,j);
+
             m_SPWFDMat(i+m_halfNumberOfParticles,j) = computeSPWFDerivative(n, rSpinDown);
-            m_SPWFDDMat(i+m_halfNumberOfParticles,j) = computeSPWFDoubleDerivative(n, rSpinDown);
+            m_SPWFDMat(i+m_halfNumberOfParticles,j) *= m_cDeterminant;
+
+            m_SPWFDDMat(i+m_halfNumberOfParticles,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, rSpinDown);
 
         }
     }
@@ -986,9 +999,12 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
             n[d] = m_quantumNumbers(j, d);
         }
 
-        m_SPWFMat(i,j) = evaluateSingleParticleWF(n, r_i);
+        m_SPWFMat(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, r_i);
+
         m_SPWFDMat(i,j) = computeSPWFDerivative(n, r_i);
-        m_SPWFDDMat(i,j) = computeSPWFDoubleDerivative(n, r_i);
+        m_SPWFDMat(i,j) *= m_cDeterminant;
+
+        m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, r_i);
     }
 
 }
