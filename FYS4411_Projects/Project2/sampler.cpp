@@ -55,10 +55,6 @@ void Sampler::sample(bool acceptedStep) {
         }
     }
 
-    /* Here you should sample all the interesting things you want to measure.
-     * Note that there are (way) more than the single one here currently.
-     */
-
     // Sample local energy
     std::vector<double> energies = m_system->getHamiltonian()->
                                  computeLocalEnergy(m_system->getParticles());
@@ -148,9 +144,8 @@ void Sampler::printOutputToTerminal() {
 }
 
 void Sampler::computeAverages() {
-    /* Compute the averages of the sampled quantities. You need to think
-     * thoroughly through what is written here currently; is this correct?  It should be now.
-     */
+    // Compute the averages of the sampled quantities.
+
     // We only sample after the equilibration steps so we need to average by the number of steps after equilibration.
     m_energy = m_cumulativeEnergy / (double) m_stepNumber;
     m_squaredEnergy = m_cumulativeSquaredEnergy / (double) m_stepNumber;
