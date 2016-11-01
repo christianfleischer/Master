@@ -33,7 +33,7 @@ int main(int nargs, char* args[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     timeStart = MPI_Wtime();
 
-    int numberOfDimensions  = 2;
+    int numberOfDimensions  = 1;
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
@@ -46,9 +46,9 @@ int main(int nargs, char* args[]) {
     double dt               = 0.01;                   // Time step for importance sampling.
     double aElectrons       = 1.; //1./3
     double C                = 1.;                     // Norm constant.
-    bool analyticalKinetic  = false;
+    bool analyticalKinetic  = true;
     bool importanceSampling = true;
-    bool repulsion          = true;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
+    bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
     bool Jastrow            = false;                   // Switch for Jastrow factor. (manybody qdot)

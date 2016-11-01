@@ -14,8 +14,8 @@ int main() {
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 20;
-    int nPrimeMax               = 3;
+    int nMax 					= 2;
+    int nPrimeMax               = 2;
     int numberOfDimensions      = 1;
 
     vec L(3);
