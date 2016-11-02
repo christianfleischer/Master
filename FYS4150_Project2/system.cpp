@@ -192,6 +192,9 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
 
             i++;
         }
+        supPos.col(nPrime) = plusTermX%plusTermY;
+        supPosSep.slice(0).col(nPrime) = plusTermX;
+        supPosSep.slice(1).col(nPrime) = plusTermY;
     }
 
     else if (m_numberOfDimensions == 3) {

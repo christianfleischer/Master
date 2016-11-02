@@ -25,8 +25,11 @@ for d in range(nDim):
 
 # Numerically calculated eigenvector(2) (for different quantum numbers n):
 psi = np.zeros((numEigFunctions,N))
-for i in range(numEigFunctions):
-    psi[i] = eigenvectors[:,i]
+if numEigFunctions == 1:
+    psi[0] = eigenvectors
+else:
+    for i in range(numEigFunctions):
+        psi[i] = eigenvectors[:,i]
 
 
 def H(r, n_r):
