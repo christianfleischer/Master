@@ -174,9 +174,13 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
 
         vec plusTermX = zeros(m_N-1);
         vec plusTermY = zeros(m_N-1);
+        vec plusTerm = zeros(m_N-1);
         while (n < nMax) {
-            plusTermX += C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
-            plusTermY += C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+            plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+            plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+            plusTerm += plusTermX%plusTermY;
+            supPosSep.slice(0).col(nPrime) += plusTermX;
+            supPosSep.slice(1).col(nPrime) += plusTermY;
 
             cout << "i: " << i << " nx: " << nx << " ny: " << ny << " n: " << n << endl;
 
@@ -192,9 +196,9 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
 
             i++;
         }
-        supPos.col(nPrime) = plusTermX%plusTermY;
-        supPosSep.slice(0).col(nPrime) = plusTermX;
-        supPosSep.slice(1).col(nPrime) = plusTermY;
+        //supPosSep.slice(0).col(nPrime) /= sqrt(dot(supPosSep.slice(0).col(nPrime),supPosSep.slice(0).col(nPrime)));
+        //supPosSep.slice(1).col(nPrime) /= sqrt(dot(supPosSep.slice(1).col(nPrime),supPosSep.slice(1).col(nPrime)));
+        supPos.col(nPrime) = plusTerm;
     }
 
     else if (m_numberOfDimensions == 3) {
