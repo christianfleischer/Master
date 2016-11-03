@@ -38,10 +38,11 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
 
     cube eigVecsTemp = zeros(m_N-1, numberOfEigstates, m_numberOfDimensions);
     m_qNumbers = zeros(numberOfEigstates, m_numberOfDimensions);
+    m_numberOfEigstates = numberOfEigstates;
 
     if (m_numberOfDimensions == 1) {
-        for (int n = 0; n < numberOfEigstates; n++) {
-            m_qNumbers(n, 0) = n;
+        for (int i = 0; i < numberOfEigstates; i++) {
+            m_qNumbers(i, 0) = i;
         }
         int d = 0;
         eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
@@ -83,7 +84,37 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     }
 
     else if (m_numberOfDimensions == 3) {
-        cout << m_numberOfDimensions << ". dim not implemented yet." << endl;
+        m_qNumbers(0, 0) = 0; m_qNumbers(0, 1) = 0; m_qNumbers(0, 2) = 0;
+
+        if (numberOfEigstates >= 4) {
+            m_qNumbers(1, 0) = 1; m_qNumbers(1, 1) = 0; m_qNumbers(1, 2) = 0;
+            m_qNumbers(2, 0) = 0; m_qNumbers(2, 1) = 1; m_qNumbers(2, 2) = 0;
+            m_qNumbers(3, 0) = 0; m_qNumbers(3, 1) = 0; m_qNumbers(3, 2) = 1;
+        }
+
+        if (numberOfEigstates >= 10) {
+            m_qNumbers(4, 0) = 2; m_qNumbers(4, 1) = 0; m_qNumbers(4, 2) = 0;
+            m_qNumbers(5, 0) = 1; m_qNumbers(5, 1) = 1; m_qNumbers(5, 2) = 0;
+            m_qNumbers(6, 0) = 1; m_qNumbers(6, 1) = 0; m_qNumbers(6, 2) = 1;
+            m_qNumbers(7, 0) = 0; m_qNumbers(7, 1) = 2; m_qNumbers(7, 2) = 0;
+            m_qNumbers(8, 0) = 0; m_qNumbers(8, 1) = 1; m_qNumbers(8, 2) = 1;
+            m_qNumbers(9, 0) = 0; m_qNumbers(9, 1) = 0; m_qNumbers(9, 2) = 2;
+        }
+
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+            saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
+        }
+
+        for (int i = 0; i < numberOfEigstates; i++) {
+            int nx = m_qNumbers(i, 0);
+            int ny = m_qNumbers(i, 1);
+            int nz = m_qNumbers(i, 2);
+
+            saveEigenvector.col(i) = eigVecsTemp.slice(0).col(nx)
+                                    %eigVecsTemp.slice(1).col(ny)
+                                    %eigVecsTemp.slice(2).col(nz);
+        }
     }
 
     else {
@@ -132,7 +163,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
     //rCut.col(2) = zeros(m_N-1);
 
     cube C = zeros(nMax, nPrimeMax, m_numberOfDimensions);
-    mat supPos = ones(m_N-1, nPrimeMax);
+    mat supPos = zeros(m_N-1, nPrimeMax);
 
     //This is wrong!:
     for (int d = 0; d < m_numberOfDimensions; d++) {
@@ -153,56 +184,98 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
 
     if (m_numberOfDimensions == 1) {
         for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
-            for (int d = 0; d < m_numberOfDimensions; d++) {
-                vec plusTerm = zeros(m_N-1);
-                for (int n = 0; n < nMax; n++) {
-                    plusTerm += C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
-                }
-                supPos.col(nPrime) %= plusTerm;
-                supPosSep.slice(d).col(nPrime) = plusTerm;
+            for (int i = 0; i < m_numberOfEigstates; i++) {
+                int nx = m_qNumbers(i, 0);
+
+                vec plusTerm = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+
+                supPos.col(nPrime) += plusTerm;
+                supPosSep.slice(0).col(nPrime) += plusTerm;
             }
-            //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
         }
+
+//        for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+//            for (int d = 0; d < m_numberOfDimensions; d++) {
+//                vec plusTerm = zeros(m_N-1);
+//                for (int n = 0; n < nMax; n++) {
+//                    plusTerm += C(n, nPrime, d)*m_waveFunction->harmonicOscillatorBasis(rCut.col(d), n);
+//                }
+//                supPos.col(nPrime) %= plusTerm;
+//                supPosSep.slice(d).col(nPrime) = plusTerm;
+//            }
+//            //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
+//        }
     }
 
     else if (m_numberOfDimensions == 2) {
-        int nPrime = 0;
-        int nx 	= 0;
-        int ny 	= 0;
-        int n 	= 0;
-        int i 	= 0;
 
-        vec plusTermX = zeros(m_N-1);
-        vec plusTermY = zeros(m_N-1);
-        vec plusTerm = zeros(m_N-1);
-        while (n < nMax) {
-            plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
-            plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
-            plusTerm += plusTermX%plusTermY;
-            supPosSep.slice(0).col(nPrime) += plusTermX;
-            supPosSep.slice(1).col(nPrime) += plusTermY;
+        for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+            for (int i = 0; i < m_numberOfEigstates; i++) {
+                int nx = m_qNumbers(i, 0);
+                int ny = m_qNumbers(i, 1);
 
-            cout << "i: " << i << " nx: " << nx << " ny: " << ny << " n: " << n << endl;
+                vec plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+                vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
 
-            if (ny == n) {
-                n++;
-                nx = n;
-                ny = 0;
+                supPos.col(nPrime) += plusTermX%plusTermY;
+                supPosSep.slice(0).col(nPrime) += plusTermX;
+                supPosSep.slice(1).col(nPrime) += plusTermY;
             }
-            else {
-                nx--;
-                ny++;
-            }
-
-            i++;
         }
-        //supPosSep.slice(0).col(nPrime) /= sqrt(dot(supPosSep.slice(0).col(nPrime),supPosSep.slice(0).col(nPrime)));
-        //supPosSep.slice(1).col(nPrime) /= sqrt(dot(supPosSep.slice(1).col(nPrime),supPosSep.slice(1).col(nPrime)));
-        supPos.col(nPrime) = plusTerm;
+
+//        int nPrime = 0;
+//        int nx 	= 0;
+//        int ny 	= 0;
+//        int n 	= 0;
+//        int i 	= 0;
+
+//        vec plusTermX = zeros(m_N-1);
+//        vec plusTermY = zeros(m_N-1);
+//        vec plusTerm = zeros(m_N-1);
+//        while (n < nMax) {
+//            plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+//            plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+//            plusTerm += plusTermX%plusTermY;
+//            supPosSep.slice(0).col(nPrime) += plusTermX;
+//            supPosSep.slice(1).col(nPrime) += plusTermY;
+
+//            cout << "i: " << i << " nx: " << nx << " ny: " << ny << " n: " << n << endl;
+
+//            if (ny == n) {
+//                n++;
+//                nx = n;
+//                ny = 0;
+//            }
+//            else {
+//                nx--;
+//                ny++;
+//            }
+
+//            i++;
+//        }
+//        //supPosSep.slice(0).col(nPrime) /= sqrt(dot(supPosSep.slice(0).col(nPrime),supPosSep.slice(0).col(nPrime)));
+//        //supPosSep.slice(1).col(nPrime) /= sqrt(dot(supPosSep.slice(1).col(nPrime),supPosSep.slice(1).col(nPrime)));
+//        supPos.col(nPrime) = plusTerm;
     }
 
     else if (m_numberOfDimensions == 3) {
-        cout << m_numberOfDimensions << ". dim not implemented yet." << endl;
+
+        for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+            for (int i = 0; i < m_numberOfEigstates; i++) {
+                int nx = m_qNumbers(i, 0);
+                int ny = m_qNumbers(i, 1);
+                int nz = m_qNumbers(i, 2);
+
+                vec plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+                vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+                vec plusTermZ = C(nz, nPrime, 2)*m_waveFunction->harmonicOscillatorBasis(rCut.col(2), nz);
+
+                supPos.col(nPrime) += plusTermX%plusTermY%plusTermZ;
+                supPosSep.slice(0).col(nPrime) += plusTermX;
+                supPosSep.slice(1).col(nPrime) += plusTermY;
+                supPosSep.slice(2).col(nPrime) += plusTermZ;
+            }
+        }
     }
 
     else {

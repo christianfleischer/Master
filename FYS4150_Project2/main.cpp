@@ -1,6 +1,7 @@
 #include <iostream>
 #include <armadillo>
 #include <time.h>
+#include <cassert>
 #include "system.h"
 #include "WaveFunctions/wavefunction.h"
 #include "WaveFunctions/doublewell.h"
@@ -16,7 +17,7 @@ int main() {
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     int nMax 					= 2;
     int nPrimeMax               = 2;
-    int numberOfDimensions      = 2;
+    int numberOfDimensions      = 3;
 
     vec L(3);
     L.fill(0.);
@@ -25,14 +26,17 @@ int main() {
     int numberOfEigstates;
 
     if (numberOfDimensions == 2) {
-        numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
+        //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
+        numberOfEigstates = int(0.5*(nMax)*(nMax+1));
     }
 
     else if (numberOfDimensions == 3) {
-        numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
+        //numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
+        numberOfEigstates = int((nMax)*(nMax+1)*(nMax+2)/6.);
     }
     else { numberOfEigstates = nMax; }
 
+    assert(nPrimeMax <= numberOfEigstates);
 
     //Set up the vector x and the matrix A:
     double h                    = (posMax-posMin)/N;

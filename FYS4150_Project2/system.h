@@ -29,6 +29,7 @@ public:
 
 private:
     int                     m_N                      = 0;
+    int                     m_numberOfEigstates      = 0;
     double                  m_h                      = 0;
     int                     m_numberOfDimensions     = 0;
     int                     m_numberOfParticles      = 0;
