@@ -84,22 +84,39 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     }
 
     else if (m_numberOfDimensions == 3) {
-        m_qNumbers(0, 0) = 0; m_qNumbers(0, 1) = 0; m_qNumbers(0, 2) = 0;
 
-        if (numberOfEigstates >= 4) {
-            m_qNumbers(1, 0) = 1; m_qNumbers(1, 1) = 0; m_qNumbers(1, 2) = 0;
-            m_qNumbers(2, 0) = 0; m_qNumbers(2, 1) = 1; m_qNumbers(2, 2) = 0;
-            m_qNumbers(3, 0) = 0; m_qNumbers(3, 1) = 0; m_qNumbers(3, 2) = 1;
+        int i = 0;
+        for (int nx = 0; nx < nMax; nx++) {
+            for (int ny = 0; ny < nMax; ny++) {
+                for (int nz = 0; nz < nMax; nz++) {
+                    if (nx+ny+nz < nMax) {
+                        m_qNumbers(i,0) = nx;
+                        m_qNumbers(i,1) = ny;
+                        m_qNumbers(i,2) = nz;
+                        i++;
+                    }
+                }
+            }
         }
+        cout << i << endl;
+        cout << numberOfEigstates << endl;
 
-        if (numberOfEigstates >= 10) {
-            m_qNumbers(4, 0) = 2; m_qNumbers(4, 1) = 0; m_qNumbers(4, 2) = 0;
-            m_qNumbers(5, 0) = 1; m_qNumbers(5, 1) = 1; m_qNumbers(5, 2) = 0;
-            m_qNumbers(6, 0) = 1; m_qNumbers(6, 1) = 0; m_qNumbers(6, 2) = 1;
-            m_qNumbers(7, 0) = 0; m_qNumbers(7, 1) = 2; m_qNumbers(7, 2) = 0;
-            m_qNumbers(8, 0) = 0; m_qNumbers(8, 1) = 1; m_qNumbers(8, 2) = 1;
-            m_qNumbers(9, 0) = 0; m_qNumbers(9, 1) = 0; m_qNumbers(9, 2) = 2;
-        }
+//        m_qNumbers(0, 0) = 0; m_qNumbers(0, 1) = 0; m_qNumbers(0, 2) = 0;
+
+//        if (numberOfEigstates >= 4) {
+//            m_qNumbers(1, 0) = 1; m_qNumbers(1, 1) = 0; m_qNumbers(1, 2) = 0;
+//            m_qNumbers(2, 0) = 0; m_qNumbers(2, 1) = 1; m_qNumbers(2, 2) = 0;
+//            m_qNumbers(3, 0) = 0; m_qNumbers(3, 1) = 0; m_qNumbers(3, 2) = 1;
+//        }
+
+//        if (numberOfEigstates >= 10) {
+//            m_qNumbers(4, 0) = 2; m_qNumbers(4, 1) = 0; m_qNumbers(4, 2) = 0;
+//            m_qNumbers(5, 0) = 1; m_qNumbers(5, 1) = 1; m_qNumbers(5, 2) = 0;
+//            m_qNumbers(6, 0) = 1; m_qNumbers(6, 1) = 0; m_qNumbers(6, 2) = 1;
+//            m_qNumbers(7, 0) = 0; m_qNumbers(7, 1) = 2; m_qNumbers(7, 2) = 0;
+//            m_qNumbers(8, 0) = 0; m_qNumbers(8, 1) = 1; m_qNumbers(8, 2) = 1;
+//            m_qNumbers(9, 0) = 0; m_qNumbers(9, 1) = 0; m_qNumbers(9, 2) = 2;
+//        }
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
             eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
