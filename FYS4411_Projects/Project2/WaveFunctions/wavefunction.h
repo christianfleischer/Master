@@ -19,8 +19,8 @@ public:
     virtual std::vector<double> computeDerivativeWrtParameters(std::vector<Particle *> particles) = 0;
     virtual void updateSlaterDet(int randomParticle) { randomParticle = randomParticle; }
     virtual void updateDistances(int randomParticle) { randomParticle = randomParticle; }
-    virtual void updateSPWFMat(int randomParticle) {randomParticle = randomParticle; }
-    virtual void updateJastrow(int randomParticle) {randomParticle = randomParticle; }
+    virtual void updateSPWFMat(int randomParticle) { randomParticle = randomParticle; }
+    virtual void updateJastrow(int randomParticle) { randomParticle = randomParticle; }
 
 protected:
     int     m_numberOfParameters = 0;

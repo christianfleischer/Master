@@ -27,6 +27,7 @@ SOURCES += main.cpp \
     WaveFunctions/twoelectrons.cpp \
     WaveFunctions/manyelectrons.cpp \
     BasisFunctions/basisfunctions.cpp \
+    WaveFunctions/manyelectrons_coefficients.cpp
 
 LIBS += -llapack -lblas -larmadillo
 
@@ -49,6 +50,7 @@ HEADERS += \
     WaveFunctions/twoelectrons.h \
     WaveFunctions/manyelectrons.h \
     BasisFunctions/basisfunctions.h \
+    WaveFunctions/manyelectrons_coefficients.h
 
 # MPI Settings
 QMAKE_CXX = mpicxx

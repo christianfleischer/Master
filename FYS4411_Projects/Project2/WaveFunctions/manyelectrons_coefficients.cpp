@@ -1,4 +1,4 @@
-#include "manyelectrons.h"
+#include "manyelectrons_coefficients.h"
 #include <cmath>
 #include <cassert>
 #include "../InitialStates/randomuniform.h"
@@ -7,7 +7,7 @@
 #include "../particle.h"
 #include <iostream>
 
-ManyElectrons::ManyElectrons(System* system, double alpha, double beta, double omega, double C, bool Jastrow) :
+ManyElectronsCoefficients::ManyElectronsCoefficients(System* system, double alpha, double beta, double omega, double C, bool Jastrow) :
         WaveFunction(system) {
     assert(omega > 0);
     m_omega = omega;
@@ -29,7 +29,7 @@ ManyElectrons::ManyElectrons(System* system, double alpha, double beta, double o
     setUpJastrowMat();
 }
 
-double ManyElectrons::evaluate(std::vector<class Particle*> particles) {
+double ManyElectronsCoefficients::evaluate(std::vector<class Particle*> particles) {
     // Evaluates the wave function using brute force.
     mat spinUpSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
     mat spinDownSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
@@ -72,7 +72,7 @@ double ManyElectrons::evaluate(std::vector<class Particle*> particles) {
     return waveFunction;
 }
 
-double ManyElectrons::evaluateSingleParticleWF(vec n, std::vector<double> r) {
+double ManyElectronsCoefficients::evaluateSingleParticleWF(vec n, std::vector<double> r) {
     // Calculates the single particle wave function.
     double alpha = m_parameters[0];
 
@@ -105,7 +105,7 @@ double ManyElectrons::evaluateSingleParticleWF(vec n, std::vector<double> r) {
     return waveFunction;
 }
 
-std::vector<double> ManyElectrons::computeDerivative(std::vector<class Particle*> particles) {
+std::vector<double> ManyElectronsCoefficients::computeDerivative(std::vector<class Particle*> particles) {
     //Calculates ∇ψ/ψ for the wave function.
 
     int i = m_system->getRandomParticle();
@@ -131,7 +131,7 @@ std::vector<double> ManyElectrons::computeDerivative(std::vector<class Particle*
     //return 0;
 }
 
-std::vector<double> ManyElectrons::computeSlaterGradient(/*std::vector<class Particle*> particles, */int i) {
+std::vector<double> ManyElectronsCoefficients::computeSlaterGradient(/*std::vector<class Particle*> particles, */int i) {
     // Computes the gradient of the Slater part of the wave function.
     std::vector<double> slaterGradient(m_numberOfDimensions);
     for (int d = 0; d < m_numberOfDimensions; d++) {
@@ -171,7 +171,7 @@ std::vector<double> ManyElectrons::computeSlaterGradient(/*std::vector<class Par
 
 }
 
-std::vector<double> ManyElectrons::computeJastrowGradient(std::vector<class Particle*> particles, int k) {
+std::vector<double> ManyElectronsCoefficients::computeJastrowGradient(std::vector<class Particle*> particles, int k) {
     // Computes the gradient of the Jastrow part of the wave function.
     std::vector<double> jastrowGradient(m_numberOfDimensions);
     for (int d = 0; d < m_numberOfDimensions; d++) {
@@ -211,7 +211,7 @@ std::vector<double> ManyElectrons::computeJastrowGradient(std::vector<class Part
 
 }
 
-std::vector<double> ManyElectrons::computeSPWFDerivative(vec n, std::vector<double> r) {
+std::vector<double> ManyElectronsCoefficients::computeSPWFDerivative(vec n, std::vector<double> r) {
     // Calculates the single particle wave function differentiated w.r.t. position.
     std::vector<double> derivative(m_numberOfDimensions);
     double alpha = m_parameters[0];
@@ -234,7 +234,7 @@ std::vector<double> ManyElectrons::computeSPWFDerivative(vec n, std::vector<doub
     return derivative;
 }
 
-double ManyElectrons::computeDoubleDerivative(std::vector<class Particle*> particles) {
+double ManyElectronsCoefficients::computeDoubleDerivative(std::vector<class Particle*> particles) {
     /* All wave functions need to implement this function, so you need to
      * find the double derivative analytically. Note that by double derivative,
      * we actually mean the sum of the Laplacians with respect to the
@@ -380,7 +380,7 @@ double ManyElectrons::computeDoubleDerivative(std::vector<class Particle*> parti
     //return 0;
 }
 
-double ManyElectrons::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
+double ManyElectronsCoefficients::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
 
     // Calculates the single particle wave function twice differentiated w.r.t. position.
     double doubleDerivative = 0;
@@ -419,7 +419,7 @@ double ManyElectrons::computeSPWFDoubleDerivative(vec n, std::vector<double> r) 
 
 }
 
-double ManyElectrons::computeSPWFAlphaDerivative(vec n, std::vector<double> r) {
+double ManyElectronsCoefficients::computeSPWFAlphaDerivative(vec n, std::vector<double> r) {
     // Calculates the single particle wave function differentiated w.r.t. alpha.
     double derivative = 0;
     double alpha = m_parameters[0];
@@ -454,7 +454,7 @@ double ManyElectrons::computeSPWFAlphaDerivative(vec n, std::vector<double> r) {
 
 }
 
-std::vector<double> ManyElectrons::computeDerivativeWrtParameters(std::vector<Particle *> particles){
+std::vector<double> ManyElectronsCoefficients::computeDerivativeWrtParameters(std::vector<Particle *> particles){
     // Calculates the derivative w.r.t. alpha and beta for the interacting wave function using the analytical expression.
 
     std::vector<double> derivative(2);
@@ -515,7 +515,7 @@ std::vector<double> ManyElectrons::computeDerivativeWrtParameters(std::vector<Pa
     //return 0;
 }
 
-double ManyElectrons::computeMetropolisRatio(std::vector<Particle *> particles,
+double ManyElectronsCoefficients::computeMetropolisRatio(std::vector<Particle *> particles,
                                             int randomParticle, std::vector<double> positionChange) {
     // Function for calculating the wave function part of the Metropolis ratio,
     // both the Slater part and the Jastrow part.
@@ -603,7 +603,7 @@ double ManyElectrons::computeMetropolisRatio(std::vector<Particle *> particles,
 
 }
 
-double ManyElectrons::computeHermitePolynomial(int nValue, double position) {
+double ManyElectronsCoefficients::computeHermitePolynomial(int nValue, double position) {
     // Computes Hermite polynomials.
     double alpha = m_parameters[0];
     double alphaSqrt = sqrt(alpha);
@@ -624,7 +624,7 @@ double ManyElectrons::computeHermitePolynomial(int nValue, double position) {
 
 }
 
-double ManyElectrons::computeHermitePolynomialDerivative(int nValue, double position) {
+double ManyElectronsCoefficients::computeHermitePolynomialDerivative(int nValue, double position) {
     // Computes Hermite polynomials differentiated w.r.t. position.
     double alpha = m_parameters[0];
     double alphaSqrt = sqrt(alpha);
@@ -648,7 +648,7 @@ double ManyElectrons::computeHermitePolynomialDerivative(int nValue, double posi
 
 }
 
-double ManyElectrons::computeHermitePolynomialDoubleDerivative(int nValue, double position) {
+double ManyElectronsCoefficients::computeHermitePolynomialDoubleDerivative(int nValue, double position) {
     // Computes Hermite polynomials twice differentiated w.r.t. position.
     double alpha = m_parameters[0];
     double alphaSqrt = sqrt(alpha);
@@ -672,7 +672,7 @@ double ManyElectrons::computeHermitePolynomialDoubleDerivative(int nValue, doubl
 
 }
 
-double ManyElectrons::computeHermitePolynomialAlphaDerivative(int nValue, double position) {
+double ManyElectronsCoefficients::computeHermitePolynomialAlphaDerivative(int nValue, double position) {
     // Computes Hermite polynomials differentiated w.r.t. alpha.
     double alpha = m_parameters[0];
     double alphaSqrt = sqrt(alpha);
@@ -695,7 +695,7 @@ double ManyElectrons::computeHermitePolynomialAlphaDerivative(int nValue, double
     return HPDerivative;
 }
 
-void ManyElectrons::setUpSlaterDet() {
+void ManyElectronsCoefficients::setUpSlaterDet() {
     // Function for setting up the Slater determinant at the begining of the simulation.
 
     m_quantumNumbers = zeros<mat>(m_halfNumberOfParticles, m_numberOfDimensions);
@@ -726,6 +726,12 @@ void ManyElectrons::setUpSlaterDet() {
     }
     else { cout << "3 dim not implemented yet." << endl; }
 
+    mat cCoefficients;
+    m_system->retrieveFromFile("../../FYS4150_Project2/PlotAndData/Coefficients.dat", cCoefficients);
+
+    if (cCoefficients.is_square()) { m_cDeterminant = det(cCoefficients); }
+    else { m_cDeterminant = 1.; }
+    cout << m_cDeterminant << endl;
 
     m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     int half = m_halfNumberOfParticles;
@@ -771,31 +777,34 @@ void ManyElectrons::setUpSlaterDet() {
             }
 
             m_expFactor = exp(-alpha*m_omega*(r2SpinUp)*0.5);
-            mat cCoefficients;
-            m_system->retrieveFromFile("../../FYS4150_Project2/PlotAndData/Coefficients.dat", cCoefficients);
 
-            m_spinUpSlater(i,j) = evaluateSingleParticleWF(n, rSpinUp);
             int nMax = 10;
+            vec nTemp(m_numberOfDimensions);
+            m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
             for (int m = 0; m < nMax; m++) {
                 for (int d = 0; d < m_numberOfDimensions; ++d) {
-
+                    nTemp[d] = ;m_quantumNumbers.col(m)
                 }
+
             }
 
             m_SPWFMat(i,j) = m_spinUpSlater(i,j);
 
             m_SPWFDMat(i,j) = computeSPWFDerivative(n, rSpinUp);
+            m_SPWFDMat(i,j) *= m_cDeterminant;
 
             m_SPWFDDMat(i,j) = computeSPWFDoubleDerivative(n, rSpinUp);
+            m_SPWFDDMat(i,j) *= m_cDeterminant;
 
             m_expFactor = exp(-alpha*m_omega*(r2SpinDown)*0.5);
-            m_spinDownSlater(i,j) = evaluateSingleParticleWF(n, rSpinDown);
+            m_spinDownSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinDown);
 
             m_SPWFMat(i+m_halfNumberOfParticles, j) = m_spinDownSlater(i,j);
 
             m_SPWFDMat(i+m_halfNumberOfParticles,j) = computeSPWFDerivative(n, rSpinDown);
+            m_SPWFDMat(i+m_halfNumberOfParticles,j) *= m_cDeterminant;
 
-            m_SPWFDDMat(i+m_halfNumberOfParticles,j) = computeSPWFDoubleDerivative(n, rSpinDown);
+            m_SPWFDDMat(i+m_halfNumberOfParticles,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, rSpinDown);
 
         }
     }
@@ -804,7 +813,7 @@ void ManyElectrons::setUpSlaterDet() {
     m_spinDownSlaterInverse = m_spinDownSlater.i();
 }
 
-void ManyElectrons::setUpDistances() {
+void ManyElectronsCoefficients::setUpDistances() {
 
     m_distances = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
 
@@ -823,7 +832,7 @@ void ManyElectrons::setUpDistances() {
     }
 }
 
-void ManyElectrons::setUpJastrowMat() {
+void ManyElectronsCoefficients::setUpJastrowMat() {
 
     m_JastrowMat = zeros<cube>(m_numberOfParticles, m_numberOfParticles, m_numberOfDimensions);
     m_JastrowGrad = zeros(m_numberOfParticles, m_numberOfDimensions);
@@ -860,7 +869,7 @@ void ManyElectrons::setUpJastrowMat() {
     }
 }
 
-void ManyElectrons::updateSlaterDet(int randomParticle) {
+void ManyElectronsCoefficients::updateSlaterDet(int randomParticle) {
     // Function for updating the Slater determinant after every accepted metropolis step.
     int i = randomParticle;
     //std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
@@ -940,7 +949,7 @@ void ManyElectrons::updateSlaterDet(int randomParticle) {
     }
 }
 
-void ManyElectrons::updateDistances(int randomParticle) {
+void ManyElectronsCoefficients::updateDistances(int randomParticle) {
     // Function for updating the distances between electrons.
     int i = randomParticle;
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
@@ -967,7 +976,7 @@ void ManyElectrons::updateDistances(int randomParticle) {
 
 }
 
-void ManyElectrons::updateSPWFMat(int randomParticle) {
+void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 
     int i = randomParticle;
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
@@ -988,16 +997,17 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
             n[d] = m_quantumNumbers(j, d);
         }
 
-        m_SPWFMat(i,j) = evaluateSingleParticleWF(n, r_i);
+        m_SPWFMat(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, r_i);
 
         m_SPWFDMat(i,j) = computeSPWFDerivative(n, r_i);
+        m_SPWFDMat(i,j) *= m_cDeterminant;
 
-        m_SPWFDDMat(i,j) = computeSPWFDoubleDerivative(n, r_i);
+        m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, r_i);
     }
 
 }
 
-void ManyElectrons::updateJastrow(int randomParticle) {
+void ManyElectronsCoefficients::updateJastrow(int randomParticle) {
 
     int p = randomParticle;
     std::vector<double> r_p = m_system->getParticles()[p]->getPosition();

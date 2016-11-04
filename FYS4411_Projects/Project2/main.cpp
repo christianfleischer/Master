@@ -8,6 +8,7 @@
 #include "WaveFunctions/repulsivegaussian.h"
 #include "WaveFunctions/twoelectrons.h"
 #include "WaveFunctions/manyelectrons.h"
+#include "WaveFunctions/manyelectrons_coefficients.h"
 #include "Hamiltonians/hamiltonian.h"
 #include "Hamiltonians/harmonicoscillator.h"
 #include "Hamiltonians/harmonicoscillatorrepulsive.h"
@@ -17,6 +18,7 @@
 #include "VariationMethods/steepestdescent.h"
 #include "Math/random.h"
 #include <mpi.h>
+#include <cassert>
 
 using namespace std;
 
@@ -57,7 +59,7 @@ int main(int nargs, char* args[]) {
     bool savePositions      = false;
     bool showProgress       = true;
     bool printToTerminal    = true;
-    bool use2WellCoeff 		= false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
+    bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
 
     int numMyCycles = numberOfSteps/numprocs;
 
@@ -86,7 +88,12 @@ int main(int nargs, char* args[]) {
         }
         else {
             system->setHamiltonian      (new HarmonicOscillatorElectrons(system, omega, analyticalKinetic, repulsion));
-            system->setWaveFunction     (new ManyElectrons(system, alpha, beta, omega, C, Jastrow));
+            if (useCoeff) {
+                system->setWaveFunction (new ManyElectronsCoefficients(system, alpha, beta, omega, C, Jastrow));
+            }
+            else {
+                system->setWaveFunction (new ManyElectrons(system, alpha, beta, omega, C, Jastrow));
+            }
         }
     }
     system->setEquilibrationFraction    (equilibration);
