@@ -98,8 +98,6 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
                 }
             }
         }
-        cout << i << endl;
-        cout << numberOfEigstates << endl;
 
 //        m_qNumbers(0, 0) = 0; m_qNumbers(0, 1) = 0; m_qNumbers(0, 2) = 0;
 
@@ -169,7 +167,7 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
     C *= m_h;
 }
 
-mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &saveC) {
+mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &saveC) {
     mat rCut = zeros(m_N-1, m_numberOfDimensions);
 
     for (int d=0; d < m_numberOfDimensions; d++) {
@@ -185,8 +183,9 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, mat &s
     //This is wrong!:
     for (int d = 0; d < m_numberOfDimensions; d++) {
         findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d), d);
-        saveC %= C.slice(d);
+        //saveC %= C.slice(d);
     }
+    saveC = C;
 
 //    for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
 //        for (int n = 0; n < nMax; n++) {

@@ -35,7 +35,7 @@ public:
     void setComputationTime         (double computationTime);
     void setSaveEnergies            (bool saveEnergies);
     void setSavePositions           (bool savePositions);
-    void retrieveFromFile			(std::string fileName, mat &loadCoefficients);
+    void retrieveFromFile			(std::string fileName, cube &loadCoefficients);
     class WaveFunction*             getWaveFunction()   { return m_waveFunction; }
     class Hamiltonian*              getHamiltonian()    { return m_hamiltonian; }
     class Sampler*                  getSampler()        { return m_sampler; }

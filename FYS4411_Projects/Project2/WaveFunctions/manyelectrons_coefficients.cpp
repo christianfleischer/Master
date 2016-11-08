@@ -724,12 +724,33 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             }
         }
     }
-    else { cout << "3 dim not implemented yet." << endl; }
+    else {
+        int i = 0;
+        int nMax = 0;
+        for (int nx = 0; nx < nMax; nx++) {
+            for (int ny = 0; ny < nMax; ny++) {
+                for (int nz = 0; nz < nMax; nz++) {
+                    if (nx+ny+nz < nMax) {
+                        m_quantumNumbers(i,0) = nx;
+                        m_quantumNumbers(i,1) = ny;
+                        m_quantumNumbers(i,2) = nz;
+                        i++;
+                    }
+                }
+            }
+        }
+        cout << "3 dim not implemented yet." << endl;
+    }
 
-    mat cCoefficients;
-    m_system->retrieveFromFile("../../FYS4150_Project2/PlotAndData/Coefficients.dat", cCoefficients);
+    m_system->retrieveFromFile("../../FYS4150_Project2/PlotAndData/Coefficients.dat", m_cCoefficients);
+    mat cCoeffProd = m_cCoefficients.slice(0);
+    if (m_cCoefficients.slice(0).is_square()) {
 
-    if (cCoefficients.is_square()) { m_cDeterminant = det(cCoefficients); }
+        for (int d = 1; d < m_numberOfDimensions; d++) {
+            cCoeffProd %= m_cCoefficients.slice(d);
+        }
+        m_cDeterminant = det(cCoeffProd);
+    }
     else { m_cDeterminant = 1.; }
     cout << m_cDeterminant << endl;
 
@@ -783,7 +804,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
             for (int m = 0; m < nMax; m++) {
                 for (int d = 0; d < m_numberOfDimensions; ++d) {
-                    nTemp[d] = ;m_quantumNumbers.col(m)
+                    //nTemp[d] = m_quantumNumbers.col(m);
                 }
 
             }

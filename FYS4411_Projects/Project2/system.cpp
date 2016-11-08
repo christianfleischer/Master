@@ -375,7 +375,7 @@ void System::setSavePositions(bool savePositions) {
 }
 
 
-void System::retrieveFromFile(string fileName, mat &loadCoefficients) {
+void System::retrieveFromFile(string fileName, cube &loadCoefficients) {
     loadCoefficients.load(fileName, raw_ascii);
     return;
 }

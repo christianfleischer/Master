@@ -724,7 +724,22 @@ void ManyElectrons::setUpSlaterDet() {
             }
         }
     }
-    else { cout << "3 dim not implemented yet." << endl; }
+    else {
+        int i = 0;
+        int nMax = m_halfNumberOfParticles;
+        for (int nx = 0; nx < nMax; nx++) {
+            for (int ny = 0; ny < nMax; ny++) {
+                for (int nz = 0; nz < nMax; nz++) {
+                    if (nx+ny+nz < nMax) {
+                        m_quantumNumbers(i,0) = nx;
+                        m_quantumNumbers(i,1) = ny;
+                        m_quantumNumbers(i,2) = nz;
+                        i++;
+                    }
+                }
+            }
+        }
+    }
 
 
     m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
@@ -771,8 +786,6 @@ void ManyElectrons::setUpSlaterDet() {
             }
 
             m_expFactor = exp(-alpha*m_omega*(r2SpinUp)*0.5);
-            mat cCoefficients;
-            m_system->retrieveFromFile("../../FYS4150_Project2/PlotAndData/Coefficients.dat", cCoefficients);
 
             m_spinUpSlater(i,j) = evaluateSingleParticleWF(n, rSpinUp);
             int nMax = 10;

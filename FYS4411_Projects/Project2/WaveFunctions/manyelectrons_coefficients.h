@@ -53,6 +53,7 @@ private:
     mat m_SPWFMat;
     field<vec> m_SPWFDMat;
     mat m_SPWFDDMat;
+    cube m_cCoefficients;
     double m_cDeterminant;
     cube m_JastrowMat;
     cube m_JastrowMatOld;

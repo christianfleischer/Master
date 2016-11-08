@@ -17,7 +17,7 @@ int main() {
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     int nMax 					= 3;
     int nPrimeMax               = 2;
-    int numberOfDimensions      = 3;
+    int numberOfDimensions      = 1;
 
     vec L(3);
     L.fill(0.);
@@ -59,7 +59,7 @@ int main() {
     cube saveSepEigenvector		= zeros(N-1, numberOfEigstates, numberOfDimensions);
     mat SavePositionvector      = zeros(N-1, numberOfDimensions+1);
     cube supPosSep				= zeros(N-1, nPrimeMax, numberOfDimensions);
-    mat saveC = ones(nMax, nPrimeMax);
+    cube saveC = ones(nMax, nPrimeMax, numberOfDimensions);
 
     for (int d = 0; d < numberOfDimensions; d++) {
         SavePositionvector.col(d)   = r.col(d).subvec(1, N-1);    //Saves the y vector for output.
