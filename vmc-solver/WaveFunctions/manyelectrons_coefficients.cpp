@@ -698,10 +698,39 @@ double ManyElectronsCoefficients::computeHermitePolynomialAlphaDerivative(int nV
 void ManyElectronsCoefficients::setUpSlaterDet() {
     // Function for setting up the Slater determinant at the begining of the simulation.
 
-    m_quantumNumbers = zeros<mat>(m_halfNumberOfParticles, m_numberOfDimensions);
+    m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
+
+    vec cVec = m_cCoefficients.slice(0).col(0);
+    int nMaxCoeff = cVec.size();
+    int nMax;
+    int numberOfEigstates;
+
+    if (nMaxCoeff > m_halfNumberOfParticles) {
+        nMax = nMaxCoeff;
+
+        if (m_numberOfDimensions == 2) {
+            //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
+            numberOfEigstates = int(0.5*(nMax)*(nMax+1));
+        }
+
+        else if (m_numberOfDimensions == 3) {
+            //numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
+            numberOfEigstates = int((nMax)*(nMax+1)*(nMax+2)/6.);
+        }
+        else { numberOfEigstates = nMax; }
+    }
+    else {
+        nMax = m_halfNumberOfParticles;
+        numberOfEigstates = m_halfNumberOfParticles;
+    }
+
+    m_numberOfEigstates = numberOfEigstates;
+
+
+    m_quantumNumbers = zeros<mat>(numberOfEigstates, m_numberOfDimensions);
 
     if (m_numberOfDimensions == 1) {
-        for (int p = 0; p < m_halfNumberOfParticles; p++) {
+        for (int p = 0; p < numberOfEigstates; p++) {
             m_quantumNumbers(p, 0) = p;
         }
     }
@@ -711,7 +740,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         int nx = 0;
         int ny = 0;
 
-        for (int p = 0; p < m_halfNumberOfParticles; p++) {
+        for (int p = 0; p < numberOfEigstates; p++) {
             m_quantumNumbers(p, 0) = nx;    m_quantumNumbers(p, 1) = ny;
             if (ny == n) {
                 n++;
@@ -726,7 +755,6 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
     }
     else {
         int i = 0;
-        int nMax = 0;
         for (int nx = 0; nx < nMax; nx++) {
             for (int ny = 0; ny < nMax; ny++) {
                 for (int nz = 0; nz < nMax; nz++) {
@@ -741,8 +769,6 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         }
         cout << "3 dim not implemented yet." << endl;
     }
-
-    m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
 
     if (m_cCoefficients.slice(0).is_square()) {
         mat cCoeffProd = m_cCoefficients.slice(0);
@@ -799,33 +825,53 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
             m_expFactor = exp(-alpha*m_omega*(r2SpinUp)*0.5);
 
-            int nMax = 10;
             vec nTemp(m_numberOfDimensions);
-            m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
-            for (int m = 0; m < nMax; m++) {
+            //m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
+            for (int m = 0; m < m_numberOfEigstates; m++) {
+                nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+                double C = 1;
                 for (int d = 0; d < m_numberOfDimensions; ++d) {
+                    C *= m_cCoefficients(nTemp(d), 0, d);
                     //nTemp[d] = m_quantumNumbers.col(m);
                 }
 
+                m_spinUpSlater(i,j) += C*evaluateSingleParticleWF(nTemp, rSpinUp);
+                vec temp = computeSPWFDerivative(nTemp, rSpinUp);
+                temp *= C;
+                m_SPWFDMat(i,j) += temp;
+                m_SPWFDDMat(i,j) += C*computeSPWFDoubleDerivative(nTemp, rSpinUp);
             }
 
             m_SPWFMat(i,j) = m_spinUpSlater(i,j);
 
-            m_SPWFDMat(i,j) = computeSPWFDerivative(n, rSpinUp);
-            m_SPWFDMat(i,j) *= m_cDeterminant;
+            //m_SPWFDMat(i,j) = computeSPWFDerivative(n, rSpinUp);
+            //m_SPWFDMat(i,j) *= m_cDeterminant;
 
-            m_SPWFDDMat(i,j) = computeSPWFDoubleDerivative(n, rSpinUp);
-            m_SPWFDDMat(i,j) *= m_cDeterminant;
+            //m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, rSpinUp);
 
             m_expFactor = exp(-alpha*m_omega*(r2SpinDown)*0.5);
-            m_spinDownSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinDown);
+            //m_spinDownSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinDown);
+
+            for (int m = 0; m < m_numberOfEigstates; m++) {
+                nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+                double C = 1;
+                for (int d = 0; d < m_numberOfDimensions; ++d) {
+                    C *= m_cCoefficients(nTemp(d), 0, d);
+                    //nTemp[d] = m_quantumNumbers.col(m);
+                }
+                m_spinDownSlater(i,j) += C*evaluateSingleParticleWF(nTemp, rSpinDown);
+                vec temp = computeSPWFDerivative(nTemp, rSpinDown);
+                temp *= C;
+                m_SPWFDMat(i+m_halfNumberOfParticles,j) += temp;
+                m_SPWFDDMat(i+m_halfNumberOfParticles,j) += C*computeSPWFDoubleDerivative(nTemp, rSpinDown);
+            }
 
             m_SPWFMat(i+m_halfNumberOfParticles, j) = m_spinDownSlater(i,j);
 
-            m_SPWFDMat(i+m_halfNumberOfParticles,j) = computeSPWFDerivative(n, rSpinDown);
-            m_SPWFDMat(i+m_halfNumberOfParticles,j) *= m_cDeterminant;
+            //m_SPWFDMat(i+m_halfNumberOfParticles,j) = computeSPWFDerivative(n, rSpinDown);
+            //m_SPWFDMat(i+m_halfNumberOfParticles,j) *= m_cDeterminant;
 
-            m_SPWFDDMat(i+m_halfNumberOfParticles,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, rSpinDown);
+            //m_SPWFDDMat(i+m_halfNumberOfParticles,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, rSpinDown);
 
         }
     }
@@ -1018,13 +1064,37 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
             n[d] = m_quantumNumbers(j, d);
         }
 
-        m_SPWFMat(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, r_i);
+        m_SPWFMat(i,j) = 0;
 
-        m_SPWFDMat(i,j) = computeSPWFDerivative(n, r_i);
-        m_SPWFDMat(i,j) *= m_cDeterminant;
+        m_SPWFDMat(i,j) = zeros(m_SPWFDMat(i,j).size());
 
-        m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, r_i);
+        m_SPWFDDMat(i,j) = 0;
+
+        vec nTemp(m_numberOfDimensions);
+        for (int m = 0; m < m_numberOfEigstates; m++) {
+            nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+            double C = 1;
+            for (int d = 0; d < m_numberOfDimensions; ++d) {
+                C *= m_cCoefficients(nTemp(d), 0, d);
+                //nTemp[d] = m_quantumNumbers.col(m);
+            }
+
+            m_SPWFMat(i,j) += C*evaluateSingleParticleWF(nTemp, r_i);
+            vec temp = computeSPWFDerivative(nTemp, r_i);
+            temp *= C;
+            m_SPWFDMat(i,j) += temp;
+            m_SPWFDDMat(i,j) += C*computeSPWFDoubleDerivative(nTemp, r_i);
+        }
+
+//        m_SPWFMat(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, r_i);
+
+//        m_SPWFDMat(i,j) = computeSPWFDerivative(n, r_i);
+//        m_SPWFDMat(i,j) *= m_cDeterminant;
+
+//        m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, r_i);
     }
+
+
 
 }
 

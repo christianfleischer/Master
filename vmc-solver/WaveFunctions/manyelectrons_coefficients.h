@@ -36,6 +36,7 @@ private:
     int m_numberOfDimensions = 0;
     int m_halfNumberOfParticles = 0;
     int m_k = 0;
+    int m_numberOfEigstates = 0;
     double m_omega = 0;
     double m_alpha = 0;
     double m_alphaOmega = 0;

@@ -17,7 +17,7 @@ int main() {
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     int nMax 					= 3;
     int nPrimeMax               = 2;
-    int numberOfDimensions      = 1;
+    int numberOfDimensions      = 3;
 
     vec L(3);
     L.fill(0.);
@@ -88,7 +88,7 @@ int main() {
     supPos.save("../diagonalization/PlotAndData/Superpositions.dat", raw_ascii);
     supPosSep.slice(0).save("../diagonalization/PlotAndData/SeparateSuperpositionsX.dat", raw_ascii);
     if (numberOfDimensions>1) supPosSep.slice(1).save("../diagonalization/PlotAndData/SeparateSuperpositionsY.dat", raw_ascii);
-    saveC.save("../diagonalization/PlotAndData/Coefficients.dat", raw_ascii);
+    saveC.save("../diagonalization/PlotAndData/Coefficients.dat", arma_ascii);
     //saveEigenvector.print();
 
     cout << endl << "eigvals, Armadillo:" << endl;
