@@ -788,12 +788,6 @@ void ManyElectrons::setUpSlaterDet() {
             m_expFactor = exp(-alpha*m_omega*(r2SpinUp)*0.5);
 
             m_spinUpSlater(i,j) = evaluateSingleParticleWF(n, rSpinUp);
-            int nMax = 10;
-            for (int m = 0; m < nMax; m++) {
-                for (int d = 0; d < m_numberOfDimensions; ++d) {
-
-                }
-            }
 
             m_SPWFMat(i,j) = m_spinUpSlater(i,j);
 
