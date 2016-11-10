@@ -35,7 +35,7 @@ int main(int nargs, char* args[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     timeStart = MPI_Wtime();
 
-    int numberOfDimensions  = 2;
+    int numberOfDimensions  = 3;
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
