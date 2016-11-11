@@ -28,7 +28,9 @@ SOURCES += main.cpp \
     WaveFunctions/manyelectrons.cpp \
     BasisFunctions/basisfunctions.cpp \
     WaveFunctions/manyelectrons_coefficients.cpp \
-    Hamiltonians/squarewell.cpp
+    Hamiltonians/squarewell.cpp \
+    tests/main.cpp
+    tests/main.cpp
 
 LIBS += -llapack -lblas -larmadillo
 
