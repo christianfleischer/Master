@@ -1,27 +1,27 @@
 #include "UnitTest++/UnitTest++.h"
 #include <string.h>
 #include <stdio.h>
-#include "../Hamiltonians/squarewell.h"
 #include "../system.h"
 #include <iostream>
 #include <fstream>
-#include "system.h"
-#include "sampler.h"
-#include "particle.h"
-#include "WaveFunctions/wavefunction.h"
-#include "WaveFunctions/simplegaussian.h"
-#include "WaveFunctions/repulsivegaussian.h"
-#include "WaveFunctions/twoelectrons.h"
-#include "WaveFunctions/manyelectrons.h"
-#include "WaveFunctions/manyelectrons_coefficients.h"
-#include "Hamiltonians/hamiltonian.h"
-#include "Hamiltonians/harmonicoscillator.h"
-#include "Hamiltonians/harmonicoscillatorrepulsive.h"
-#include "Hamiltonians/harmonicoscillatorelectrons.h"
-#include "InitialStates/initialstate.h"
-#include "InitialStates/randomuniform.h"
-#include "VariationMethods/steepestdescent.h"
-#include "Math/random.h"
+#include "../system.h"
+#include "../sampler.h"
+#include "../particle.h"
+#include "../WaveFunctions/wavefunction.h"
+#include "../WaveFunctions/simplegaussian.h"
+#include "../WaveFunctions/repulsivegaussian.h"
+#include "../WaveFunctions/twoelectrons.h"
+#include "../WaveFunctions/manyelectrons.h"
+#include "../WaveFunctions/manyelectrons_coefficients.h"
+#include "../Hamiltonians/squarewell.h"
+#include "../Hamiltonians/hamiltonian.h"
+#include "../Hamiltonians/harmonicoscillator.h"
+#include "../Hamiltonians/harmonicoscillatorrepulsive.h"
+#include "../Hamiltonians/harmonicoscillatorelectrons.h"
+#include "../InitialStates/initialstate.h"
+#include "../InitialStates/randomuniform.h"
+#include "../VariationMethods/steepestdescent.h"
+#include "../Math/random.h"
 #include <mpi.h>
 #include <cassert>
 
@@ -118,15 +118,14 @@ SUITE(QD) {
     }
 
     TEST(Square) {
-        SquareWell* sqwell = new SquareWell(system, 1., 3., false);
+        SquareWell* sqwell = new SquareWell(system, 1., 3., omega, false, false);
         /* CHECK(sqwell->computeLocalEnergy(system->getParticles())); */
-        CHECK_EQUAL(1,1);
     }
+    TEST(Sanity) {CHECK_EQUAL(1,1);}
+
 
 }
 
-int main(int nargs, char* args[]) {
-
+int main() {
     return UnitTest::RunAllTests();
-
 }

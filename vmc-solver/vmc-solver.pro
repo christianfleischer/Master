@@ -29,7 +29,6 @@ SOURCES += main.cpp \
     BasisFunctions/basisfunctions.cpp \
     WaveFunctions/manyelectrons_coefficients.cpp \
     Hamiltonians/squarewell.cpp \
-    tests/main.cpp
     Hamiltonians/finiteharmonicoscillator.cpp
 
 LIBS += -llapack -lblas -larmadillo
