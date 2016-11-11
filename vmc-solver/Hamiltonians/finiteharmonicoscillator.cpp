@@ -4,17 +4,16 @@
 #include "../system.h"
 #include "../particle.h"
 #include "../WaveFunctions/wavefunction.h"
-#include "squarewell.h"
+#include "finiteharmonicoscillator.h"
 
-SquareWell::SquareWell(System* system, double V0, double distToWall, double omega, bool analyticalKinetic, bool repulsion) : Hamiltonian(system, analyticalKinetic){
+FiniteHarmonicOscillator::FiniteHarmonicOscillator(System *system, double distToWall, double omega, bool analyticalKinetic, bool repulsion) : Hamiltonian(system, analyticalKinetic){
     assert(omega > 0);
     m_omega = omega;
     m_repulsion = repulsion;
     m_distToWall = distToWall;
-    m_V0 = V0;
 }
 
-std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> particles) {
+std::vector<double> FiniteHarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) {
     /* Here, you need to compute the kinetic and potential energies. Note that
      * when using numerical differentiation, the computation of the kinetic
      * energy becomes the same for all Hamiltonians, and thus the code for
@@ -32,14 +31,13 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
     double repulsiveTerm = 0;
 
     for (int i=0; i < numberOfParticles; i++){
+        double rSquared = 0;
         std::vector<double> r_i = particles[i]->getPosition();
-        bool isOutside = false;
-        for (int d = 0; d < numberOfDimensions; d++) {
-            if (r_i[d] > m_distToWall) {
-                isOutside = true;
-            }
+        for (int k=0; k < numberOfDimensions; k++){
+            rSquared += r_i[k]*r_i[k];
         }
-        if (isOutside) potentialEnergy += m_V0;
+        if (rSquared > m_distToWall*m_distToWall) { rSquared = m_distToWall*m_distToWall; }
+        potentialEnergy += rSquared;
 
         for (int j=i+1; j < numberOfParticles; j++){
             double r_ijSquared = 0;
@@ -74,3 +72,4 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
 
     return energies;
 }
+

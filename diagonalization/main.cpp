@@ -17,7 +17,7 @@ int main() {
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     int nMax 					= 3;
     int nPrimeMax               = 2;
-    int numberOfDimensions      = 3;
+    int numberOfDimensions      = 2;
 
     vec L(3);
     L.fill(0.);
