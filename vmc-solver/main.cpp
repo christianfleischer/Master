@@ -13,6 +13,8 @@
 #include "Hamiltonians/harmonicoscillator.h"
 #include "Hamiltonians/harmonicoscillatorrepulsive.h"
 #include "Hamiltonians/harmonicoscillatorelectrons.h"
+#include "Hamiltonians/squarewell.h"
+#include "Hamiltonians/finiteharmonicoscillator.h"
 #include "InitialStates/initialstate.h"
 #include "InitialStates/randomuniform.h"
 #include "VariationMethods/steepestdescent.h"
@@ -35,7 +37,7 @@ int main(int nargs, char* args[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     timeStart = MPI_Wtime();
 
-    int numberOfDimensions  = 3;
+    int numberOfDimensions  = 2;
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
@@ -48,18 +50,22 @@ int main(int nargs, char* args[]) {
     double dt               = 0.01;                   // Time step for importance sampling.
     double aElectrons       = 1.; //1./3
     double C                = 1.;                     // Norm constant.
-    bool analyticalKinetic  = false;
+    double distToWall       = 3.;
+    double V0               = 1.;
+    bool analyticalKinetic  = true;
     bool importanceSampling = true;
-    bool repulsion          = true;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
+    bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
-    bool Jastrow            = true;                   // Switch for Jastrow factor. (manybody qdot)
+    bool Jastrow            = false;                   // Switch for Jastrow factor. (manybody qdot)
     bool optimizeParameters = false;                  // Switch for optimizing variational parameters.
     bool saveEnergies       = false;
     bool savePositions      = false;
     bool showProgress       = true;
     bool printToTerminal    = true;
-    bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
+    bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
+    bool finiteWell         = false;
+    bool squareWell         = true;
 
     int numMyCycles = numberOfSteps/numprocs;
 
@@ -82,12 +88,19 @@ int main(int nargs, char* args[]) {
     system->setWaveFunction             (new SimpleGaussian(system, alpha));
     }
     if (quantumDots) {
-        if (twobodyQD) {
-            system->setHamiltonian      (new HarmonicOscillatorElectrons(system, omega, analyticalKinetic, repulsion));
-            system->setWaveFunction     (new TwoElectrons(system, alpha, beta, omega, aElectrons, C, Jastrow));
+        if (finiteWell) {
+            system->setHamiltonian      (new FiniteHarmonicOscillator(system, distToWall, omega, analyticalKinetic, repulsion));
+        }
+        else if (squareWell) {
+            system->setHamiltonian      (new SquareWell(system, V0, distToWall, omega, analyticalKinetic, repulsion));
         }
         else {
             system->setHamiltonian      (new HarmonicOscillatorElectrons(system, omega, analyticalKinetic, repulsion));
+        }
+        if (twobodyQD) {
+            system->setWaveFunction     (new TwoElectrons(system, alpha, beta, omega, aElectrons, C, Jastrow));
+        }
+        else {
             if (useCoeff) {
                 system->setWaveFunction (new ManyElectronsCoefficients(system, alpha, beta, omega, C, Jastrow));
             }
