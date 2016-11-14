@@ -26,43 +26,49 @@
 #include <cassert>
 
 using namespace std;
+using namespace UnitTest;
 
+
+SUITE(TestTheTest) {
+    TEST(Sanity) {CHECK_EQUAL(1,1);}
+}
 
 SUITE(QD) {
-    int numprocs, my_rank;
+    int my_rank = 0;
+    int numprocs = 4;
     double totalE, totalKE, totalPE, totalVariance, totalAcceptanceRate, finalMeanDistance;
     double timeStart, timeEnd, totalTime;
-
 
     int numberOfDimensions  = 3;
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;
-    double omega            = 1.;     
+    double omega            = 1.;
     double alpha            = 0.98456;
     double beta             = 0.40691;
     double gamma            = 2.82843;
-    double a                = 0.0043; 
-    double stepLength       = 0.5;    
-    double equilibration    = 0.1;    
-    double dt               = 0.01;   
-    double aElectrons       = 1.; 
-    double C                = 1.;     
+    double a                = 0.0043;
+    double stepLength       = 0.5;
+    double equilibration    = 0.1;
+    double dt               = 0.01;
+    double aElectrons       = 1.;
+    double C                = 1.;
     bool analyticalKinetic  = false;
     bool importanceSampling = true;
-    bool repulsion          = true;   
-    bool quantumDots        = true;   
-    bool twobodyQD          = false;  
-    bool Jastrow            = true;   
-    bool optimizeParameters = false;  
+    bool repulsion          = true;
+    bool quantumDots        = true;
+    bool twobodyQD          = false;
+    bool Jastrow            = true;
+    bool optimizeParameters = false;
     bool saveEnergies       = false;
     bool savePositions      = false;
     bool showProgress       = true;
     bool printToTerminal    = true;
-    bool useCoeff 		    = false;  
+    bool useCoeff 		    = false;
 
     int numMyCycles = numberOfSteps/numprocs;
-
     System* system = new System();
+
+
 
     TEST(Initiate) {
         // Initialize MPI parallelization
@@ -121,11 +127,11 @@ SUITE(QD) {
         SquareWell* sqwell = new SquareWell(system, 1., 3., omega, false, false);
         /* CHECK(sqwell->computeLocalEnergy(system->getParticles())); */
     }
-    TEST(Sanity) {CHECK_EQUAL(1,1);}
-
-
 }
+
+
 
 int main() {
-    return UnitTest::RunAllTests();
+    return RunAllTests();
 }
+

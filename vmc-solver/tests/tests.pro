@@ -31,7 +31,7 @@ SOURCES += main.cpp \
     ../Hamiltonians/squarewell.cpp \
     ../Hamiltonians/finiteharmonicoscillator.cpp
 
-LIBS += -llapack -lblas -larmadillo -lunittest-cpp
+LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
 HEADERS += \
     ../system.h \
@@ -54,7 +54,7 @@ HEADERS += \
     ../BasisFunctions/basisfunctions.h \
     ../WaveFunctions/manyelectrons_coefficients.h \
     ../Hamiltonians/squarewell.h \
-    ../Hamiltonians/finiteharmonicoscillator.h
+    ../Hamiltonians/finiteharmonicoscillator.h \
 
 # MPI Settings
 QMAKE_CXX = mpicxx
