@@ -39,6 +39,9 @@ SUITE(QD) {
     double totalE, totalKE, totalPE, totalVariance, totalAcceptanceRate, finalMeanDistance;
     double timeStart, timeEnd, totalTime;
 
+    vec L(3);
+    L.fill(0.);
+
     int numberOfDimensions  = 3;
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;
