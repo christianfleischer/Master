@@ -31,7 +31,7 @@ SOURCES += main.cpp \
     Hamiltonians/squarewell.cpp \
     Hamiltonians/finiteharmonicoscillator.cpp
 
-LIBS += -llapack -lblas -larmadillo
+LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
 HEADERS += \
     system.h \

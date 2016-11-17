@@ -1,4 +1,5 @@
 #include <iostream>
+#include "UnitTest++/UnitTest++.h"
 #include <fstream>
 #include "system.h"
 #include "sampler.h"
@@ -23,6 +24,7 @@
 #include <cassert>
 
 using namespace std;
+using namespace UnitTest;
 
 
 int main(int nargs, char* args[]) {
@@ -65,7 +67,8 @@ int main(int nargs, char* args[]) {
     bool printToTerminal    = true;
     bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
     bool finiteWell         = false;
-    bool squareWell         = false;
+    bool squareWell         = true;
+    bool runTests           = true;
 
     int numMyCycles = numberOfSteps/numprocs;
 
@@ -128,7 +131,8 @@ int main(int nargs, char* args[]) {
     // Merge the files from the nodes into one data file
     system->mergeOutputFiles            (numprocs);
 
-    return 0;
+    if (runTests) { return RunAllTests(); }
+    else { return 0; }
 }
 
 //12: 65.7
