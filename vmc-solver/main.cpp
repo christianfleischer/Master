@@ -1,5 +1,5 @@
 #include <iostream>
-#include "UnitTest++/UnitTest++.h"
+#include <unittest++/UnitTest++.h>
 #include <fstream>
 #include "system.h"
 #include "sampler.h"
@@ -67,7 +67,7 @@ int main(int nargs, char* args[]) {
     bool printToTerminal    = true;
     bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
     bool finiteWell         = false;
-    bool squareWell         = true;
+    bool squareWell         = false;
     bool runTests           = true;
 
     int numMyCycles = numberOfSteps/numprocs;
