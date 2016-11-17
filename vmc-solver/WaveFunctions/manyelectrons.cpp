@@ -123,7 +123,7 @@ std::vector<double> ManyElectrons::computeDerivative(std::vector<class Particle*
 
     if (m_Jastrow) {
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            derivative[i*m_numberOfDimensions+d] += m_JastrowGrad(i,d);//computeJastrowGradient(particles, i)[0];
+            derivative[i*m_numberOfDimensions+d] += computeJastrowGradient(particles, i)[d];
             //derivative[i*m_numberOfDimensions+1] += m_JastrowGrad(i,1);//computeJastrowGradient(particles, i)[1];
         }
     }
@@ -746,8 +746,14 @@ void ManyElectrons::setUpSlaterDet() {
     int half = m_halfNumberOfParticles;
     for (int i=0; i < m_numberOfParticles; i++) {
         for (int j=0; j < m_numberOfParticles; j++) {
-            if ( ((i < half) && (j < half)) || ((i >= half) && (j >= half)) ) { m_a(i,j) = 1./3; }
-            else { m_a(i,j) = 1.; }
+            if ( ((i < half) && (j < half)) || ((i >= half) && (j >= half)) ) {
+                if (m_numberOfDimensions == 2) { m_a(i,j) = 1./3; }
+                else if (m_numberOfDimensions == 3) { m_a(i,j) = 1./4; }
+            }
+            else {
+                if (m_numberOfDimensions == 2) { m_a(i,j) = 1.; }
+                else if (m_numberOfDimensions == 3) { m_a(i,j) = 1./2; }
+            }
         }
     }
 

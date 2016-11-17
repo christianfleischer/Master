@@ -41,8 +41,8 @@ int main(int nargs, char* args[]) {
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
-    double alpha            = 0.98456;//0.7;          // Variational parameter.
-    double beta             = 0.40691;//2.82843;      // Variational parameter.
+    double alpha            = 0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
+    double beta             = 0.40691;//2.82843;      // Variational parameter.         //3D: 0.376667
     double gamma            = 2.82843;
     double a                = 0.0043;                 // Hard core boson diameter.
     double stepLength       = 0.5;                    // Metropolis step length.
@@ -54,10 +54,10 @@ int main(int nargs, char* args[]) {
     double V0               = 1.;
     bool analyticalKinetic  = true;
     bool importanceSampling = true;
-    bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
+    bool repulsion          = true;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
-    bool Jastrow            = false;                   // Switch for Jastrow factor. (manybody qdot)
+    bool Jastrow            = true;                   // Switch for Jastrow factor. (manybody qdot)
     bool optimizeParameters = false;                  // Switch for optimizing variational parameters.
     bool saveEnergies       = false;
     bool savePositions      = false;
@@ -65,7 +65,7 @@ int main(int nargs, char* args[]) {
     bool printToTerminal    = true;
     bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
     bool finiteWell         = false;
-    bool squareWell         = true;
+    bool squareWell         = false;
 
     int numMyCycles = numberOfSteps/numprocs;
 
