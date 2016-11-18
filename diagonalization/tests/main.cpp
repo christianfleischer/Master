@@ -12,6 +12,10 @@ using namespace std;
 using namespace arma;
 using namespace UnitTest;
 
+void initSystem() {
+
+}
+
 TEST(Diagonalization) {
     int N                       = 1000;
     double posMin               = -10;
