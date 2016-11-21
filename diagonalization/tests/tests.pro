@@ -8,11 +8,13 @@ SOURCES += main.cpp \
     ../WaveFunctions/wavefunction.cpp \
     ../initialize_electrons.cpp \
     ../WaveFunctions/doublewell.cpp \
-    ../Math/factorial.cpp
+    ../Math/factorial.cpp \
+    wrapper.cpp
 
 LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
 HEADERS += ../system.h \
     ../WaveFunctions/wavefunction.h \
     ../WaveFunctions/doublewell.h \
-    ../Math/factorial.h
+    ../Math/factorial.h \
+    wrapper.h
