@@ -21,63 +21,43 @@ SUITE(Diagonalization) {
     Wrapper* wrapper = new Wrapper();
 
     TEST(Initialization) {
-        int N                       = 1000;
-        double posMin               = -10;
-        double posMax               = 10;
-        double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-        int nMax 					= 3;
-        int nPrimeMax               = 2;
-        int numberOfDimensions      = 2;
+        wrapper->m_N                    = 1000;
+        wrapper->m_posMin               = -10;
+        wrapper->m_posMax               = 10;
+        wrapper->m_omega_r              = 0.5;
+        wrapper->m_nMax                 = 3;
+        wrapper->m_nPrimeMax            = 2;
+        wrapper->m_numberOfDimensions   = 3;
+        wrapper->m_h                    = (wrapper->m_posMax-wrapper->m_posMin)/wrapper->m_N;
 
-        wrapper->m_N = N;
-        wrapper->m_posMin = posMin;
-        wrapper->m_posMax = posMax;
-        wrapper->m_omega_r = omega_r;
-        wrapper->m_nMax = nMax;
-        wrapper->m_nPrimeMax = nPrimeMax;
-        wrapper->m_numberOfDimensions = numberOfDimensions;
+        wrapper->m_harmOscPotential     = true;
 
-        bool harmOscPotential       = true;
-
-        wrapper->m_harmOscPotential = harmOscPotential;
-
-        vec L(numberOfDimensions);
+        vec L(wrapper->m_numberOfDimensions);
         L.fill(0.);
         L(0) = 0.;
-
         wrapper->setL(L);
-
-        int numberOfEigstates;
-
 
         if (wrapper->m_numberOfDimensions == 2) {
             //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
-            numberOfEigstates = int(0.5*(wrapper->m_nMax)*(wrapper->m_nMax+1));
+            wrapper->m_numberOfEigstates = int(0.5*(wrapper->m_nMax)*(wrapper->m_nMax+1));
         }
 
         else if (wrapper->m_numberOfDimensions == 3) {
             //numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
-            numberOfEigstates = int((wrapper->m_nMax)*(wrapper->m_nMax+1)*(wrapper->m_nMax+2)/6.);
+            wrapper->m_numberOfEigstates = int((wrapper->m_nMax)*(wrapper->m_nMax+1)*(wrapper->m_nMax+2)/6.);
         }
-        else { numberOfEigstates = wrapper->m_nMax; }
+        else { wrapper->m_numberOfEigstates = wrapper->m_nMax; }
 
-        assert(wrapper->m_nPrimeMax <= numberOfEigstates);
-
-        wrapper->m_numberOfEigstates = numberOfEigstates;
-
+        assert(wrapper->m_nPrimeMax <= wrapper->m_numberOfEigstates);
     }
 
     TEST(McTestFace) {
-
-
-
         //Set up the vector x and the matrix A:
-        double h                    = (wrapper->m_posMax-wrapper->m_posMin)/wrapper->m_N;
         mat r = zeros(wrapper->m_N+1,wrapper->m_numberOfDimensions);
         vec rAbs = zeros(wrapper->m_N+1);
 
         for (int d = 0; d < wrapper->m_numberOfDimensions; d++) {
-            r.col(d) = wrapper->m_posMin + linspace(0, wrapper->m_N, wrapper->m_N+1)*h;
+            r.col(d) = wrapper->m_posMin + linspace(0, wrapper->m_N, wrapper->m_N+1)*wrapper->m_h;
             rAbs += r.col(d)%r.col(d);
         }
 
@@ -99,7 +79,7 @@ SUITE(Diagonalization) {
         SavePositionvector.col(wrapper->m_numberOfDimensions) = rAbs.subvec(1, wrapper->m_N-1);    //Saves the r vector for output.
 
         //Init system
-        System* system = new System(wrapper->m_omega_r, wrapper->m_numberOfDimensions, h, wrapper->m_N);
+        System* system = new System(wrapper->m_omega_r, wrapper->m_numberOfDimensions, wrapper->m_h, wrapper->m_N);
 
         system->setWaveFunction(new DoubleWell(system, wrapper->m_omega_r));
 
@@ -112,6 +92,8 @@ SUITE(Diagonalization) {
         if (wrapper->m_harmOscPotential) {
             CHECK_CLOSE(0.5, eigvals(0,0), 0.0001);
         }
+        // Check that quantum numbers are correct
+        CHECK_EQUAL(wrapper->m_nPrimeMax, system->getQuantumNumbers()(wrapper->m_numberOfEigstates - 1, 0));
 
         cout << endl << "eigvals, Armadillo:" << endl;
         int displayVals = 15;
@@ -124,6 +106,7 @@ SUITE(Diagonalization) {
         cout << endl;
         cout << "Computation time (sec):" << endl;
         cout << "Aramadillo: " << system->getComputationTime() << endl;
+
     }
 }
 

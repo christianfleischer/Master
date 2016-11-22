@@ -142,6 +142,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     finish1 = clock();
     m_computationTime = ((finish1-start1)/(double) CLOCKS_PER_SEC);
 
+    cout << m_qNumbers << endl;
     return;
 }
 

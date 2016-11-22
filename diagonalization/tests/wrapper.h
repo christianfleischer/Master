@@ -16,6 +16,7 @@ public:
     int m_nMax;
     int m_nPrimeMax;
     int m_numberOfDimensions;
+    double m_h;
 
     bool m_harmOscPotential;
 
@@ -23,6 +24,7 @@ public:
     void setL(vec);
 
     int m_numberOfEigstates;
+
 
 };
 

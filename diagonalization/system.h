@@ -26,6 +26,7 @@ public:
     int getNumberOfDimensions()             { return m_numberOfDimensions; }
     int getNumberOfParticles()              { return m_numberOfParticles; }
     double getComputationTime()             { return m_computationTime; }
+    mat getQuantumNumbers()                      { return m_qNumbers; }
 
 private:
     int                     m_N                      = 0;
