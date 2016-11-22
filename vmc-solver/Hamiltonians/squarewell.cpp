@@ -35,7 +35,7 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
         std::vector<double> r_i = particles[i]->getPosition();
         bool isOutside = false;
         for (int d = 0; d < numberOfDimensions; d++) {
-            if (r_i[d] > m_distToWall) {
+            if (abs(r_i[d]) > m_distToWall) {
                 isOutside = true;
             }
         }
@@ -52,7 +52,7 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
             repulsiveTerm += 1./r_ij;
         }
     }
-    potentialEnergy *= 0.5*m_omega*m_omega;
+    //potentialEnergy *= 0.5*m_omega*m_omega;
     if (m_repulsion) { potentialEnergy += repulsiveTerm; }
 
     double kineticEnergy = 0;

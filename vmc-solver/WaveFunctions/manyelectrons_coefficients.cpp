@@ -767,7 +767,6 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                 }
             }
         }
-        cout << "3 dim not implemented yet." << endl;
     }
 
     if (m_cCoefficients.slice(0).is_square()) {

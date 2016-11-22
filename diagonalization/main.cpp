@@ -5,6 +5,8 @@
 #include "system.h"
 #include "WaveFunctions/wavefunction.h"
 #include "WaveFunctions/doublewell.h"
+#include "WaveFunctions/finitewell.h"
+#include "WaveFunctions/squarewell.h"
 
 using namespace std;
 using namespace arma;
@@ -15,13 +17,14 @@ int main() {
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
+    double V0                   = 1.;
     int nMax 					= 3;
     int nPrimeMax               = 2;
-    int numberOfDimensions      = 1;
+    int numberOfDimensions      = 3;
 
     vec L(3);
-    L.fill(0.);
-    L(0) = 0.;
+    L.fill(3.);
+    //L(0) = 0.;
 
     int numberOfEigstates;
 
@@ -72,7 +75,9 @@ int main() {
     //Init system
     System* system = new System(omega_r, numberOfDimensions, h, N);
 
-    system->setWaveFunction(new DoubleWell(system, omega_r));
+    //system->setWaveFunction(new DoubleWell(system, omega_r));
+    //system->setWaveFunction(new FiniteWell(system, omega_r));
+    system->setWaveFunction(new SquareWell(system, omega_r, V0));
 
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat,

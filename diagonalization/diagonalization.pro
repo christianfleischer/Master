@@ -8,11 +8,15 @@ SOURCES += main.cpp \
     WaveFunctions/wavefunction.cpp \
     initialize_electrons.cpp \
     WaveFunctions/doublewell.cpp \
-    Math/factorial.cpp
+    Math/factorial.cpp \
+    WaveFunctions/finitewell.cpp \
+    WaveFunctions/squarewell.cpp
 
 LIBS += -llapack -lblas -larmadillo
 
 HEADERS += system.h \
     WaveFunctions/wavefunction.h \
     WaveFunctions/doublewell.h \
-    Math/factorial.h
+    Math/factorial.h \
+    WaveFunctions/finitewell.h \
+    WaveFunctions/squarewell.h

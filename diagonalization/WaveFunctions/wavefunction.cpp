@@ -9,6 +9,21 @@ vec WaveFunction::computeHermitePolynomial(int nValue, vec position) {
     // Computes Hermite polynomials.
     double omegaSqrt = sqrt(m_omega);
 
+    vec factor = 2*omegaSqrt*position;
+
+    vec HermitePolynomialPP = zeros(position.size());        // H_{n-2}
+    vec HermitePolynomialP = ones(position.size());          // H_{n-1}
+    vec HermitePolynomial = HermitePolynomialP;              // H_n
+
+    for (int n=1; n <= nValue; n++) {
+        HermitePolynomial = factor%HermitePolynomialP - 2*(n-1)*HermitePolynomialPP;
+        HermitePolynomialPP = HermitePolynomialP;
+        HermitePolynomialP = HermitePolynomial;
+    }
+
+    return HermitePolynomial;
+}
+
 //    vec x = position*omegaSqrt;
 
 //    if (nValue == 0) {
@@ -38,18 +53,3 @@ vec WaveFunction::computeHermitePolynomial(int nValue, vec position) {
 //    else if (nValue == 8) {
 //        return 256*x%x%x%x%x%x%x%x - 3584*x%x%x%x%x%x + 13440*x%x%x%x - 13440*x%x + 1680;
 //    }
-
-    vec factor = 2*omegaSqrt*position;
-
-    vec HermitePolynomialPP = zeros(position.size());        // H_{n-2}
-    vec HermitePolynomialP = ones(position.size());          // H_{n-1}
-    vec HermitePolynomial = HermitePolynomialP;              // H_n
-
-    for (int n=1; n <= nValue; n++) {
-        HermitePolynomial = factor%HermitePolynomialP - 2*(n-1)*HermitePolynomialPP;
-        HermitePolynomialPP = HermitePolynomialP;
-        HermitePolynomialP = HermitePolynomial;
-    }
-
-    return HermitePolynomial;
-}
