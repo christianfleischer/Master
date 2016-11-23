@@ -65,7 +65,7 @@ int main(int nargs, char* args[]) {
     bool savePositions      = false;
     bool showProgress       = true;
     bool printToTerminal    = true;
-    bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
+    bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
     bool finiteWell         = false;
     bool squareWell         = true;
     bool runTests           = false;

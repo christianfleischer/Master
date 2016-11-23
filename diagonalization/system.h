@@ -26,6 +26,7 @@ public:
     int getNumberOfDimensions()             { return m_numberOfDimensions; }
     int getNumberOfParticles()              { return m_numberOfParticles; }
     double getComputationTime()             { return m_computationTime; }
+    mat getEigvals()                        { return m_eigvals; }
 
 private:
     int                     m_N                      = 0;
@@ -36,6 +37,7 @@ private:
     double                  m_computationTime        = 0;
     double                  m_omega                  = 0;
     mat						m_qNumbers;
+    mat                     m_eigvals;
     cube                    m_psi;
     class WaveFunction*     m_waveFunction           = nullptr;
 };

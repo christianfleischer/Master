@@ -21,6 +21,7 @@ int main() {
     int nMax 					= 3;
     int nPrimeMax               = 2;
     int numberOfDimensions      = 3;
+    double distanceToWall       = 3.;
 
     vec L(3);
     L.fill(3.);
@@ -76,8 +77,8 @@ int main() {
     System* system = new System(omega_r, numberOfDimensions, h, N);
 
     //system->setWaveFunction(new DoubleWell(system, omega_r));
-    //system->setWaveFunction(new FiniteWell(system, omega_r));
-    system->setWaveFunction(new SquareWell(system, omega_r, V0));
+    //system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
+    system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
 
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat,

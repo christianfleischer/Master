@@ -139,6 +139,8 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
 
     m_psi = saveSepEigenvector;
 
+    m_eigvals = eigvals;
+
     finish1 = clock();
     m_computationTime = ((finish1-start1)/(double) CLOCKS_PER_SEC);
 

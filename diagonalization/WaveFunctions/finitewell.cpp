@@ -3,9 +3,10 @@
 #include "../Math/factorial.h"
 #include <cmath>
 
-FiniteWell::FiniteWell(System *system, double omega)
+FiniteWell::FiniteWell(System *system, double omega, double distanceToWall)
     : WaveFunction(system, omega) {
 
+    m_distanceToWall = distanceToWall;
 }
 
 vec FiniteWell::harmonicOscillatorBasis(mat x, int n) {
@@ -29,11 +30,11 @@ vec FiniteWell::harmonicOscillatorBasis(mat x, int n) {
 vec FiniteWell::potential (vec r, double L) {
     int N = m_system->getN();
     vec V(N+1);
-    double L2 = L*L;
+    double distanceToWall2 = m_distanceToWall*m_distanceToWall;
 
     for (int i = 0; i < N+1; i++) {
         double r_i2 = r[i]*r[i];
-        if (r_i2 > L2) { V[i] = L2; }
+        if (r_i2 > distanceToWall2) { V[i] = distanceToWall2; }
         else { V[i] = r_i2; }
     }
 

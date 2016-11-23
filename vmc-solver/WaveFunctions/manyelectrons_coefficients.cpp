@@ -847,6 +847,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                 m_SPWFDDMat(i,j) += C*computeSPWFDoubleDerivative(nTemp, rSpinUp);
             }
 
+
             m_SPWFMat(i,j) = m_spinUpSlater(i,j);
 
             //m_SPWFDMat(i,j) = computeSPWFDerivative(n, rSpinUp);
