@@ -10,7 +10,7 @@ HarmonicOscillatorRepulsive::HarmonicOscillatorRepulsive(System* system, double 
                                                          double a, double gamma,
                                                          bool analyticalKinetic) :
         Hamiltonian(system, analyticalKinetic) {
-    //assert(omega > 0);
+    assert(omega > 0);
     m_omega = omega;
     m_a = a;
     m_gamma = gamma;

@@ -11,18 +11,10 @@ public:
     double computeDoubleDerivative(std::vector<class Particle*> particles);
     double computeMetropolisRatio(std::vector<Particle *> particles, int randomParticle,
                                   std::vector<double> positionChange);
-    double computeHermitePolynomial(int nValue, double position);
-    double computeHermitePolynomialDerivative(int nValue, double position);
-    double computeHermitePolynomialDoubleDerivative(int nValue, double position);
-    double computeHermitePolynomialAlphaDerivative(int nValue, double position);
-    double evaluateSingleParticleWF(vec n, std::vector<double> r);
-    double computeSPWFDoubleDerivative(vec n, std::vector<double> r);
-    double computeSPWFAlphaDerivative(vec n, std::vector<double> r);
     std::vector<double> computeDerivative(std::vector<class Particle*> particles);
     std::vector<double> computeDerivativeWrtParameters(std::vector<Particle *> particles);
     std::vector<double> computeSlaterGradient(/*std::vector<Particle *> particles, */int i);
     std::vector<double> computeJastrowGradient(std::vector<Particle *> particles, int i);
-    std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r);
     void setUpSlaterDet();
     void setUpDistances();
     void setUpJastrowMat();
@@ -42,7 +34,6 @@ private:
     double m_C = 0;
     double m_metropolisRatio = 0;
     double m_ratioSlaterDet = 0;
-    double m_expFactor;
     mat m_quantumNumbers;
     mat m_spinUpSlater;
     mat m_spinDownSlater;

@@ -32,7 +32,7 @@ vec SquareWell::harmonicOscillatorBasis(mat x, int n) {
     int N = m_system->getN();
     vec phi(N-1);
     for (int i = 0; i < N-1; i++) {
-        if (abs(x[i]) > 3.) {
+        if (abs(x[i]) > m_distanceToWall) {
             phi[i] = exp(alpha*x[i]) + exp(-alpha*x[i]);
         }
         else {

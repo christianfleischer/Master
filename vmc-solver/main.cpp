@@ -67,7 +67,7 @@ int main(int nargs, char* args[]) {
     bool printToTerminal    = true;
     bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
     bool finiteWell         = false;
-    bool squareWell         = true;
+    bool squareWell         = false;
     bool runTests           = false;
 
     int numMyCycles = numberOfSteps/numprocs;

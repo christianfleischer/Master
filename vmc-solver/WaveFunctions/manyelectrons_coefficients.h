@@ -43,7 +43,6 @@ private:
     double m_C = 0;
     double m_metropolisRatio = 0;
     double m_ratioSlaterDet = 0;
-    double m_expFactor;
     mat m_quantumNumbers;
     mat m_spinUpSlater;
     mat m_spinDownSlater;

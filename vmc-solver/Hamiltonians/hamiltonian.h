@@ -1,17 +1,28 @@
 #ifndef PROJECT2_HAMILTONIAN_H
 #define PROJECT2_HAMILTONIAN_H
 #include <vector>
+#include <armadillo>
+
+using namespace arma;
 
 class Hamiltonian {
 public:
     Hamiltonian(class System* system, bool analyticalKinetic);
     double computeKineticEnergy(std::vector<class Particle*> particles);
-    virtual std::vector<double> computeLocalEnergy(std::vector<class Particle*> particles) = 0;
+    virtual std::vector<double> computeLocalEnergy(std::vector<class Particle*> particles) { particles = particles; }
+    virtual double evaluateSingleParticleWF(vec n, std::vector<double> r) { return n[0]*r[0]; }
+    virtual std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r) { n = n; return r; }
+    virtual double computeSPWFDoubleDerivative(vec n, std::vector<double> r) { return n[0]*r[0]; }
+    virtual double computeSPWFAlphaDerivative(vec n, std::vector<double> r) { return n[0]*r[0]; }
     double getAnalytic(){ return m_analyticalKinetic; }
+    void setExpFactor(double expFactor) { m_expFactor = expFactor; }
+    void setAlpha(double alpha) { m_alpha =  alpha; }
 
 protected:
     class System* m_system = nullptr;
     bool m_analyticalKinetic = false;
+    double m_expFactor = 0;
+    double m_alpha = 0;
 };
 
 #endif // PROJECT2_HAMILTONIAN_H

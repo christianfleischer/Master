@@ -3,6 +3,7 @@
 #include "../sampler.h"
 #include "../InitialStates/randomuniform.h"
 #include "../WaveFunctions/wavefunction.h"
+#include "../Hamiltonians/hamiltonian.h"
 #include <cmath>
 #include <iostream>
 #include "mpi.h"
@@ -35,6 +36,7 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
         for (int i=0; i < numberOfParameters; i++) {
             m_system->getWaveFunction()->adjustParameter(parameters[i], i);
         }
+        m_system->getHamiltonian()->setAlpha(parameters[0]);
 
         m_system->runMetropolisSteps(numberOfMetropolisSteps, importanceSampling, false, false);
 

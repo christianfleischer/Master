@@ -74,3 +74,43 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
 
     return energies;
 }
+
+double SquareWell::evaluateSingleParticleWF(vec n, std::vector<double> r) {
+    // Calculates the single particle wave function.
+
+    //double alpha = m_parameters[0];
+    //double waveFunction = m_system->getWaveFunction()->getExpFactor();
+
+    //return waveFunction;
+}
+
+std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double> r) {
+    // Calculates the single particle wave function differentiated w.r.t. position.
+
+    //std::vector<double> derivative(m_numberOfDimensions);
+    //double alpha = m_system->getWaveFunction()->getParameters()[0];
+    //double r2 = x*x + y*y;
+
+    //return derivative;
+}
+
+double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
+
+    // Calculates the single particle wave function twice differentiated w.r.t. position.
+    //double doubleDerivative = 0;
+    //double alpha = m_system->getWaveFunction()->getParameters()[0];
+    //double r2 = x*x + y*y;
+
+    //return doubleDerivative;
+
+}
+
+double SquareWell::computeSPWFAlphaDerivative(vec n, std::vector<double> r) {
+    // Calculates the single particle wave function differentiated w.r.t. alpha.
+    //double derivative = 0;
+    //double alpha = m_system->getWaveFunction()->getParameters()[0];
+    //double r2 = x*x + y*y;
+
+    //return derivative;
+}
+
