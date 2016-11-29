@@ -95,6 +95,11 @@ SUITE(Diagonalization) {
         // Check that quantum numbers are correct
         CHECK_EQUAL(wrapper->m_nPrimeMax, system->getQuantumNumbers()(wrapper->m_numberOfEigstates - 1, 0));
 
+        // Check that the potential returns correct value
+        // CHECK_EQUAL(wrapp)
+        cout << system->getWaveFunction()->potential((r.row(0)).t(), 0.) << endl;
+        cout << r.row(0) << endl;
+
         cout << endl << "eigvals, Armadillo:" << endl;
         int displayVals = 15;
         for (int i = 0; i < displayVals; ++i) {
