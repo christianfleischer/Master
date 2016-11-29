@@ -26,14 +26,21 @@ vec SquareWell::harmonicOscillatorBasis(mat x, int n) {
 //    vec phi = constant*wavefunc%computeHermitePolynomial(n, x);
 
     mat eigvals = m_system->getEigvals();
-    double alpha = sqrt(2*(m_V0-eigvals.col(0)[n]));
-    double k = sqrt(2*eigvals.col(0)[n]);
+    double E = eigvals.col(0)[n];
+    double k = sqrt(2*E);
+    double kPrime = sqrt(2*(E-m_V0));
+    double alpha = sqrt(2*(m_V0-E));
 
     int N = m_system->getN();
     vec phi(N-1);
     for (int i = 0; i < N-1; i++) {
         if (abs(x[i]) > m_distanceToWall) {
-            phi[i] = exp(alpha*x[i]) + exp(-alpha*x[i]);
+            if (E > m_V0) {
+                phi[i] = sin(kPrime*x[i]) + cos(kPrime*x[i]);
+            }
+            else {
+                phi[i] = exp(alpha*x[i]) + exp(-alpha*x[i]);
+            }
         }
         else {
             phi[i] = sin(k*x[i]) + cos(k*x[i]);

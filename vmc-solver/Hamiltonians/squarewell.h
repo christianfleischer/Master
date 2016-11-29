@@ -2,6 +2,9 @@
 #define SQUAREWELL_H
 #include "hamiltonian.h"
 #include <vector>
+#include <armadillo>
+
+using namespace arma;
 
 class SquareWell : public Hamiltonian {
 public:
@@ -13,10 +16,12 @@ public:
     double computeSPWFAlphaDerivative(vec n, std::vector<double> r);
 
 private:
+    int m_numberOfDimensions = 0;
     double m_V0 = 0;
     double m_distToWall = 0;
     double m_omega = 0;
     bool m_repulsion = false;
+    mat m_eigvals;
 };
 
 

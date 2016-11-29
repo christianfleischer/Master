@@ -24,7 +24,7 @@ int main() {
     double distanceToWall       = 3.;
 
     vec L(3);
-    L.fill(3.);
+    L.fill(0.);
     //L(0) = 0.;
 
     int numberOfEigstates;
@@ -96,6 +96,7 @@ int main() {
     if (numberOfDimensions>1) supPosSep.slice(1).save("../diagonalization/PlotAndData/SeparateSuperpositionsY.dat", raw_ascii);
     saveC.save("../diagonalization/PlotAndData/Coefficients.dat", arma_ascii);
     //saveEigenvector.print();
+    eigvals.save("../diagonalization/PlotAndData/Eigenvalues.dat", arma_ascii);
 
     cout << endl << "eigvals, Armadillo:" << endl;
     int displayVals = 15;

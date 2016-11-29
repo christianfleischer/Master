@@ -10,8 +10,10 @@ SquareWell::SquareWell(System* system, double V0, double distToWall, double omeg
     assert(omega > 0);
     m_omega = omega;
     m_repulsion = repulsion;
+    m_numberOfDimensions = m_system->getNumberOfDimensions();
     m_distToWall = distToWall;
     m_V0 = V0;
+    m_eigvals.load("../diagonalization/PlotAndData/Eigenvalues.dat", arma_ascii);
 }
 
 std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> particles) {
@@ -79,29 +81,143 @@ double SquareWell::evaluateSingleParticleWF(vec n, std::vector<double> r) {
     // Calculates the single particle wave function.
 
     //double alpha = m_parameters[0];
-    //double waveFunction = m_system->getWaveFunction()->getExpFactor();
+    double waveFunction = 1.;
+    double r2 = 0;
 
-    //return waveFunction;
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        r2 += r[d]*r[d];
+    }
+
+    if (sqrt(r2) > m_distToWall) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            int n_d = n[d];
+            double E = m_eigvals.col(d)[n_d];
+            if (E > m_V0) {
+                double kPrime = sqrt(2*(E-m_V0));
+                waveFunction *= sin(kPrime*r[d]) + cos(kPrime*r[d]);
+            }
+            else {
+                double alpha = sqrt(2.*(m_V0-E));
+                waveFunction *= exp(alpha*r[d]) + exp(-alpha*r[d]);
+            }
+        }
+    }
+    else {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            int n_d = n[d];
+            double k = sqrt(2.*m_eigvals.col(d)[n_d]);
+            waveFunction *= sin(k*r[d]) + cos(k*r[d]);
+        }
+    }
+
+    return waveFunction;
 }
 
 std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double> r) {
     // Calculates the single particle wave function differentiated w.r.t. position.
 
-    //std::vector<double> derivative(m_numberOfDimensions);
+    std::vector<double> derivative(m_numberOfDimensions);
     //double alpha = m_system->getWaveFunction()->getParameters()[0];
-    //double r2 = x*x + y*y;
+    double r2 = 0;
+    vec alpha(m_numberOfDimensions);
+    vec k(m_numberOfDimensions);
+    vec kPrime(m_numberOfDimensions);
+    vec E(m_numberOfDimensions);
 
-    //return derivative;
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        int n_d = n[d];
+        E[d] = m_eigvals.col(d)[n_d];
+        r2 += r[d]*r[d];
+        alpha[d] = sqrt(2.*(m_V0-E[d]));
+        kPrime[d] = sqrt(2.*(E[d]-m_V0));
+        k[d] = sqrt(2.*E[d]);
+    }
+
+    if (sqrt(r2) > m_distToWall) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            if (E[d] > m_V0) {
+                derivative[d] = kPrime[d]*cos(kPrime[d]*r[d]) - kPrime[d]*sin(kPrime[d]*r[d]);
+
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) derivative[d] *= sin(kPrime[dim]*r[dim]) + cos(kPrime[dim]*r[dim]);
+                }
+            }
+            else {
+                derivative[d] = alpha[d]*(exp(alpha[d]*r[d]) - exp(-alpha[d]*r[d]));
+
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) derivative[d] *= exp(alpha[dim]*r[dim]) + exp(-alpha[dim]*r[dim]);
+                }
+            }
+        }
+    }
+
+    else {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            derivative[d] = k[d]*cos(k[d]*r[d]) - k[d]*sin(k[d]*r[d]);
+
+            for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                if (d != dim) derivative[d] *= sin(k[dim]*r[dim]) + cos(k[dim]*r[dim]);
+            }
+        }
+    }
+
+    return derivative;
 }
 
 double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
 
     // Calculates the single particle wave function twice differentiated w.r.t. position.
-    //double doubleDerivative = 0;
+    double doubleDerivative = 0;
     //double alpha = m_system->getWaveFunction()->getParameters()[0];
-    //double r2 = x*x + y*y;
+    double r2 = 0;
+    vec alpha(m_numberOfDimensions);
+    vec k(m_numberOfDimensions);
+    vec kPrime(m_numberOfDimensions);
+    vec E(m_numberOfDimensions);
 
-    //return doubleDerivative;
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        int n_d = n[d];
+        E[d] = m_eigvals.col(d)[n_d];
+        r2 += r[d]*r[d];
+        alpha[d] = sqrt(2.*(m_V0-E[d]));
+        kPrime[d] = sqrt(2.*(E[d]-m_V0));
+        k[d] = sqrt(2.*E[d]);
+    }
+
+    if (sqrt(r2) > m_distToWall) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            double term;
+            if (E[d] > m_V0) {
+                term = -kPrime[d]*kPrime[d]*sin(kPrime[d]*r[d]) - kPrime[d]*kPrime[d]*cos(kPrime[d]*r[d]);
+
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) term *= sin(kPrime[dim]*r[dim]) + cos(kPrime[dim]*r[dim]);
+                }
+            }
+            else {
+                term = alpha[d]*alpha[d]*(exp(alpha[d]*r[d]) + exp(-alpha[d]*r[d]));
+
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) term *= exp(alpha[dim]*r[dim]) + exp(-alpha[dim]*r[dim]);
+                }
+            }
+            doubleDerivative += term;
+        }
+    }
+
+    else {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            double term = -k[d]*k[d]*sin(k[d]*r[d]) - k[d]*k[d]*cos(k[d]*r[d]);
+
+            for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                if (d != dim) term *= sin(k[dim]*r[dim]) + cos(k[dim]*r[dim]);
+            }
+            doubleDerivative += term;
+        }
+    }
+
+    return doubleDerivative;
 
 }
 
