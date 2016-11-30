@@ -114,7 +114,7 @@ SUITE(Diagonalization) {
             vec tmp_r2(1);
             tmp_r2(0) = -4.44;
             cout << system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0) << endl;
-            CHECK_CLOSE(system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0)(0), tmp_resWave, 0.0001);
+                CHECK_CLOSE(system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0)(0), tmp_resWave, 0.0001);
             //
         }
 
