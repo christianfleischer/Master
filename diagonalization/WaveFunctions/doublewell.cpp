@@ -16,7 +16,6 @@ vec DoubleWell::harmonicOscillatorBasis(mat x, int n) {
     double pi4 = pow(M_PI, -0.25);
     double omega4 = pow(m_omega, 0.25);
     double constant = omega4*pi4/sqrt(nFac*n2);
-
     vec xAbs2 = x%x;
 
     vec wavefunc = exp(-0.5*m_omega*xAbs2);

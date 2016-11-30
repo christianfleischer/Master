@@ -34,7 +34,7 @@ SUITE(Diagonalization) {
 
         vec L(wrapper->m_numberOfDimensions);
         L.fill(0.);
-        L(0) = 0.;
+        L(0) = 5.;
         wrapper->setL(L);
 
         if (wrapper->m_numberOfDimensions == 2) {
@@ -62,7 +62,6 @@ SUITE(Diagonalization) {
         }
 
         rAbs = sqrt(rAbs);
-
 
         cube diagMat(wrapper->m_N-1, wrapper->m_N-1, wrapper->m_numberOfDimensions);
         cube eigvecs(wrapper->m_N-1, wrapper->m_N-1, wrapper->m_numberOfDimensions);
@@ -95,10 +94,32 @@ SUITE(Diagonalization) {
         // Check that quantum numbers are correct
         CHECK_EQUAL(wrapper->m_nPrimeMax, system->getQuantumNumbers()(wrapper->m_numberOfEigstates - 1, 0));
 
-        // Check that the potential returns correct value
-        // CHECK_EQUAL(wrapp)
-        cout << system->getWaveFunction()->potential((r.row(0)).t(), 0.) << endl;
-        cout << r.row(0) << endl;
+        if (wrapper->m_omega_r == 0.5 && wrapper->m_L(0) == 5) {
+            // Check that the potential returns correct value
+            vec tmp_resPot(3);
+            tmp_resPot(0) = 6.25; tmp_resPot(1) = 6.25; tmp_resPot(2) = 1.5625;
+
+            int tmp_L = 5.;
+
+            vec tmp_r(3);
+            tmp_r(0) = -10; tmp_r(1) = 0; tmp_r(2) = 2.5;
+            CHECK_ARRAY_EQUAL(system->getWaveFunction()->potential(tmp_r, tmp_L), tmp_resPot, 3);
+            tmp_L = 0.;
+            tmp_resPot(0) = 25; tmp_resPot(1) = 0; tmp_resPot(2) = 1.5625;
+            CHECK_ARRAY_EQUAL(system->getWaveFunction()->potential(tmp_r, tmp_L), tmp_resPot, 3);
+            //
+
+            // Check that the wavefunction returns correct value for a given quantum number
+            double tmp_resWave = 0.0045717;
+            vec tmp_r2(1);
+            tmp_r2(0) = -4.44;
+            cout << system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0) << endl;
+            CHECK_CLOSE(system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0)(0), tmp_resWave, 0.0001);
+            //
+        }
+
+
+
 
         cout << endl << "eigvals, Armadillo:" << endl;
         int displayVals = 15;
