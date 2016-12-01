@@ -95,7 +95,7 @@ SUITE(Diagonalization) {
         CHECK_EQUAL(wrapper->m_nPrimeMax, system->getQuantumNumbers()(wrapper->m_numberOfEigstates - 1, 0));
 
         if (wrapper->m_omega_r == 0.5 && wrapper->m_L(0) == 5) {
-            // Check that the potential returns correct value
+            // BEGIN harmOsc: Check that the potential returns correct value
             vec tmp_resPot(3);
             tmp_resPot(0) = 6.25; tmp_resPot(1) = 6.25; tmp_resPot(2) = 1.5625;
 
@@ -107,15 +107,16 @@ SUITE(Diagonalization) {
             tmp_L = 0.;
             tmp_resPot(0) = 25; tmp_resPot(1) = 0; tmp_resPot(2) = 1.5625;
             CHECK_ARRAY_EQUAL(system->getWaveFunction()->potential(tmp_r, tmp_L), tmp_resPot, 3);
-            //
+            // END harmOsc
 
-            // Check that the wavefunction returns correct value for a given quantum number
-            double tmp_resWave = 0.0045717;
+            // BEGIN wavefunc: Check that the wavefunction returns correct value for a given quantum number
+            double tmp_resWave1 = 0.0045717;
+            double tmp_resWave2 = -0.3826216;
             vec tmp_r2(1);
-            tmp_r2(0) = -4.44;
-            cout << system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0) << endl;
-                CHECK_CLOSE(system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0)(0), tmp_resWave, 0.0001);
-            //
+            tmp_r2(0) = -4.44; //"Random" coordinate.
+            CHECK_CLOSE(system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 0)(0), tmp_resWave1, 0.0001);
+            CHECK_CLOSE(system->getWaveFunction()->harmonicOscillatorBasis(tmp_r2, 5)(0), tmp_resWave2, 0.0001);
+            // END wavefunc
         }
 
 
