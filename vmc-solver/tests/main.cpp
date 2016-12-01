@@ -24,6 +24,7 @@
 #include "../Math/random.h"
 #include <mpi.h>
 #include <cassert>
+#include "wrapper.h"
 
 using namespace std;
 using namespace UnitTest;
