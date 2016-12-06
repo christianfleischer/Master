@@ -43,7 +43,7 @@ int main(int nargs, char* args[]) {
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e6;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
-    double alpha            = 1;//0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
+    double alpha            = 0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
     double beta             = 0.40691;//2.82843;      // Variational parameter.         //3D: 0.376667
     double gamma            = 2.82843;
     double a                = 0.0043;                 // Hard core boson diameter.
@@ -65,7 +65,7 @@ int main(int nargs, char* args[]) {
     bool savePositions      = false;
     bool showProgress       = true;
     bool printToTerminal    = true;
-    bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
+    bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
     bool finiteWell         = false;
     bool squareWell         = true;
     bool runTests           = false;

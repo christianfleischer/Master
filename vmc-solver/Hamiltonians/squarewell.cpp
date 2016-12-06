@@ -84,31 +84,71 @@ double SquareWell::evaluateSingleParticleWF(vec n, std::vector<double> r) {
     double waveFunction = 1.;
     double r2 = 0;
 
-    for (int d = 0; d < m_numberOfDimensions; d++) {
-        r2 += r[d]*r[d];
-    }
+    double A = 0.;
+    double B = 1.;
+    double F = 0.;
+    double G = 1.;
+    double H = 1.;
+    double I = 0.;
 
-    if (sqrt(r2) > m_distToWall) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            int n_d = n[d];
-            double E = m_eigvals.col(d)[n_d];
-            if (E > m_V0) {
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        int n_d = n[d];
+        double E = m_eigvals.col(d)[n_d];
+        if ( r[d] < -m_distToWall ) {
+            if ( E > m_V0 ) {
                 double kPrime = sqrt(2*(E-m_V0));
                 waveFunction *= sin(kPrime*r[d]) + cos(kPrime*r[d]);
             }
             else {
                 double alpha = sqrt(2.*(m_V0-E));
-                waveFunction *= exp(alpha*r[d]) + exp(-alpha*r[d]);
+                waveFunction *= F*exp(-alpha*r[d]) + G*exp(alpha*r[d]);
             }
         }
-    }
-    else {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
+        else if ( r[d] > m_distToWall ) {
+            if ( E > m_V0 ) {
+                double kPrime = sqrt(2*(E-m_V0));
+                waveFunction *= sin(kPrime*r[d]) + cos(kPrime*r[d]);
+            }
+            else {
+                double alpha = sqrt(2.*(m_V0-E));
+                waveFunction *= H*exp(-alpha*r[d]) + I*exp(alpha*r[d]);
+            }
+        }
+        else {
             int n_d = n[d];
             double k = sqrt(2.*m_eigvals.col(d)[n_d]);
-            waveFunction *= sin(k*r[d]) + cos(k*r[d]);
+            waveFunction *= A*sin(k*r[d]) + B*cos(k*r[d]);
         }
     }
+
+//    for (int d = 0; d < m_numberOfDimensions; d++) {
+//        r2 += r[d]*r[d];
+//    }
+
+//    if (sqrt(r2) > m_distToWall) {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            int n_d = n[d];
+//            double E = m_eigvals.col(d)[n_d];
+//            if (E > m_V0) {
+//                double kPrime = sqrt(2*(E-m_V0));
+//                waveFunction *= sin(kPrime*r[d]) + cos(kPrime*r[d]);
+//            }
+//            else if (r[d] < -m_distToWall) {
+//                double alpha = sqrt(2.*(m_V0-E));
+//                waveFunction *= exp(alpha*r[d]) + exp(-alpha*r[d]);
+//            }
+//            else if (r[d] > m_distToWall) {
+
+//            }
+//        }
+//    }
+//    else {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            int n_d = n[d];
+//            double k = sqrt(2.*m_eigvals.col(d)[n_d]);
+//            waveFunction *= A*sin(k*r[d]) + B*cos(k*r[d]);
+//        }
+//    }
 
     return waveFunction;
 }
@@ -118,6 +158,14 @@ std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double>
 
     std::vector<double> derivative(m_numberOfDimensions);
     //double alpha = m_system->getWaveFunction()->getParameters()[0];
+
+    double A = 0.;
+    double B = 1.;
+    double F = 0.;
+    double G = 1.;
+    double H = 1.;
+    double I = 0.;
+
     double r2 = 0;
     vec alpha(m_numberOfDimensions);
     vec k(m_numberOfDimensions);
@@ -133,9 +181,9 @@ std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double>
         k[d] = sqrt(2.*E[d]);
     }
 
-    if (sqrt(r2) > m_distToWall) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            if (E[d] > m_V0) {
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        if ( r[d] < -m_distToWall ) {
+            if ( E[d] > m_V0 ) {
                 derivative[d] = kPrime[d]*cos(kPrime[d]*r[d]) - kPrime[d]*sin(kPrime[d]*r[d]);
 
                 for (int dim = 0; dim < m_numberOfDimensions; dim++) {
@@ -143,24 +191,66 @@ std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double>
                 }
             }
             else {
-                derivative[d] = alpha[d]*(exp(alpha[d]*r[d]) - exp(-alpha[d]*r[d]));
+                derivative[d] = alpha[d]*(-F*exp(-alpha[d]*r[d]) + G*exp(alpha[d]*r[d]));
 
                 for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-                    if (d != dim) derivative[d] *= exp(alpha[dim]*r[dim]) + exp(-alpha[dim]*r[dim]);
+                    if (d != dim) derivative[d] *= F*exp(-alpha[dim]*r[dim]) + G*exp(alpha[dim]*r[dim]);
                 }
             }
         }
-    }
+        else if ( r[d] > m_distToWall ) {
+            if ( E[d] > m_V0 ) {
+                derivative[d] = kPrime[d]*cos(kPrime[d]*r[d]) - kPrime[d]*sin(kPrime[d]*r[d]);
 
-    else {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            derivative[d] = k[d]*cos(k[d]*r[d]) - k[d]*sin(k[d]*r[d]);
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) derivative[d] *= sin(kPrime[dim]*r[dim]) + cos(kPrime[dim]*r[dim]);
+                }
+            }
+            else {
+                derivative[d] = alpha[d]*(-H*exp(-alpha[d]*r[d]) + I*exp(alpha[d]*r[d]));
+
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) derivative[d] *= H*exp(-alpha[dim]*r[dim]) + I*exp(alpha[dim]*r[dim]);
+                }
+            }
+        }
+        else {
+            derivative[d] = k[d]*A*cos(k[d]*r[d]) - k[d]*B*sin(k[d]*r[d]);
 
             for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-                if (d != dim) derivative[d] *= sin(k[dim]*r[dim]) + cos(k[dim]*r[dim]);
+                if (d != dim) derivative[d] *= A*sin(k[dim]*r[dim]) + B*cos(k[dim]*r[dim]);
             }
         }
     }
+
+//    if (sqrt(r2) > m_distToWall) {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            if (E[d] > m_V0) {
+//                derivative[d] = kPrime[d]*cos(kPrime[d]*r[d]) - kPrime[d]*sin(kPrime[d]*r[d]);
+
+//                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+//                    if (d != dim) derivative[d] *= sin(kPrime[dim]*r[dim]) + cos(kPrime[dim]*r[dim]);
+//                }
+//            }
+//            else {
+//                derivative[d] = alpha[d]*(exp(alpha[d]*r[d]) - exp(-alpha[d]*r[d]));
+
+//                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+//                    if (d != dim) derivative[d] *= exp(alpha[dim]*r[dim]) + exp(-alpha[dim]*r[dim]);
+//                }
+//            }
+//        }
+//    }
+
+//    else {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            derivative[d] = k[d]*cos(k[d]*r[d]) - k[d]*sin(k[d]*r[d]);
+
+//            for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+//                if (d != dim) derivative[d] *= sin(k[dim]*r[dim]) + cos(k[dim]*r[dim]);
+//            }
+//        }
+//    }
 
     return derivative;
 }
@@ -170,6 +260,14 @@ double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
     // Calculates the single particle wave function twice differentiated w.r.t. position.
     double doubleDerivative = 0;
     //double alpha = m_system->getWaveFunction()->getParameters()[0];
+
+    double A = 0.;
+    double B = 1.;
+    double F = 0.;
+    double G = 1.;
+    double H = 1.;
+    double I = 0.;
+
     double r2 = 0;
     vec alpha(m_numberOfDimensions);
     vec k(m_numberOfDimensions);
@@ -185,10 +283,10 @@ double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
         k[d] = sqrt(2.*E[d]);
     }
 
-    if (sqrt(r2) > m_distToWall) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            double term;
-            if (E[d] > m_V0) {
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        double term = 0;
+        if ( r[d] < -m_distToWall ) {
+            if ( E[d] > m_V0 ) {
                 term = -kPrime[d]*kPrime[d]*sin(kPrime[d]*r[d]) - kPrime[d]*kPrime[d]*cos(kPrime[d]*r[d]);
 
                 for (int dim = 0; dim < m_numberOfDimensions; dim++) {
@@ -196,26 +294,70 @@ double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
                 }
             }
             else {
-                term = alpha[d]*alpha[d]*(exp(alpha[d]*r[d]) + exp(-alpha[d]*r[d]));
+                term = alpha[d]*alpha[d]*(F*exp(-alpha[d]*r[d]) + G*exp(alpha[d]*r[d]));
 
                 for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-                    if (d != dim) term *= exp(alpha[dim]*r[dim]) + exp(-alpha[dim]*r[dim]);
+                    if (d != dim) term *= F*exp(-alpha[dim]*r[dim]) + G*exp(alpha[dim]*r[dim]);
                 }
             }
-            doubleDerivative += term;
         }
-    }
+        else if ( r[d] > m_distToWall ) {
+            if ( E[d] > m_V0 ) {
+                term = -kPrime[d]*kPrime[d]*sin(kPrime[d]*r[d]) - kPrime[d]*kPrime[d]*cos(kPrime[d]*r[d]);
 
-    else {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            double term = -k[d]*k[d]*sin(k[d]*r[d]) - k[d]*k[d]*cos(k[d]*r[d]);
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) term *= sin(kPrime[dim]*r[dim]) + cos(kPrime[dim]*r[dim]);
+                }
+            }
+            else {
+                term = alpha[d]*alpha[d]*(H*exp(-alpha[d]*r[d]) + I*exp(alpha[d]*r[d]));
+
+                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+                    if (d != dim) term *= H*exp(-alpha[dim]*r[dim]) + I*exp(alpha[dim]*r[dim]);
+                }
+            }
+        }
+        else {
+            double term = -k[d]*k[d]*A*sin(k[d]*r[d]) - k[d]*k[d]*B*cos(k[d]*r[d]);
 
             for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-                if (d != dim) term *= sin(k[dim]*r[dim]) + cos(k[dim]*r[dim]);
+                if (d != dim) term *= A*sin(k[dim]*r[dim]) + B*cos(k[dim]*r[dim]);
             }
-            doubleDerivative += term;
         }
+        doubleDerivative += term;
     }
+
+//    if (sqrt(r2) > m_distToWall) {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            double term;
+//            if (E[d] > m_V0) {
+//                term = -kPrime[d]*kPrime[d]*sin(kPrime[d]*r[d]) - kPrime[d]*kPrime[d]*cos(kPrime[d]*r[d]);
+
+//                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+//                    if (d != dim) term *= sin(kPrime[dim]*r[dim]) + cos(kPrime[dim]*r[dim]);
+//                }
+//            }
+//            else {
+//                term = alpha[d]*alpha[d]*(exp(alpha[d]*r[d]) + exp(-alpha[d]*r[d]));
+
+//                for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+//                    if (d != dim) term *= exp(alpha[dim]*r[dim]) + exp(-alpha[dim]*r[dim]);
+//                }
+//            }
+//            doubleDerivative += term;
+//        }
+//    }
+
+//    else {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            double term = -k[d]*k[d]*sin(k[d]*r[d]) - k[d]*k[d]*cos(k[d]*r[d]);
+
+//            for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+//                if (d != dim) term *= sin(k[dim]*r[dim]) + cos(k[dim]*r[dim]);
+//            }
+//            doubleDerivative += term;
+//        }
+//    }
 
     return doubleDerivative;
 
