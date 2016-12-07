@@ -84,39 +84,56 @@ double SquareWell::evaluateSingleParticleWF(vec n, std::vector<double> r) {
     double waveFunction = 1.;
     double r2 = 0;
 
-    double A = 0.;
-    double B = 1.;
-    double F = 0.;
-    double G = 1.;
-    double H = 1.;
-    double I = 0.;
-
     for (int d = 0; d < m_numberOfDimensions; d++) {
         int n_d = n[d];
         double E = m_eigvals.col(d)[n_d];
+        double k = sqrt(2.*m_eigvals.col(d)[n_d]);
+        double kPrime = sqrt(2*(E-m_V0));
+        double alpha = sqrt(2.*(m_V0-E));
+
+        double A;
+        double B;
+        double F;
+        double G;
+        double H;
+        double I;
+
+        if (n_d%2 == 0) {
+            A = 0.;
+            B = 1.;
+            F = 0.;
+            G = B*cos(k*m_distToWall)/exp(-alpha*m_distToWall);
+            H = G;
+            I = 0.;
+        }
+
+        else {
+            A = 1.;
+            B = 0.;
+            F = 0.;
+            G = -A*sin(k*m_distToWall)/exp(-alpha*m_distToWall);
+            H = -G;
+            I = 0.;
+        }
+
+
         if ( r[d] < -m_distToWall ) {
             if ( E > m_V0 ) {
-                double kPrime = sqrt(2*(E-m_V0));
                 waveFunction *= sin(kPrime*r[d]) + cos(kPrime*r[d]);
             }
             else {
-                double alpha = sqrt(2.*(m_V0-E));
                 waveFunction *= F*exp(-alpha*r[d]) + G*exp(alpha*r[d]);
             }
         }
         else if ( r[d] > m_distToWall ) {
             if ( E > m_V0 ) {
-                double kPrime = sqrt(2*(E-m_V0));
                 waveFunction *= sin(kPrime*r[d]) + cos(kPrime*r[d]);
             }
             else {
-                double alpha = sqrt(2.*(m_V0-E));
                 waveFunction *= H*exp(-alpha*r[d]) + I*exp(alpha*r[d]);
             }
         }
         else {
-            int n_d = n[d];
-            double k = sqrt(2.*m_eigvals.col(d)[n_d]);
             waveFunction *= A*sin(k*r[d]) + B*cos(k*r[d]);
         }
     }
@@ -159,18 +176,18 @@ std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double>
     std::vector<double> derivative(m_numberOfDimensions);
     //double alpha = m_system->getWaveFunction()->getParameters()[0];
 
-    double A = 0.;
-    double B = 1.;
-    double F = 0.;
-    double G = 1.;
-    double H = 1.;
-    double I = 0.;
-
     double r2 = 0;
     vec alpha(m_numberOfDimensions);
     vec k(m_numberOfDimensions);
     vec kPrime(m_numberOfDimensions);
     vec E(m_numberOfDimensions);
+
+    double A;
+    double B;
+    double F;
+    double G;
+    double H;
+    double I;
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
         int n_d = n[d];
@@ -182,6 +199,27 @@ std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double>
     }
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
+
+        int n_d = n[d];
+
+        if (n_d%2 == 0) {
+            A = 0.;
+            B = 1.;
+            F = 0.;
+            G = B*cos(k[d]*m_distToWall)/exp(-alpha[d]*m_distToWall);
+            H = G;
+            I = 0.;
+        }
+
+        else {
+            A = 1.;
+            B = 0.;
+            F = 0.;
+            G = -A*sin(k[d]*m_distToWall)/exp(-alpha[d]*m_distToWall);
+            H = -G;
+            I = 0.;
+        }
+
         if ( r[d] < -m_distToWall ) {
             if ( E[d] > m_V0 ) {
                 derivative[d] = kPrime[d]*cos(kPrime[d]*r[d]) - kPrime[d]*sin(kPrime[d]*r[d]);
@@ -261,18 +299,18 @@ double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
     double doubleDerivative = 0;
     //double alpha = m_system->getWaveFunction()->getParameters()[0];
 
-    double A = 0.;
-    double B = 1.;
-    double F = 0.;
-    double G = 1.;
-    double H = 1.;
-    double I = 0.;
-
     double r2 = 0;
     vec alpha(m_numberOfDimensions);
     vec k(m_numberOfDimensions);
     vec kPrime(m_numberOfDimensions);
     vec E(m_numberOfDimensions);
+
+    double A;
+    double B;
+    double F;
+    double G;
+    double H;
+    double I;
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
         int n_d = n[d];
@@ -284,6 +322,27 @@ double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
     }
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
+
+        int n_d = n[d];
+
+        if (n_d%2 == 0) {
+            A = 0.;
+            B = 1.;
+            F = 0.;
+            G = B*cos(k[d]*m_distToWall)/exp(-alpha[d]*m_distToWall);
+            H = G;
+            I = 0.;
+        }
+
+        else {
+            A = 1.;
+            B = 0.;
+            F = 0.;
+            G = -A*sin(k[d]*m_distToWall)/exp(-alpha[d]*m_distToWall);
+            H = -G;
+            I = 0.;
+        }
+
         double term = 0;
         if ( r[d] < -m_distToWall ) {
             if ( E[d] > m_V0 ) {

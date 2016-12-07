@@ -31,12 +31,30 @@ vec SquareWell::harmonicOscillatorBasis(mat x, int n) {
     double kPrime = sqrt(2*(E-m_V0));
     double alpha = sqrt(2*(m_V0-E));
 
-    double A = 0.;
-    double B = 1.;
-    double F = 0.;
-    double G = 1.;
-    double H = 1.;
-    double I = 0.;
+    double A;
+    double B;
+    double F;
+    double G;
+    double H;
+    double I;
+
+    if (n%2 == 0) {
+        A = 0.;
+        B = 1.;
+        F = 0.;
+        G = B*cos(k*m_distanceToWall)/exp(-alpha*m_distanceToWall);
+        H = G;
+        I = 0.;
+    }
+
+    else {
+        A = 1.;
+        B = 0.;
+        F = 0.;
+        G = -A*sin(k*m_distanceToWall)/exp(-alpha*m_distanceToWall);
+        H = -G;
+        I = 0.;
+    }
 
     int N = m_system->getN();
     vec phi(N-1);
