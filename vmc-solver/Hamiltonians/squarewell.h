@@ -14,6 +14,10 @@ public:
     std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r);
     double computeSPWFDoubleDerivative(vec n, std::vector<double> r);
     double computeSPWFAlphaDerivative(vec n, std::vector<double> r);
+    double computeHermitePolynomial(int nValue, double position);
+    double computeHermitePolynomialDerivative(int nValue, double position);
+    double computeHermitePolynomialDoubleDerivative(int nValue, double position);
+    double computeHermitePolynomialAlphaDerivative(int nValue, double position);
 
 private:
     int m_numberOfDimensions = 0;

@@ -25,34 +25,50 @@ ManyElectronsCoefficients::ManyElectronsCoefficients(System* system, double alph
     m_C = C;
     m_numberOfParticles = m_system->getNumberOfParticles();
     m_halfNumberOfParticles = m_numberOfParticles/2.;
-    setUpSlaterDet();
+
+    if (m_numberOfParticles == 1) {
+        setUpSlaterDetOneParticle();
+    }
+    else {
+        setUpSlaterDet();
+    }
+
     setUpDistances();
     setUpJastrowMat();
 }
 
 double ManyElectronsCoefficients::evaluate(std::vector<class Particle*> particles) {
     // Evaluates the wave function using brute force.
-    mat spinUpSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
-    mat spinDownSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
 
-    double beta = m_parameters[1];
+    mat spinUpSlater;
+    mat spinDownSlater;
+    if (m_numberOfParticles == 1) {
+        spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+        spinDownSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+        spinUpSlater(0,0) = m_SPWFMat(0,0);
+    }
+    else {
+        spinUpSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
+        spinDownSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
 
-    for (int i=0; i < m_halfNumberOfParticles; i++) {
-        //std::vector<double> rSpinUp = particles[i]->getPosition();//m_system->getParticles()[i]->getPosition();
-        //double xSpinUp = rSpinUp[0];
-        //double ySpinUp = rSpinUp[1];
-        //std::vector<double> rSpinDown = particles[i+m_halfNumberOfParticles]->getPosition();//m_system->getParticles()[i+m_halfNumberOfParticles]->getPosition();
-        //double xSpinDown = rSpinDown[0];
-        //double ySpinDown = rSpinDown[1];
+        for (int i=0; i < m_halfNumberOfParticles; i++) {
+            //std::vector<double> rSpinUp = particles[i]->getPosition();//m_system->getParticles()[i]->getPosition();
+            //double xSpinUp = rSpinUp[0];
+            //double ySpinUp = rSpinUp[1];
+            //std::vector<double> rSpinDown = particles[i+m_halfNumberOfParticles]->getPosition();//m_system->getParticles()[i+m_halfNumberOfParticles]->getPosition();
+            //double xSpinDown = rSpinDown[0];
+            //double ySpinDown = rSpinDown[1];
 
-        for (int j=0; j < m_halfNumberOfParticles; j++) {
-            //int nx = m_quantumNumbers(j, 0);
-            //int ny = m_quantumNumbers(j, 1);
-            spinUpSlater(i,j) = m_SPWFMat(i,j);//evaluateSingleParticleWF(nx, ny, xSpinUp, ySpinUp);
-            spinDownSlater(i,j) = m_SPWFMat(i+m_halfNumberOfParticles,j);//evaluateSingleParticleWF(nx, ny, xSpinDown, ySpinDown);
+            for (int j=0; j < m_halfNumberOfParticles; j++) {
+                //int nx = m_quantumNumbers(j, 0);
+                //int ny = m_quantumNumbers(j, 1);
+                spinUpSlater(i,j) = m_SPWFMat(i,j);//evaluateSingleParticleWF(nx, ny, xSpinUp, ySpinUp);
+                spinDownSlater(i,j) = m_SPWFMat(i+m_halfNumberOfParticles,j);//evaluateSingleParticleWF(nx, ny, xSpinDown, ySpinDown);
+            }
         }
     }
 
+    double beta = m_parameters[1];
     double exponent = 0;
     if (m_Jastrow) {
         for (int i=0; i < m_numberOfParticles; i++) {
@@ -68,7 +84,13 @@ double ManyElectronsCoefficients::evaluate(std::vector<class Particle*> particle
         }
     }
 
-    double waveFunction = det(spinDownSlater)*det(spinUpSlater)*exp(exponent);
+    double waveFunction;
+    if (m_numberOfParticles == 1) {
+        waveFunction = det(spinUpSlater)*exp(exponent);
+    }
+    else {
+        waveFunction = det(spinDownSlater)*det(spinUpSlater)*exp(exponent);
+    }
 
     return waveFunction;
 }
@@ -195,28 +217,33 @@ double ManyElectronsCoefficients::computeDoubleDerivative(std::vector<class Part
     double jastrowLaplacian = 0;
     double crossTerm = 0;
 
-    for (int i=0; i < m_halfNumberOfParticles; i++) {
-        //std::vector<double> r_i = particles[i]->getPosition();
-        //double x = r_i[0];
-        //double y = r_i[1];
-
-        for (int j=0; j < m_halfNumberOfParticles; j++) {
-            //int nx = m_quantumNumbers(j, 0);
-            //int ny = m_quantumNumbers(j, 1);
-            slaterLaplacian += m_SPWFDDMat(i,j)//computeSPWFDoubleDerivative(nx, ny, x, y)
-                              *m_spinUpSlaterInverse(j,i);
-        }
+    if (m_numberOfParticles == 1) {
+        slaterLaplacian += m_SPWFDDMat(0,0)*m_spinUpSlaterInverse(0,0);
     }
-    for (int i=m_halfNumberOfParticles; i < m_numberOfParticles; i++) {
-        //std::vector<double> r_i = particles[i]->getPosition();
-        //double x = r_i[0];
-        //double y = r_i[1];
+    else {
+        for (int i=0; i < m_halfNumberOfParticles; i++) {
+            //std::vector<double> r_i = particles[i]->getPosition();
+            //double x = r_i[0];
+            //double y = r_i[1];
 
-        for (int j=0; j < m_halfNumberOfParticles; j++) {
-            //int nx = m_quantumNumbers(j, 0);
-            //int ny = m_quantumNumbers(j, 1);
-            slaterLaplacian += m_SPWFDDMat(i,j)//computeSPWFDoubleDerivative(nx, ny, x, y)
-                              *m_spinDownSlaterInverse(j,i-m_halfNumberOfParticles);
+            for (int j=0; j < m_halfNumberOfParticles; j++) {
+                //int nx = m_quantumNumbers(j, 0);
+                //int ny = m_quantumNumbers(j, 1);
+                slaterLaplacian += m_SPWFDDMat(i,j)//computeSPWFDoubleDerivative(nx, ny, x, y)
+                                  *m_spinUpSlaterInverse(j,i);
+            }
+        }
+        for (int i=m_halfNumberOfParticles; i < m_numberOfParticles; i++) {
+            //std::vector<double> r_i = particles[i]->getPosition();
+            //double x = r_i[0];
+            //double y = r_i[1];
+
+            for (int j=0; j < m_halfNumberOfParticles; j++) {
+                //int nx = m_quantumNumbers(j, 0);
+                //int ny = m_quantumNumbers(j, 1);
+                slaterLaplacian += m_SPWFDDMat(i,j)//computeSPWFDoubleDerivative(nx, ny, x, y)
+                                  *m_spinDownSlaterInverse(j,i-m_halfNumberOfParticles);
+            }
         }
     }
 
@@ -472,6 +499,98 @@ double ManyElectronsCoefficients::computeMetropolisRatio(std::vector<Particle *>
 
     return m_metropolisRatio;
 
+}
+
+void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
+
+    m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
+
+    vec cVec = m_cCoefficients.slice(0).col(0);
+    int nMaxCoeff = cVec.size();
+    int nMax;
+    int numberOfEigstates;
+
+    if (nMaxCoeff > m_halfNumberOfParticles) {
+        nMax = nMaxCoeff;
+
+        if (m_numberOfDimensions == 2) {
+            //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
+            numberOfEigstates = int(0.5*(nMax)*(nMax+1));
+        }
+
+        else if (m_numberOfDimensions == 3) {
+            //numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
+            numberOfEigstates = int((nMax)*(nMax+1)*(nMax+2)/6.);
+        }
+        else { numberOfEigstates = nMax; }
+    }
+    else {
+        nMax = m_halfNumberOfParticles;
+        numberOfEigstates = m_halfNumberOfParticles;
+    }
+
+    m_numberOfEigstates = numberOfEigstates;
+
+    if (m_cCoefficients.slice(0).is_square()) {
+        mat cCoeffProd = m_cCoefficients.slice(0);
+        for (int d = 1; d < m_numberOfDimensions; d++) {
+            cCoeffProd %= m_cCoefficients.slice(d);
+        }
+        m_cDeterminant = det(cCoeffProd);
+    }
+    else { m_cDeterminant = 1.; }
+    cout << m_cDeterminant << endl;
+
+    // Below m_numberOfParticle instead of m_halfNumberOfParticles. Can't have half of one particle.
+    m_quantumNumbers = zeros<mat>(m_numberOfParticles, m_numberOfDimensions);
+
+    m_spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+    m_spinDownSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+
+    m_SPWFMat = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+    m_SPWFDMat = field<vec>(m_numberOfParticles, m_numberOfParticles);
+    m_SPWFDDMat = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+
+    double alpha = m_parameters[0];
+    m_system->getHamiltonian()->setAlpha(alpha);
+
+    m_SPWFDMat(0,0) = zeros<vec>(m_numberOfDimensions);
+
+    std::vector<double> r = m_system->getInitialState()->getParticles()[0]->getPosition();
+    double r2 = 0;
+
+    vec n(m_numberOfDimensions);
+
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        n[d] = m_quantumNumbers(0, d);
+        r2 += r[d]*r[d];
+    }
+
+    double expFactor = exp(-alpha*m_omega*(r2)*0.5);
+
+    m_system->getHamiltonian()->setExpFactor(expFactor);
+
+    vec nTemp(m_numberOfDimensions);
+    //m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
+    for (int m = 0; m < m_numberOfEigstates; m++) {
+        nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
+        double C = 1;
+        for (int d = 0; d < m_numberOfDimensions; ++d) {
+            C *= m_cCoefficients(nTemp(d), 0, d);
+            //nTemp[d] = m_quantumNumbers.col(m);
+        }
+
+        m_spinUpSlater(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r);
+        vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r);
+        temp *= C;
+        m_SPWFDMat(0,0) += temp;
+        m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r);
+    }
+
+    m_spinDownSlater(0,0) = m_spinUpSlater(0,0);
+
+    m_spinUpSlaterInverse = m_spinUpSlater.i();
+    m_spinDownSlaterInverse = m_spinDownSlater.i();
 }
 
 void ManyElectronsCoefficients::setUpSlaterDet() {
@@ -846,44 +965,73 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
     double expFactor = exp(-alpha*m_omega*(r2)*0.5);
     m_system->getHamiltonian()->setExpFactor(expFactor);
 
-    for (int j=0; j<m_halfNumberOfParticles; j++) {
-//        int nx = m_quantumNumbers(j, 0);
-//        int ny = m_quantumNumbers(j, 1);
+    if (m_numberOfParticles == 1) {
         vec n(m_numberOfDimensions);
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            n[d] = m_quantumNumbers(j, d);
+            n[d] = m_quantumNumbers(0, d);
         }
 
-        m_SPWFMat(i,j) = 0;
+        m_SPWFMat(0,0) = 0;
 
-        m_SPWFDMat(i,j) = zeros(m_SPWFDMat(i,j).size());
+        m_SPWFDMat(0,0) = zeros(m_SPWFDMat(0,0).size());
 
-        m_SPWFDDMat(i,j) = 0;
+        m_SPWFDDMat(0,0) = 0;
 
         vec nTemp(m_numberOfDimensions);
         for (int m = 0; m < m_numberOfEigstates; m++) {
-            nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+            nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
             double C = 1;
             for (int d = 0; d < m_numberOfDimensions; ++d) {
                 C *= m_cCoefficients(nTemp(d), 0, d);
                 //nTemp[d] = m_quantumNumbers.col(m);
             }
 
-            m_SPWFMat(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i);
+            m_SPWFMat(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i);
             vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i);
             temp *= C;
-            m_SPWFDMat(i,j) += temp;
-            m_SPWFDDMat(i,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i);
+            m_SPWFDMat(0,0) += temp;
+            m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i);
         }
-
-//        m_SPWFMat(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, r_i);
-
-//        m_SPWFDMat(i,j) = computeSPWFDerivative(n, r_i);
-//        m_SPWFDMat(i,j) *= m_cDeterminant;
-
-//        m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, r_i);
     }
+    else {
+        for (int j=0; j<m_halfNumberOfParticles; j++) {
+//          int nx = m_quantumNumbers(j, 0);
+//          int ny = m_quantumNumbers(j, 1);
+            vec n(m_numberOfDimensions);
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                n[d] = m_quantumNumbers(j, d);
+            }
 
+            m_SPWFMat(i,j) = 0;
+
+            m_SPWFDMat(i,j) = zeros(m_SPWFDMat(i,j).size());
+
+            m_SPWFDDMat(i,j) = 0;
+
+            vec nTemp(m_numberOfDimensions);
+            for (int m = 0; m < m_numberOfEigstates; m++) {
+                nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+                double C = 1;
+                for (int d = 0; d < m_numberOfDimensions; ++d) {
+                    C *= m_cCoefficients(nTemp(d), 0, d);
+                    //nTemp[d] = m_quantumNumbers.col(m);
+                }
+
+                m_SPWFMat(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i);
+                vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i);
+                temp *= C;
+                m_SPWFDMat(i,j) += temp;
+                m_SPWFDDMat(i,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i);
+            }
+
+//          m_SPWFMat(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, r_i);
+
+//          m_SPWFDMat(i,j) = computeSPWFDerivative(n, r_i);
+//          m_SPWFDMat(i,j) *= m_cDeterminant;
+
+//          m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, r_i);
+        }
+    }
 
 
 }

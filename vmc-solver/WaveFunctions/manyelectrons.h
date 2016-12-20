@@ -16,6 +16,7 @@ public:
     std::vector<double> computeSlaterGradient(/*std::vector<Particle *> particles, */int i);
     std::vector<double> computeJastrowGradient(std::vector<Particle *> particles, int i);
     void setUpSlaterDet();
+    void setUpSlaterDetOneParticle();
     void setUpDistances();
     void setUpJastrowMat();
     void updateSlaterDet(int randomParticle);

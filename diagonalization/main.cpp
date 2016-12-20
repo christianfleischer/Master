@@ -76,9 +76,9 @@ int main() {
     //Init system
     System* system = new System(omega_r, numberOfDimensions, h, N);
 
-    //system->setWaveFunction(new DoubleWell(system, omega_r));
+    system->setWaveFunction(new DoubleWell(system, omega_r));
     //system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
-    system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
+    //system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
 
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat,
