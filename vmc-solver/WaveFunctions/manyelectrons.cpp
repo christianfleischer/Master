@@ -575,6 +575,7 @@ void ManyElectrons::setUpSlaterDet() {
             }
         }
     }
+    //TODO: FEIL, regner ut for mange.
     else {
         int i = 0;
         int nMax = m_halfNumberOfParticles;
@@ -582,6 +583,7 @@ void ManyElectrons::setUpSlaterDet() {
             for (int ny = 0; ny < nMax; ny++) {
                 for (int nz = 0; nz < nMax; nz++) {
                     if (nx+ny+nz < nMax) {
+                        cout << "EEE" << endl;
                         m_quantumNumbers(i,0) = nx;
                         m_quantumNumbers(i,1) = ny;
                         m_quantumNumbers(i,2) = nz;
@@ -591,7 +593,7 @@ void ManyElectrons::setUpSlaterDet() {
             }
         }
     }
-
+    cout << "EEE" << endl;
 
     m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     int half = m_halfNumberOfParticles;

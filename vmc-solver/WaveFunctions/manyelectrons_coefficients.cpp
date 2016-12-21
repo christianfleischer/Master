@@ -734,10 +734,10 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             vec nTemp(m_numberOfDimensions);
             //m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
             for (int m = 0; m < m_numberOfEigstates; m++) {
-                nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+                nTemp = conv_to<vec>::from(m_quantumNumbers.row(j));
                 double C = 1;
                 for (int d = 0; d < m_numberOfDimensions; ++d) {
-                    C *= m_cCoefficients(nTemp(d), 0, d);
+                    C *= m_cCoefficients(nTemp(d), j, d);
                     //nTemp[d] = m_quantumNumbers.col(m);
                 }
 
@@ -761,10 +761,10 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             //m_spinDownSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinDown);
 
             for (int m = 0; m < m_numberOfEigstates; m++) {
-                nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+                nTemp = conv_to<vec>::from(m_quantumNumbers.row(j));
                 double C = 1;
                 for (int d = 0; d < m_numberOfDimensions; ++d) {
-                    C *= m_cCoefficients(nTemp(d), 0, d);
+                    C *= m_cCoefficients(nTemp(d), j, d);
                     //nTemp[d] = m_quantumNumbers.col(m);
                 }
                 m_spinDownSlater(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, rSpinDown);
@@ -783,6 +783,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
         }
     }
+
 
     m_spinUpSlaterInverse = m_spinUpSlater.i();
     m_spinDownSlaterInverse = m_spinDownSlater.i();
@@ -1010,10 +1011,10 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 
             vec nTemp(m_numberOfDimensions);
             for (int m = 0; m < m_numberOfEigstates; m++) {
-                nTemp = conv_to<vec>::from(m_quantumNumbers.row(m));
+                nTemp = conv_to<vec>::from(m_quantumNumbers.row(j));
                 double C = 1;
                 for (int d = 0; d < m_numberOfDimensions; ++d) {
-                    C *= m_cCoefficients(nTemp(d), 0, d);
+                    C *= m_cCoefficients(nTemp(d), j, d);
                     //nTemp[d] = m_quantumNumbers.col(m);
                 }
 
@@ -1032,7 +1033,6 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 //          m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, r_i);
         }
     }
-
 
 }
 

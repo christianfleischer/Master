@@ -18,8 +18,8 @@ int main() {
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
-    int nMax 					= 3;
-    int nPrimeMax               = 2;
+    int nMax 					= 6;
+    int nPrimeMax               = 6;
     int numberOfDimensions      = 3;
     double distanceToWall       = 3.;
 
