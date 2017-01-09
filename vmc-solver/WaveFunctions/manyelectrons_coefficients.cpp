@@ -505,99 +505,6 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
 
     m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
 
-    vec cVec = m_cCoefficients.slice(0).col(0);
-    int nMaxCoeff = cVec.size();
-    int nMax;
-    int numberOfEigstates;
-
-    if (nMaxCoeff > m_halfNumberOfParticles) {
-        nMax = nMaxCoeff;
-
-        if (m_numberOfDimensions == 2) {
-            //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
-            numberOfEigstates = int(0.5*(nMax)*(nMax+1));
-        }
-
-        else if (m_numberOfDimensions == 3) {
-            //numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
-            numberOfEigstates = int((nMax)*(nMax+1)*(nMax+2)/6.);
-        }
-        else { numberOfEigstates = nMax; }
-    }
-    else {
-        nMax = m_halfNumberOfParticles;
-        numberOfEigstates = m_halfNumberOfParticles;
-    }
-
-    m_numberOfEigstates = numberOfEigstates;
-
-    if (m_cCoefficients.slice(0).is_square()) {
-        mat cCoeffProd = m_cCoefficients.slice(0);
-        for (int d = 1; d < m_numberOfDimensions; d++) {
-            cCoeffProd %= m_cCoefficients.slice(d);
-        }
-        m_cDeterminant = det(cCoeffProd);
-    }
-    else { m_cDeterminant = 1.; }
-    cout << m_cDeterminant << endl;
-
-    // Below m_numberOfParticle instead of m_halfNumberOfParticles. Can't have half of one particle.
-    m_quantumNumbers = zeros<mat>(m_numberOfParticles, m_numberOfDimensions);
-
-    m_spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
-    m_spinDownSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
-
-    m_SPWFMat = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
-    m_SPWFDMat = field<vec>(m_numberOfParticles, m_numberOfParticles);
-    m_SPWFDDMat = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
-
-    double alpha = m_parameters[0];
-    m_system->getHamiltonian()->setAlpha(alpha);
-
-    m_SPWFDMat(0,0) = zeros<vec>(m_numberOfDimensions);
-
-    std::vector<double> r = m_system->getInitialState()->getParticles()[0]->getPosition();
-    double r2 = 0;
-
-    vec n(m_numberOfDimensions);
-
-    for (int d = 0; d < m_numberOfDimensions; d++) {
-        n[d] = m_quantumNumbers(0, d);
-        r2 += r[d]*r[d];
-    }
-
-    double expFactor = exp(-alpha*m_omega*(r2)*0.5);
-
-    m_system->getHamiltonian()->setExpFactor(expFactor);
-
-    vec nTemp(m_numberOfDimensions);
-    //m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
-    for (int m = 0; m < m_numberOfEigstates; m++) {
-        nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
-        double C = 1;
-        for (int d = 0; d < m_numberOfDimensions; ++d) {
-            C *= m_cCoefficients(nTemp(d), 0, d);
-            //nTemp[d] = m_quantumNumbers.col(m);
-        }
-
-        m_spinUpSlater(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r);
-        vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r);
-        temp *= C;
-        m_SPWFDMat(0,0) += temp;
-        m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r);
-    }
-
-    m_spinDownSlater(0,0) = m_spinUpSlater(0,0);
-
-    m_spinUpSlaterInverse = m_spinUpSlater.i();
-    m_spinDownSlaterInverse = m_spinDownSlater.i();
-}
-
-void ManyElectronsCoefficients::setUpSlaterDet() {
-    // Function for setting up the Slater determinant at the begining of the simulation.
-
-    m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
-
     vec cColVec = m_cCoefficients.slice(0).col(0);
     int nMaxCoeff = cColVec.size();
     int numberOfEigstates;
@@ -605,13 +512,27 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
     rowvec cRowVec = m_cCoefficients.slice(0).row(0);
     m_nPrimeMax = cRowVec.size();
 
-    int nMax;
+    int nMax = 0;
 
-    for (int n=0; n<m_halfNumberOfParticles; n++) {
-        int numberOfEigstates = (n*n*n + 3*n*n +2*n)/6;
-        if (numberOfEigstates == m_halfNumberOfParticles) {
-            nMax = n;
-            break;
+    if (m_numberOfDimensions == 1) {
+        nMax = m_halfNumberOfParticles;
+    }
+    else if (m_numberOfDimensions == 2) {
+        for (int n=1; n<=m_halfNumberOfParticles; n++) {
+            numberOfEigstates = 0.5*n*n + 0.5*n;
+            if (numberOfEigstates == m_halfNumberOfParticles) {
+                nMax = n;
+                break;
+            }
+        }
+    }
+    else if (m_numberOfDimensions == 3) {
+        for (int n=1; n<=m_halfNumberOfParticles; n++) {
+            numberOfEigstates = (n*n*n + 3*n*n +2*n)/6.;
+            if (numberOfEigstates == m_halfNumberOfParticles) {
+                nMax = n;
+                break;
+            }
         }
     }
 
@@ -666,7 +587,196 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             for (int nx = 0; nx <= i; nx++) {
                 for (int ny = 0; ny <= i; ny++) {
                     for (int nz = 0; nz <= i; nz++) {
-                        if (nx+ny+nz == i) {
+                        if ( (nx+ny+nz) == i ) {
+                            m_quantumNumbers(j,0) = nx;
+                            m_quantumNumbers(j,1) = ny;
+                            m_quantumNumbers(j,2) = nz;
+                            j++;
+                        }
+                    }
+                }
+            }
+        }
+
+//        int i = 0;
+
+//        for (int nx = 0; nx < 2; nx++) {
+//            for (int ny = 0; ny < 2; ny++) {
+//                for (int nz = 0; nz < 2; nz++) {
+//                    if (nx+ny+nz < 2) {
+//                        m_quantumNumbers(i,0) = nx;
+//                        m_quantumNumbers(i,1) = ny;
+//                        m_quantumNumbers(i,2) = nz;
+//                        i++;
+//                    }
+//                }
+//            }
+//        }
+
+//        for (int nx = 0; nx < nMax; nx++) {
+//            for (int ny = 0; ny < nMax; ny++) {
+//                for (int nz = 0; nz < nMax; nz++) {
+//                    if (nx+ny+nz < nMax) {
+//                        m_quantumNumbersC(i,0) = nx;
+//                        m_quantumNumbersC(i,1) = ny;
+//                        m_quantumNumbersC(i,2) = nz;
+//                        i++;
+//                    }
+//                }
+//            }
+//        }
+    }
+
+    if (m_cCoefficients.slice(0).is_square()) {
+        mat cCoeffProd = m_cCoefficients.slice(0);
+        for (int d = 1; d < m_numberOfDimensions; d++) {
+            cCoeffProd %= m_cCoefficients.slice(d);
+        }
+        m_cDeterminant = det(cCoeffProd);
+    }
+    else { m_cDeterminant = 1.; }
+    cout << m_cDeterminant << endl;
+
+    // Below m_numberOfParticle instead of m_halfNumberOfParticles. Can't have half of one particle.
+    m_quantumNumbers = zeros<mat>(m_numberOfParticles, m_numberOfDimensions);
+
+    m_spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+    m_spinDownSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+
+    m_SPWFMat = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+    m_SPWFDMat = field<vec>(m_numberOfParticles, m_numberOfParticles);
+    m_SPWFDDMat = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+
+    double alpha = m_parameters[0];
+    m_system->getHamiltonian()->setAlpha(alpha);
+
+    m_SPWFDMat(0,0) = zeros<vec>(m_numberOfDimensions);
+
+    std::vector<double> r = m_system->getInitialState()->getParticles()[0]->getPosition();
+    double r2 = 0;
+
+    vec n(m_numberOfDimensions);
+
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        n[d] = m_quantumNumbers(0, d);
+        r2 += r[d]*r[d];
+    }
+
+    double expFactor = exp(-alpha*m_omega*(r2)*0.5);
+
+    m_system->getHamiltonian()->setExpFactor(expFactor);
+
+    vec nTemp(m_numberOfDimensions);
+    //m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
+    for (int m = 0; m < m_nPrimeMax; m++) {
+        nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
+        double C = 1;
+        for (int d = 0; d < m_numberOfDimensions; ++d) {
+            C *= m_cCoefficients(nTemp(d), m, d);
+            //nTemp[d] = m_quantumNumbers.col(m);
+        }
+
+        m_spinUpSlater(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r);
+        vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r);
+        temp *= C;
+        m_SPWFDMat(0,0) += temp;
+        m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r);
+    }
+
+    m_spinDownSlater(0,0) = m_spinUpSlater(0,0);
+
+    m_spinUpSlaterInverse = m_spinUpSlater.i();
+    m_spinDownSlaterInverse = m_spinDownSlater.i();
+}
+
+void ManyElectronsCoefficients::setUpSlaterDet() {
+    // Function for setting up the Slater determinant at the begining of the simulation.
+
+    m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
+
+    vec cColVec = m_cCoefficients.slice(0).col(0);
+    int nMaxCoeff = cColVec.size();
+    int numberOfEigstates = 0;
+
+    rowvec cRowVec = m_cCoefficients.slice(0).row(0);
+    m_nPrimeMax = cRowVec.size();
+
+    int nMax = 0;
+
+    if (m_numberOfDimensions == 1) {
+        nMax = m_halfNumberOfParticles;
+    }
+    else if (m_numberOfDimensions == 2) {
+        for (int n=1; n<=m_halfNumberOfParticles; n++) {
+            numberOfEigstates = 0.5*n*n + 0.5*n;
+            if (numberOfEigstates == m_halfNumberOfParticles) {
+                nMax = n;
+                break;
+            }
+        }
+    }
+    else if (m_numberOfDimensions == 3) {
+        for (int n=1; n<=m_halfNumberOfParticles; n++) {
+            numberOfEigstates = (n*n*n + 3*n*n +2*n)/6.;
+            if (numberOfEigstates == m_halfNumberOfParticles) {
+                nMax = n;
+                break;
+            }
+        }
+    }
+
+    if (nMaxCoeff > nMax) {
+        nMax = nMaxCoeff;
+    }
+
+    if (m_numberOfDimensions == 2) {
+        //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
+        numberOfEigstates = int(0.5*(nMax)*(nMax+1));
+    }
+
+    else if (m_numberOfDimensions == 3) {
+        //numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
+        numberOfEigstates = int((nMax)*(nMax+1)*(nMax+2)/6.);
+    }
+
+    else { numberOfEigstates = nMax; }
+
+    m_numberOfEigstates = numberOfEigstates;
+
+
+    m_quantumNumbers = zeros<mat>(numberOfEigstates, m_numberOfDimensions);
+
+    if (m_numberOfDimensions == 1) {
+        for (int p = 0; p < numberOfEigstates; p++) {
+            m_quantumNumbers(p, 0) = p;
+        }
+    }
+
+    else if (m_numberOfDimensions == 2) {
+        int n = 0;
+        int nx = 0;
+        int ny = 0;
+
+        for (int p = 0; p < numberOfEigstates; p++) {
+            m_quantumNumbers(p, 0) = nx;    m_quantumNumbers(p, 1) = ny;
+            if (ny == n) {
+                n++;
+                nx = n;
+                ny = 0;
+            }
+            else {
+                nx--;
+                ny++;
+            }
+        }
+    }
+    else {
+        int j = 0;
+        for (int i=0; i<nMax; i++) {
+            for (int nx = 0; nx <= i; nx++) {
+                for (int ny = 0; ny <= i; ny++) {
+                    for (int nz = 0; nz <= i; nz++) {
+                        if ( (nx+ny+nz) == i ) {
                             m_quantumNumbers(j,0) = nx;
                             m_quantumNumbers(j,1) = ny;
                             m_quantumNumbers(j,2) = nz;
