@@ -29,7 +29,8 @@ SOURCES += main.cpp \
     BasisFunctions/basisfunctions.cpp \
     WaveFunctions/manyelectrons_coefficients.cpp \
     Hamiltonians/squarewell.cpp \
-    Hamiltonians/finiteharmonicoscillator.cpp
+    Hamiltonians/finiteharmonicoscillator.cpp \
+    Hamiltonians/doubleharmonicoscillator.cpp
 
 LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
@@ -54,7 +55,8 @@ HEADERS += \
     BasisFunctions/basisfunctions.h \
     WaveFunctions/manyelectrons_coefficients.h \
     Hamiltonians/squarewell.h \
-    Hamiltonians/finiteharmonicoscillator.h
+    Hamiltonians/finiteharmonicoscillator.h \
+    Hamiltonians/doubleharmonicoscillator.h
 
 # MPI Settings
 QMAKE_CXX = mpicxx

@@ -1,11 +1,11 @@
-#ifndef FINITEHARMONICOSCILLATOR_H
-#define FINITEHARMONICOSCILLATOR_H
+#ifndef DOUBLEHARMONICOSCILLATOR_H
+#define DOUBLEHARMONICOSCILLATOR_H
 #include "hamiltonian.h"
 #include <vector>
 
-class FiniteHarmonicOscillator : public Hamiltonian {
+class DoubleHarmonicOscillator : public Hamiltonian {
 public:
-    FiniteHarmonicOscillator(System* system, double distToWall, double omega, bool analyticalKinetic, bool repulsion);
+    DoubleHarmonicOscillator(System* system, vec L, double omega, bool analyticalKinetic, bool repulsion);
     std::vector<double> computeLocalEnergy(std::vector<Particle*> particles);
     double evaluateSingleParticleWF(vec n, std::vector<double> r);
     std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r);
@@ -19,8 +19,8 @@ public:
 private:
     int m_numberOfDimensions = 0;
     double m_omega = 0;
-    double m_distToWall = 0;
+    vec m_L;
     bool m_repulsion = false;
 };
 
-#endif // FINITEHARMONICOSCILLATOR_H
+#endif // DOUBLEHARMONICOSCILLATOR_H
