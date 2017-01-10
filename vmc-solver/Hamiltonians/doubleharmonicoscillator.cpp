@@ -71,7 +71,7 @@ std::vector<double> DoubleHarmonicOscillator::computeLocalEnergy(std::vector<Par
     return energies;
 }
 
-double DoubleHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<double> r) {
+double DoubleHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<double> r, int j) {
     // Calculates the single particle wave function.
 
     //double alpha = m_parameters[0];
@@ -100,7 +100,9 @@ double DoubleHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<dou
         waveFunction_m *= computeHermitePolynomial(n[d], r_m[d]);
     }
 
-    double waveFunction = waveFunction_p + waveFunction_m;
+    int sign = -2*(j%2)+1;
+
+    double waveFunction = waveFunction_p + sign*waveFunction_m;
 
 //    double waveFunction = computeHermitePolynomial(nx, x)
 //                         *computeHermitePolynomial(ny, y)
@@ -109,7 +111,7 @@ double DoubleHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<dou
     return waveFunction;
 }
 
-std::vector<double> DoubleHarmonicOscillator::computeSPWFDerivative(vec n, std::vector<double> r) {
+std::vector<double> DoubleHarmonicOscillator::computeSPWFDerivative(vec n, std::vector<double> r, int j) {
     // Calculates the single particle wave function differentiated w.r.t. position.
     std::vector<double> derivative(m_numberOfDimensions);
     //double r2 = x*x + y*y;
@@ -149,8 +151,10 @@ std::vector<double> DoubleHarmonicOscillator::computeSPWFDerivative(vec n, std::
         }
     }
 
+    int sign = -2*(j%2)+1;
+
     for (int d = 0; d < m_numberOfDimensions; d++) {
-        derivative[d] = derivative_p[d] + derivative_m[d];
+        derivative[d] = derivative_p[d] + sign*derivative_m[d];
     }
 
 //    derivative[0] = (computeHermitePolynomialDerivative(nx, x) - alpha*m_omega*x*computeHermitePolynomial(nx, x))
@@ -162,7 +166,7 @@ std::vector<double> DoubleHarmonicOscillator::computeSPWFDerivative(vec n, std::
     return derivative;
 }
 
-double DoubleHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
+double DoubleHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<double> r, int j) {
 
     // Calculates the single particle wave function twice differentiated w.r.t. position.
     double doubleDerivative = 0;
@@ -219,7 +223,9 @@ double DoubleHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<
 
     doubleDerivative_m *= expFactor_m;
 
-    doubleDerivative = doubleDerivative_p + doubleDerivative_m;
+    int sign = -2*(j%2)+1;
+
+    doubleDerivative = doubleDerivative_p + sign*doubleDerivative_m;
 
 //    doubleDerivative += computeHermitePolynomial(ny, y)*m_expFactor//exp(-alpha*m_omega*r2*0.5)
 //                       *(computeHermitePolynomialDoubleDerivative(nx, x)
@@ -237,7 +243,7 @@ double DoubleHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<
 
 }
 
-double DoubleHarmonicOscillator::computeSPWFAlphaDerivative(vec n, std::vector<double> r) {
+double DoubleHarmonicOscillator::computeSPWFAlphaDerivative(vec n, std::vector<double> r, int j) {
     // Calculates the single particle wave function differentiated w.r.t. alpha.
     double derivative = 0;
     //double expFactor = m_system->getWaveFunction()->getExpFactor();

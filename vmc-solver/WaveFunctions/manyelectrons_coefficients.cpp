@@ -376,9 +376,9 @@ std::vector<double> ManyElectronsCoefficients::computeDerivativeWrtParameters(st
                 n[d] = m_quantumNumbers(j, d);
             }
 
-            slaterUpAlphaDerivative += m_system->getHamiltonian()->computeSPWFAlphaDerivative(n, rSpinUp)
+            slaterUpAlphaDerivative += m_system->getHamiltonian()->computeSPWFAlphaDerivative(n, rSpinUp, j)
                                        *m_spinUpSlaterInverse(j,i);
-            slaterDownAlphaDerivative += m_system->getHamiltonian()->computeSPWFAlphaDerivative(n, rSpinDown)
+            slaterDownAlphaDerivative += m_system->getHamiltonian()->computeSPWFAlphaDerivative(n, rSpinDown, j)
                                          *m_spinDownSlaterInverse(j,i);
         }
     }
@@ -676,11 +676,11 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
             //nTemp[d] = m_quantumNumbers.col(m);
         }
 
-        m_spinUpSlater(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r);
-        vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r);
+        m_spinUpSlater(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r, 0);
+        vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r, 0);
         temp *= C;
         m_SPWFDMat(0,0) += temp;
-        m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r);
+        m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r, 0);
     }
 
     m_spinDownSlater(0,0) = m_spinUpSlater(0,0);
@@ -890,11 +890,11 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                     //nTemp[d] = m_quantumNumbers.col(m);
                 }
 
-                m_spinUpSlater(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, rSpinUp);
-                vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, rSpinUp);
+                m_spinUpSlater(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, rSpinUp, j);
+                vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, rSpinUp, j);
                 temp *= C;
                 m_SPWFDMat(i,j) += temp;
-                m_SPWFDDMat(i,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, rSpinUp);
+                m_SPWFDDMat(i,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, rSpinUp, j);
             }
 
 
@@ -916,11 +916,11 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                     C *= m_cCoefficients(nTemp(d), m, d);
                     //nTemp[d] = m_quantumNumbers.col(m);
                 }
-                m_spinDownSlater(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, rSpinDown);
-                vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, rSpinDown);
+                m_spinDownSlater(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, rSpinDown, j);
+                vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, rSpinDown, j);
                 temp *= C;
                 m_SPWFDMat(i+m_halfNumberOfParticles,j) += temp;
-                m_SPWFDDMat(i+m_halfNumberOfParticles,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, rSpinDown);
+                m_SPWFDDMat(i+m_halfNumberOfParticles,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, rSpinDown, j);
             }
 
             m_SPWFMat(i+m_halfNumberOfParticles, j) = m_spinDownSlater(i,j);
@@ -1136,11 +1136,11 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
                 //nTemp[d] = m_quantumNumbers.col(m);
             }
 
-            m_SPWFMat(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i);
-            vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i);
+            m_SPWFMat(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i, 0);
+            vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i, 0);
             temp *= C;
             m_SPWFDMat(0,0) += temp;
-            m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i);
+            m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i, 0);
         }
     }
     else {
@@ -1167,11 +1167,11 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
                     //nTemp[d] = m_quantumNumbers.col(m);
                 }
 
-                m_SPWFMat(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i);
-                vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i);
+                m_SPWFMat(i,j) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i, j);
+                vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i, j);
                 temp *= C;
                 m_SPWFDMat(i,j) += temp;
-                m_SPWFDDMat(i,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i);
+                m_SPWFDDMat(i,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i, j);
             }
 
 //          m_SPWFMat(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, r_i);

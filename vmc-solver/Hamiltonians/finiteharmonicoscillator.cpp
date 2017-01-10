@@ -74,7 +74,7 @@ std::vector<double> FiniteHarmonicOscillator::computeLocalEnergy(std::vector<Par
     return energies;
 }
 
-double FiniteHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<double> r) {
+double FiniteHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<double> r, int j) {
     // Calculates the single particle wave function.
 
     //double alpha = m_parameters[0];
@@ -91,7 +91,7 @@ double FiniteHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<dou
     return waveFunction;
 }
 
-std::vector<double> FiniteHarmonicOscillator::computeSPWFDerivative(vec n, std::vector<double> r) {
+std::vector<double> FiniteHarmonicOscillator::computeSPWFDerivative(vec n, std::vector<double> r, int j) {
     // Calculates the single particle wave function differentiated w.r.t. position.
     std::vector<double> derivative(m_numberOfDimensions);
     //double r2 = x*x + y*y;
@@ -113,7 +113,7 @@ std::vector<double> FiniteHarmonicOscillator::computeSPWFDerivative(vec n, std::
     return derivative;
 }
 
-double FiniteHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
+double FiniteHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<double> r, int j) {
 
     // Calculates the single particle wave function twice differentiated w.r.t. position.
     double doubleDerivative = 0;
@@ -151,7 +151,7 @@ double FiniteHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<
 
 }
 
-double FiniteHarmonicOscillator::computeSPWFAlphaDerivative(vec n, std::vector<double> r) {
+double FiniteHarmonicOscillator::computeSPWFAlphaDerivative(vec n, std::vector<double> r, int j) {
     // Calculates the single particle wave function differentiated w.r.t. alpha.
     double derivative = 0;
     //double expFactor = m_system->getWaveFunction()->getExpFactor();
