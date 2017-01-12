@@ -9,7 +9,7 @@ public:
     std::vector<double> computeLocalEnergy(std::vector<Particle*> particles);
 
 private:
-    double m_omega = 0;
+
 };
 
 #endif // PROJECT2_HARMONICOSCILLATOR_H

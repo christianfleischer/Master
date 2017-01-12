@@ -15,7 +15,7 @@ public:
     virtual double computeSPWFDoubleDerivative(vec n, std::vector<double> r, int j) { return n[0]*r[0]*j; }
     virtual double computeSPWFAlphaDerivative(vec n, std::vector<double> r, int j) { return n[0]*r[0]*j; }
     double getAnalytic(){ return m_analyticalKinetic; }
-    void setExpFactor(double expFactor) { m_expFactor = expFactor; }
+    virtual void setExpFactor(int randomParticle, std::vector<class Particle*> particles);
     void setAlpha(double alpha) { m_alpha =  alpha; }
 
 protected:
@@ -23,6 +23,7 @@ protected:
     bool m_analyticalKinetic = false;
     double m_expFactor = 0;
     double m_alpha = 0;
+    double m_omega = 0;
 };
 
 #endif // PROJECT2_HAMILTONIAN_H

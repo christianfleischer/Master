@@ -528,9 +528,9 @@ void ManyElectrons::setUpSlaterDetOneParticle() {
         r2 += r[d]*r[d];
     }
 
-    double expFactor = exp(-alpha*m_omega*(r2)*0.5);
+    //double expFactor = exp(-alpha*m_omega*(r2)*0.5);
 
-    m_system->getHamiltonian()->setExpFactor(expFactor);
+    m_system->getHamiltonian()->setExpFactor(0, m_system->getInitialState()->getParticles());
 
     m_spinUpSlater(0,0) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, r, 0);
 
@@ -653,8 +653,8 @@ void ManyElectrons::setUpSlaterDet() {
                 r2SpinDown += rSpinDown[d]*rSpinDown[d];
             }
 
-            double expFactor = exp(-alpha*m_omega*(r2SpinUp)*0.5);
-            m_system->getHamiltonian()->setExpFactor(expFactor);
+            //double expFactor = exp(-alpha*m_omega*(r2SpinUp)*0.5);
+            m_system->getHamiltonian()->setExpFactor(i, m_system->getInitialState()->getParticles());
 
             m_spinUpSlater(i,j) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, rSpinUp, j);
 
@@ -664,8 +664,8 @@ void ManyElectrons::setUpSlaterDet() {
 
             m_SPWFDDMat(i,j) = m_system->getHamiltonian()->computeSPWFDoubleDerivative(n, rSpinUp, j);
 
-            expFactor = exp(-alpha*m_omega*(r2SpinDown)*0.5);
-            m_system->getHamiltonian()->setExpFactor(expFactor);
+            //expFactor = exp(-alpha*m_omega*(r2SpinDown)*0.5);
+            m_system->getHamiltonian()->setExpFactor(i+m_halfNumberOfParticles, m_system->getInitialState()->getParticles());
 
             m_spinDownSlater(i,j) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, rSpinDown, j);
 
@@ -856,8 +856,8 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
         r2 += r_i[d]*r_i[d];
     }
 
-    double expFactor = exp(-alpha*m_omega*r2*0.5);
-    m_system->getHamiltonian()->setExpFactor(expFactor);
+    //double expFactor = exp(-alpha*m_omega*r2*0.5);
+    m_system->getHamiltonian()->setExpFactor(i, m_system->getParticles());
 
     if (m_numberOfParticles == 1) {
         vec n(m_numberOfDimensions);

@@ -51,3 +51,17 @@ double Hamiltonian::computeKineticEnergy(std::vector<Particle*> particles){
     kineticEnergy = 0.5*kineticEnergy / (waveFunctionCurrent*h*h);
     return kineticEnergy;
 }
+
+void Hamiltonian::setExpFactor(int randomParticle, std::vector<Particle *> particles) {
+
+    std::vector<double> r_i = particles[randomParticle]->getPosition();
+
+    double r2 = 0;
+    int numberOfDimensions = m_system->getNumberOfDimensions();
+
+    for (int d = 0; d < numberOfDimensions; d++) {
+        r2 += r_i[d]*r_i[d];
+    }
+
+    m_expFactor = exp(-m_alpha*m_omega*r2*0.5);
+}

@@ -1,6 +1,7 @@
 #ifndef DOUBLEHARMONICOSCILLATOR_H
 #define DOUBLEHARMONICOSCILLATOR_H
 #include "hamiltonian.h"
+#include "../particle.h"
 #include <vector>
 
 class DoubleHarmonicOscillator : public Hamiltonian {
@@ -15,12 +16,18 @@ public:
     double computeHermitePolynomialDerivative(int nValue, double position);
     double computeHermitePolynomialDoubleDerivative(int nValue, double position);
     double computeHermitePolynomialAlphaDerivative(int nValue, double position);
+    void setExpFactor(int randomParticle, std::vector<Particle *> particles);
 
 private:
     int m_numberOfDimensions = 0;
-    double m_omega = 0;
     vec m_L;
     bool m_repulsion = false;
+
+    class Hamiltonian* m_well1;
+    class Hamiltonian* m_well2;
+
+    std::vector<Particle *> m_particlesWell1;
+    std::vector<Particle *> m_particlesWell2;
 };
 
 #endif // DOUBLEHARMONICOSCILLATOR_H
