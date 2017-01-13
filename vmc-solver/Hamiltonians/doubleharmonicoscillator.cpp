@@ -6,6 +6,7 @@
 #include "../system.h"
 #include "../particle.h"
 #include "../WaveFunctions/wavefunction.h"
+#include "../InitialStates/randomuniform.h"
 
 DoubleHarmonicOscillator::DoubleHarmonicOscillator(System *system, vec L, double omega, bool analyticalKinetic, bool repulsion) :
     Hamiltonian(system, analyticalKinetic) {
@@ -17,6 +18,23 @@ DoubleHarmonicOscillator::DoubleHarmonicOscillator(System *system, vec L, double
 
     m_well1 = new HarmonicOscillatorElectrons(m_system, m_omega, m_analyticalKinetic, m_repulsion);
     m_well2 = new HarmonicOscillatorElectrons(m_system, m_omega, m_analyticalKinetic, m_repulsion);
+
+    int numberOfParticles = m_system->getNumberOfParticles();
+    std::vector<Particle*> particles = m_system->getInitialState()->getParticles();
+//    std::vector<double> position;
+//    position.push_back(0); position.push_back(0);
+
+    for (int i = 0; i < numberOfParticles; i++) {
+
+        m_particlesWell1.push_back(new Particle());
+        m_particlesWell2.push_back(new Particle());
+
+        m_particlesWell1.at(i)->setNumberOfDimensions(m_numberOfDimensions);
+        m_particlesWell1.at(i)->setPosition(particles[i]->getPosition());
+
+        m_particlesWell2.at(i)->setNumberOfDimensions(m_numberOfDimensions);
+        m_particlesWell2.at(i)->setPosition(particles[i]->getPosition());
+    }
 }
 
 std::vector<double> DoubleHarmonicOscillator::computeLocalEnergy(std::vector<Particle*> particles) {
@@ -77,13 +95,23 @@ std::vector<double> DoubleHarmonicOscillator::computeLocalEnergy(std::vector<Par
 
 void DoubleHarmonicOscillator::setExpFactor(int randomParticle, std::vector<Particle *> particles) {
 
-    m_particlesWell1 = particles;
-    m_particlesWell2 = particles;
+//    m_particlesWell1[randomParticle] = particles[randomParticle];
+//    m_particlesWell2[randomParticle] = particles[randomParticle];
+
+    std::vector<double> rWell1_i = particles[randomParticle]->getPosition();
+    std::vector<double> rWell2_i = particles[randomParticle]->getPosition();
+
+    m_particlesWell1[randomParticle]->setPosition(rWell1_i);
+    m_particlesWell2[randomParticle]->setPosition(rWell2_i);
+
+    //cout << m_particlesWell2[randomParticle]->getPosition()[0] << "    " << particles[randomParticle]->getPosition()[0] << endl;
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
         m_particlesWell1[randomParticle]->adjustPosition(m_L(d), d);
         m_particlesWell2[randomParticle]->adjustPosition(-m_L(d), d);
     }
+
+    //cout << m_particlesWell2[randomParticle]->getPosition()[0] << "    " << particles[randomParticle]->getPosition()[0] << endl;
 
     m_well1->setExpFactor(randomParticle, m_particlesWell1);
     m_well2->setExpFactor(randomParticle, m_particlesWell2);

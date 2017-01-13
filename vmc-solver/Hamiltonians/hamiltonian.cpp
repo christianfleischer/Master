@@ -6,6 +6,7 @@
 Hamiltonian::Hamiltonian(System* system, bool analyticalKinetic) {
     m_system = system;
     m_analyticalKinetic = analyticalKinetic;
+    //m_alpha = 1.;
 }
 
 double Hamiltonian::computeKineticEnergy(std::vector<Particle*> particles){
