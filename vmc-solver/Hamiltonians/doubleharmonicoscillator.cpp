@@ -6,6 +6,8 @@
 #include "../particle.h"
 #include "../WaveFunctions/wavefunction.h"
 
+using namespace std;
+
 DoubleHarmonicOscillator::DoubleHarmonicOscillator(System *system, vec L, double omega, bool analyticalKinetic, bool repulsion) :
     Hamiltonian(system, analyticalKinetic) {
     assert(omega > 0);
@@ -31,7 +33,7 @@ std::vector<double> DoubleHarmonicOscillator::computeLocalEnergy(std::vector<Par
         std::vector<double> r_i = particles[i]->getPosition();
         for (int k=0; k < numberOfDimensions; k++){
             rSquared += r_i[k]*r_i[k];
-            term2 += 2*abs(r_i[k])*m_L(k);
+            term2 += 2.*abs(r_i[k])*m_L(k);
             term3 += m_L(k)*m_L(k);
         }
         potentialEnergy += rSquared - term2 + term3;
@@ -49,6 +51,7 @@ std::vector<double> DoubleHarmonicOscillator::computeLocalEnergy(std::vector<Par
     }
 
     potentialEnergy *= 0.5*m_omega*m_omega;
+
     if (m_repulsion) { potentialEnergy += repulsiveTerm; }
 
     double kineticEnergy = 0;
@@ -101,6 +104,7 @@ double DoubleHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<dou
     }
 
     int sign = -2*(j%2)+1;
+    //cout << sign << endl;
 
     double waveFunction = waveFunction_p + sign*waveFunction_m;
 

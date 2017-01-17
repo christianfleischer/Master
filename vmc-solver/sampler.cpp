@@ -90,6 +90,8 @@ void Sampler::sample(bool acceptedStep) {
         }
         avgDistance /= counter;
         m_cumulativeDistance += avgDistance;
+//        cout << particles[0]->getPosition()[0] << "   " << particles[0]->getPosition()[1] << endl;
+//        cout << particles[1]->getPosition()[0] << "   " << particles[1]->getPosition()[1] << endl;
     }
 
     // Sample things needed for the steepest descent method:

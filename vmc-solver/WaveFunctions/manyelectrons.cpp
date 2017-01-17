@@ -664,6 +664,7 @@ void ManyElectrons::setUpSlaterDet() {
 
             m_SPWFDDMat(i,j) = m_system->getHamiltonian()->computeSPWFDoubleDerivative(n, rSpinUp, j);
 
+
             expFactor = exp(-alpha*m_omega*(r2SpinDown)*0.5);
             m_system->getHamiltonian()->setExpFactor(expFactor);
 
@@ -677,6 +678,12 @@ void ManyElectrons::setUpSlaterDet() {
 
         }
     }
+    //cout << m_spinUpSlater << endl;
+
+//    int i = 0;
+//    do{
+//        int a = 1;
+//    }while(i < 1);
 
     m_spinUpSlaterInverse = m_spinUpSlater.i();
     m_spinDownSlaterInverse = m_spinDownSlater.i();
@@ -871,7 +878,7 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
 
         m_SPWFDDMat(0,0) = m_system->getHamiltonian()->computeSPWFDoubleDerivative(n, r_i, 0);
     }
-    else if (1 == 1) {
+    else if (m_system->getDoubleWellFlag()) {
         for (int j=0; j<m_halfNumberOfParticles; j++) {
     //        int nx = m_quantumNumbers(j, 0);
     //        int ny = m_quantumNumbers(j, 1);

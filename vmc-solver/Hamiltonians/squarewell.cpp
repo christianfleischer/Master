@@ -6,6 +6,8 @@
 #include "../WaveFunctions/wavefunction.h"
 #include "squarewell.h"
 
+using namespace std;
+
 SquareWell::SquareWell(System* system, double V0, double distToWall, double omega, bool analyticalKinetic, bool repulsion) : Hamiltonian(system, analyticalKinetic){
     assert(omega > 0);
     m_omega = omega;
@@ -37,7 +39,7 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
         std::vector<double> r_i = particles[i]->getPosition();
         bool isOutside = false;
         for (int d = 0; d < numberOfDimensions; d++) {
-            if (abs(r_i[d]) > m_distToWall) {
+            if (abs(r_i[d]) > m_distToWall) { //MAKE SURE ABS RETURNS FLOAT!!!
                 isOutside = true;
             }
         }

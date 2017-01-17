@@ -51,8 +51,11 @@ public:
     double getComputationTime()         { return m_computationTime; }
     bool getSaveEnergies()              { return m_saveEnergies; }
     FILE* getEnergiesFile()             { return m_outfileE; }
-    bool getSavePositions()              { return m_savePositions; }
-    FILE* getPositionsFile()             { return m_outfileP; }
+    bool getSavePositions()             { return m_savePositions; }
+    FILE* getPositionsFile()            { return m_outfileP; }
+
+    void setDoubleWellFlag(bool doubleWell)                { m_doubleWell = doubleWell; }
+    bool getDoubleWellFlag()                               { return m_doubleWell; }
 
 private:
     int                             m_numberOfParticles = 0;
@@ -75,6 +78,7 @@ private:
     FILE*                           m_outfileE;
     bool                            m_savePositions = false;
     FILE*                           m_outfileP;
+    bool                            m_doubleWell = false;
 };
 
 #endif // PROJECT2_SYSTEM_H
