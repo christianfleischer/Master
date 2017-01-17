@@ -41,8 +41,8 @@ int main(int nargs, char* args[]) {
     timeStart = MPI_Wtime();
 
     int numberOfDimensions  = 2;
-    int numberOfParticles   = 1;
-    int numberOfSteps       = (int) 1e6;              // Monte Carlo cycles
+    int numberOfParticles   = 4;
+    int numberOfSteps       = (int) 1e5;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
     double alpha            = 1;//0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
     double beta             = 0.40691;//2.82843;      // Variational parameter.         //3D: 0.376667

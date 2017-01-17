@@ -8,6 +8,8 @@
 #include "../WaveFunctions/wavefunction.h"
 #include "../InitialStates/randomuniform.h"
 
+using namespace std;
+
 DoubleHarmonicOscillator::DoubleHarmonicOscillator(System *system, vec L, double omega, bool analyticalKinetic, bool repulsion) :
     Hamiltonian(system, analyticalKinetic) {
     assert(omega > 0);
