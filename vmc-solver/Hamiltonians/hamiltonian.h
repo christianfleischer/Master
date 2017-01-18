@@ -17,6 +17,7 @@ public:
     double getAnalytic(){ return m_analyticalKinetic; }
     void setExpFactor(double expFactor) { m_expFactor = expFactor; }
     void setAlpha(double alpha) { m_alpha =  alpha; }
+    virtual vec getWellDistance()   { return zeros(1); }
 
 protected:
     class System* m_system = nullptr;

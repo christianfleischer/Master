@@ -816,6 +816,20 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 //        }
     }
 
+    if (m_system->getDoubleWellFlag() && m_numberOfParticles > 2) {
+        mat quantumNumbersDoubleWell = zeros<mat>(m_halfNumberOfParticles, m_numberOfDimensions);
+        for (int p = 0; p < m_halfNumberOfParticles; p+=2) {
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                quantumNumbersDoubleWell(p, d) = m_quantumNumbers(p/2, d);
+                if (p+1 < m_halfNumberOfParticles) {
+                    quantumNumbersDoubleWell(p+1, d) = m_quantumNumbers(p/2, d);
+                }
+            }
+        }
+
+        m_quantumNumbers = quantumNumbersDoubleWell;
+    }
+
     if (m_cCoefficients.slice(0).is_square()) {
         mat cCoeffProd = m_cCoefficients.slice(0);
         for (int d = 1; d < m_numberOfDimensions; d++) {

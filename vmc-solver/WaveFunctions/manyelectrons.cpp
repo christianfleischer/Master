@@ -602,6 +602,20 @@ void ManyElectrons::setUpSlaterDet() {
         }
     }
 
+    if (m_system->getDoubleWellFlag() && m_numberOfParticles > 2) {
+        mat quantumNumbersDoubleWell = zeros<mat>(m_halfNumberOfParticles, m_numberOfDimensions);
+        for (int p = 0; p < m_halfNumberOfParticles; p+=2) {
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                quantumNumbersDoubleWell(p, d) = m_quantumNumbers(p/2, d);
+                if (p+1 < m_halfNumberOfParticles) {
+                    quantumNumbersDoubleWell(p+1, d) = m_quantumNumbers(p/2, d);
+                }
+            }
+        }
+
+        m_quantumNumbers = quantumNumbersDoubleWell;
+    }
+
     m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     int half = m_halfNumberOfParticles;
     for (int i=0; i < m_numberOfParticles; i++) {
@@ -678,12 +692,6 @@ void ManyElectrons::setUpSlaterDet() {
 
         }
     }
-    //cout << m_spinUpSlater << endl;
-
-//    int i = 0;
-//    do{
-//        int a = 1;
-//    }while(i < 1);
 
     m_spinUpSlaterInverse = m_spinUpSlater.i();
     m_spinDownSlaterInverse = m_spinDownSlater.i();
@@ -878,22 +886,29 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
 
         m_SPWFDDMat(0,0) = m_system->getHamiltonian()->computeSPWFDoubleDerivative(n, r_i, 0);
     }
-    else if (m_system->getDoubleWellFlag()) {
-        for (int j=0; j<m_halfNumberOfParticles; j++) {
-    //        int nx = m_quantumNumbers(j, 0);
-    //        int ny = m_quantumNumbers(j, 1);
-            vec n(m_numberOfDimensions);
-            for (int d = 0; d < m_numberOfDimensions; d++) {
-                n[d] = m_quantumNumbers(j/2, d);
-            }
+//    else if (m_system->getDoubleWellFlag()) {
+//        for (int j=0; j<m_halfNumberOfParticles; j++) {
+//    //        int nx = m_quantumNumbers(j, 0);
+//    //        int ny = m_quantumNumbers(j, 1);
+//            vec L = m_system->getHamiltonian()->getWellDistance();
+//            vec n(m_numberOfDimensions);
 
-            m_SPWFMat(i,j) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, r_i, j);
+//            int denom = 1;
+//            for (int d = 0; d < m_numberOfDimensions; d++) {
+//                if (L(d) != 0) { denom = 1; }
+//            }
 
-            m_SPWFDMat(i,j) = m_system->getHamiltonian()->computeSPWFDerivative(n, r_i, j);
+//            for (int d = 0; d < m_numberOfDimensions; d++) {
+//                n[d] = m_quantumNumbers(j/denom, d);
+//            }
 
-            m_SPWFDDMat(i,j) = m_system->getHamiltonian()->computeSPWFDoubleDerivative(n, r_i, j);
-        }
-    }
+//            m_SPWFMat(i,j) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, r_i, j);
+
+//            m_SPWFDMat(i,j) = m_system->getHamiltonian()->computeSPWFDerivative(n, r_i, j);
+
+//            m_SPWFDDMat(i,j) = m_system->getHamiltonian()->computeSPWFDoubleDerivative(n, r_i, j);
+//        }
+//    }
     else {
         for (int j=0; j<m_halfNumberOfParticles; j++) {
     //        int nx = m_quantumNumbers(j, 0);

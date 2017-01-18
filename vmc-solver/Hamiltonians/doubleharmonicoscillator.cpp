@@ -36,6 +36,7 @@ std::vector<double> DoubleHarmonicOscillator::computeLocalEnergy(std::vector<Par
             term2 += 2.*abs(r_i[k])*m_L(k);
             term3 += m_L(k)*m_L(k);
         }
+
         potentialEnergy += rSquared - term2 + term3;
 
         for (int j=i+1; j < numberOfParticles; j++){
@@ -134,6 +135,7 @@ std::vector<double> DoubleHarmonicOscillator::computeSPWFDerivative(vec n, std::
     }
 
     double expFactor_p = exp(-m_alpha*m_omega*r_p2*0.5);
+
     std::vector<double> derivative_p(m_numberOfDimensions);
 
     for (int d = 0; d < m_numberOfDimensions; d++) {

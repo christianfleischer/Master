@@ -16,6 +16,8 @@ public:
     double computeHermitePolynomialDoubleDerivative(int nValue, double position);
     double computeHermitePolynomialAlphaDerivative(int nValue, double position);
 
+    vec getWellDistance()   { return m_L; }
+
 private:
     int m_numberOfDimensions = 0;
     double m_omega = 0;
