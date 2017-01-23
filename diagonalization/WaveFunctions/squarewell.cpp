@@ -3,6 +3,8 @@
 #include "../Math/factorial.h"
 #include <cmath>
 
+using namespace std;
+
 SquareWell::SquareWell(System *system, double omega, double V0, double distanceToWall)
     : WaveFunction(system, omega) {
 

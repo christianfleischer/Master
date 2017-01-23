@@ -20,7 +20,7 @@ int main() {
     double V0                   = 1.;
     int nMax 					= 4;
     int nPrimeMax               = 4;
-    int numberOfDimensions      = 3;
+    int numberOfDimensions      = 2;
     double distanceToWall       = 3.;
 
     vec L(3);
@@ -76,9 +76,9 @@ int main() {
     //Init system
     System* system = new System(omega_r, numberOfDimensions, h, N);
 
-    system->setWaveFunction(new DoubleWell(system, omega_r));
+    //system->setWaveFunction(new DoubleWell(system, omega_r));
     //system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
-    //system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
+    system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
 
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat,
@@ -100,9 +100,10 @@ int main() {
 
     cout << endl << "eigvals, Armadillo:" << endl;
     int displayVals = 15;
+    std::vector<string> dim = {"x", "y", "z"};
     for (int i = 0; i < displayVals; ++i) {
         for (int d = 0; d < numberOfDimensions; d++) {
-            cout << i+1 << ": E"<< d <<": " << eigvals.col(d)(i);
+            cout << i+1 << ": E"<< dim[d] <<": " << eigvals.col(d)(i);
         }
         cout << endl;
     }
