@@ -506,11 +506,13 @@ void ManyElectrons::setUpSlaterDetOneParticle() {
     // Below m_numberOfParticle instead of m_halfNumberOfParticles. Can't have half of one particle.
     m_quantumNumbers = zeros<mat>(m_numberOfParticles, m_numberOfDimensions);
 
-    //Square well start
-    for (int d=0; d < m_numberOfDimensions; d++) {
-        m_quantumNumbers(0,d) += 1;
+    //----Square well----
+    if (m_system->getSquareWellFlag()) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            m_quantumNumbers(0, d) += 1;
+        }
     }
-    //Square well end
+    //----Square well----
 
     m_spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     m_spinDownSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
@@ -622,13 +624,15 @@ void ManyElectrons::setUpSlaterDet() {
         m_quantumNumbers = quantumNumbersDoubleWell;
     }
 
-    //Square well start
-    for (int p = 0; p < m_halfNumberOfParticles; p++) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            m_quantumNumbers(p, d) += 1;
+    //----Square well----
+    if (m_system->getSquareWellFlag()) {
+        for (int p = 0; p < m_halfNumberOfParticles; p++) {
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                m_quantumNumbers(p, d) += 1;
+            }
         }
     }
-    //Square well end
+    //----Square well----
 
     m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     int half = m_halfNumberOfParticles;

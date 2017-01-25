@@ -627,6 +627,14 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
 //        }
     }
 
+    //----Square well----
+    if (m_system->getSquareWellFlag()) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            m_quantumNumbers(0, d) += 1;
+        }
+    }
+    //----Square well----
+
     if (m_cCoefficients.slice(0).is_square()) {
         mat cCoeffProd = m_cCoefficients.slice(0);
         for (int d = 1; d < m_numberOfDimensions; d++) {
@@ -638,8 +646,6 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
     cout << m_cDeterminant << endl;
 
     // Below m_numberOfParticle instead of m_halfNumberOfParticles. Can't have half of one particle.
-    m_quantumNumbers = zeros<mat>(m_numberOfParticles, m_numberOfDimensions);
-
     m_spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     m_spinDownSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
 
@@ -829,6 +835,16 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
         m_quantumNumbers = quantumNumbersDoubleWell;
     }
+
+    //----Square well----
+    if (m_system->getSquareWellFlag()) {
+        for (int p = 0; p < m_halfNumberOfParticles; p++) {
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                m_quantumNumbers(p, d) += 1;
+            }
+        }
+    }
+    //----Square well----
 
     if (m_cCoefficients.slice(0).is_square()) {
         mat cCoeffProd = m_cCoefficients.slice(0);

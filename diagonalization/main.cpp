@@ -18,8 +18,8 @@ int main() {
     double posMax               = 10;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
-    int nMax 					= 4;
-    int nPrimeMax               = 4;
+    int nMax 					= 20;
+    int nPrimeMax               = 20;
     int numberOfDimensions      = 2;
     double distanceToWall       = 3.;
 
@@ -76,9 +76,9 @@ int main() {
     //Init system
     System* system = new System(omega_r, numberOfDimensions, h, N);
 
-    //system->setWaveFunction(new DoubleWell(system, omega_r));
+    system->setWaveFunction(new DoubleWell(system, omega_r));
     //system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
-    system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
+    //system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
 
     system->diagonalizeMatrix(r, L, N, diagMat);
     system->findEigenstate(eigvals, eigvecs, diagMat,

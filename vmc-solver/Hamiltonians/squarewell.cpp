@@ -30,7 +30,6 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
      */
 
     int numberOfParticles = m_system->getNumberOfParticles();
-    int numberOfDimensions = m_system->getNumberOfDimensions();
 
     double potentialEnergy = 0;
     double repulsiveTerm = 0;
@@ -39,7 +38,7 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
         std::vector<double> r_i = particles[i]->getPosition();
         bool isOutside = false;
 
-        for (int d = 0; d < numberOfDimensions; d++) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
             if (abs(r_i[d]) > m_distToWall) { //MAKE SURE ABS RETURNS FLOAT!!!
                 isOutside = true;
             }
@@ -49,7 +48,7 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
         for (int j=i+1; j < numberOfParticles; j++){
             double r_ijSquared = 0;
             std::vector<double> r_j = particles[j]->getPosition();
-            for (int k=0; k < numberOfDimensions; k++){
+            for (int k=0; k < m_numberOfDimensions; k++){
                     r_ijSquared += (r_i[k] - r_j[k]) * (r_i[k] - r_j[k]);
             }
 
@@ -93,6 +92,7 @@ double SquareWell::evaluateSingleParticleWF(vec n, std::vector<double> r, int j)
 //    double waveFunction = computeHermitePolynomial(nx, x)
 //                         *computeHermitePolynomial(ny, y)
 //                         *m_expFactor;//exp(-m_omega*alpha*(x*x + y*y)*0.5);
+
 
     return waveFunction;
 }
@@ -286,7 +286,7 @@ double SquareWell::computeHermitePolynomialAlphaDerivative(int nValue, double po
     return HPDerivative;
 }
 
-//double SquareWell::evaluateSingleParticleWF(vec n, std::vector<double> r) {
+//double SquareWell::evaluateSingleParticleWF(vec n, std::vector<double> r, int j) {
 //    // Calculates the single particle wave function.
 
 //    //double alpha = m_parameters[0];
@@ -379,7 +379,7 @@ double SquareWell::computeHermitePolynomialAlphaDerivative(int nValue, double po
 //    return waveFunction;
 //}
 
-//std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double> r) {
+//std::vector<double> SquareWell::computeSPWFDerivative(vec n, std::vector<double> r, int j) {
 //    // Calculates the single particle wave function differentiated w.r.t. position.
 
 //    std::vector<double> derivative(m_numberOfDimensions);
@@ -502,7 +502,7 @@ double SquareWell::computeHermitePolynomialAlphaDerivative(int nValue, double po
 //    return derivative;
 //}
 
-//double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r) {
+//double SquareWell::computeSPWFDoubleDerivative(vec n, std::vector<double> r, int j) {
 
 //    // Calculates the single particle wave function twice differentiated w.r.t. position.
 //    double doubleDerivative = 0;
@@ -631,7 +631,7 @@ double SquareWell::computeHermitePolynomialAlphaDerivative(int nValue, double po
 
 //}
 
-//double SquareWell::computeSPWFAlphaDerivative(vec n, std::vector<double> r) {
+//double SquareWell::computeSPWFAlphaDerivative(vec n, std::vector<double> r, int j) {
 //    // Calculates the single particle wave function differentiated w.r.t. alpha.
 //    //double derivative = 0;
 //    //double alpha = m_system->getWaveFunction()->getParameters()[0];

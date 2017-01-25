@@ -6,6 +6,8 @@
 #include "../particle.h"
 #include "../WaveFunctions/wavefunction.h"
 
+using namespace std;
+
 HarmonicOscillatorElectrons::HarmonicOscillatorElectrons(System* system, double omega,
                                                          bool analyticalKinetic, bool repulsion) :
     Hamiltonian(system, analyticalKinetic) {

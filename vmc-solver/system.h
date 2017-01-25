@@ -57,6 +57,9 @@ public:
     void setDoubleWellFlag(bool doubleWell)                { m_doubleWell = doubleWell; }
     bool getDoubleWellFlag()                               { return m_doubleWell; }
 
+    void setSquareWellFlag(bool squareWell)                { m_squareWell = squareWell; }
+    bool getSquareWellFlag()                               { return m_squareWell; }
+
 private:
     int                             m_numberOfParticles = 0;
     int                             m_numberOfDimensions = 0;
@@ -79,6 +82,7 @@ private:
     bool                            m_savePositions = false;
     FILE*                           m_outfileP;
     bool                            m_doubleWell = false;
+    bool                            m_squareWell = false;
 };
 
 #endif // PROJECT2_SYSTEM_H
