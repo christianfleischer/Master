@@ -673,22 +673,34 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
     m_system->getHamiltonian()->setExpFactor(expFactor);
 
     vec nTemp(m_numberOfDimensions);
-    //m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
-    for (int m = 0; m < m_nPrimeMax; m++) {
-        nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
-        double C = 1;
-        for (int d = 0; d < m_numberOfDimensions; ++d) {
-            C *= m_cCoefficients(nTemp(d), m, d);
-            //nTemp[d] = m_quantumNumbers.col(m);
-        }
+//    //m_spinUpSlater(i,j) = m_cDeterminant*evaluateSingleParticleWF(n, rSpinUp);
+//    for (int m = 0; m < m_nPrimeMax; m++) {
+//        nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
+//        double C = 1;
+//        for (int d = 0; d < m_numberOfDimensions; ++d) {
+//            C *= m_cCoefficients(nTemp(d), m, d);
+//            //nTemp[d] = m_quantumNumbers.col(m);
+//        }
 
-        m_spinUpSlater(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r, 0);
-        vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r, 0);
-        temp *= C;
-        m_SPWFDMat(0,0) += temp;
-        m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r, 0);
+//        m_spinUpSlater(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r, 0);
+//        vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r, 0);
+//        temp *= C;
+//        m_SPWFDMat(0,0) += temp;
+//        m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r, 0);
+//    }
+
+    for (int m = 0; m < 1/*m_nPrimeMax*/; m++) {
+        for (int eig = 0; eig < m_numberOfEigstates; eig++) {
+            double term = 1;
+            for (int d = 0; d < m_numberOfDimensions; d++) {
+                double qNum = m_quantumNumbers(eig, d);
+                term *= m_cCoefficients(qNum, m, d)*harmonicOscillatorBasis(r[d], qNum);
+            }
+            m_spinUpSlater(0,0) += term;
+        }
     }
 
+    m_SPWFMat(0,0) = m_spinUpSlater(0,0);
     m_spinDownSlater(0,0) = m_spinUpSlater(0,0);
 
     m_spinUpSlaterInverse = m_spinUpSlater.i();
@@ -1158,20 +1170,32 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
         m_SPWFDDMat(0,0) = 0;
 
         vec nTemp(m_numberOfDimensions);
-        for (int m = 0; m < m_nPrimeMax; m++) {
-            nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
-            double C = 1;
-            for (int d = 0; d < m_numberOfDimensions; ++d) {
-                C *= m_cCoefficients(nTemp(d), m, d);
-                //nTemp[d] = m_quantumNumbers.col(m);
-            }
+//        for (int m = 0; m < m_nPrimeMax; m++) {
+//            nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
+//            double C = 1;
+//            for (int d = 0; d < m_numberOfDimensions; ++d) {
+//                C *= m_cCoefficients(nTemp(d), m, d);
+//                //nTemp[d] = m_quantumNumbers.col(m);
+//            }
 
-            m_SPWFMat(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i, 0);
-            vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i, 0);
-            temp *= C;
-            m_SPWFDMat(0,0) += temp;
-            m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i, 0);
+//            m_SPWFMat(0,0) += C*m_system->getHamiltonian()->evaluateSingleParticleWF(nTemp, r_i, 0);
+//            vec temp = m_system->getHamiltonian()->computeSPWFDerivative(nTemp, r_i, 0);
+//            temp *= C;
+//            m_SPWFDMat(0,0) += temp;
+//            m_SPWFDDMat(0,0) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i, 0);
+//        }
+        for (int m = 0; m < 1/*m_nPrimeMax*/; m++) {
+            for (int eig = 0; eig < m_numberOfEigstates; eig++) {
+                double term = 1;
+                for (int d = 0; d < m_numberOfDimensions; d++) {
+                    double qNum = m_quantumNumbers(eig, d);
+                    term *= m_cCoefficients(qNum, m, d)*harmonicOscillatorBasis(r_i[d], qNum);
+                    //cout << m_cCoefficients(qNum, m, d) << endl;
+                }
+                m_SPWFMat(0,0) += term;
+            }
         }
+        //m_SPWFMat = sqrt(m_SPWFMat%m_SPWFMat/dot(m_SPWFMat,m_SPWFMat));
     }
     else {
         for (int j=0; j<m_halfNumberOfParticles; j++) {
@@ -1268,4 +1292,14 @@ void ManyElectronsCoefficients::updateJastrow(int randomParticle) {
             //m_JastrowGrad(i, 1) = m_JastrowGradOld(i,1) - m_JastrowMatOld(i,p,1) + m_JastrowMat(i,p,1);
         }
     }
+}
+
+double ManyElectronsCoefficients::harmonicOscillatorBasis(double x, int nx) {
+
+    double x2 = x*x;
+    double expFactor = exp(-0.5*m_omega*x2);
+
+    double waveFunction = expFactor*m_system->getHamiltonian()->computeHermitePolynomial(nx, x);
+
+    return waveFunction;
 }

@@ -185,6 +185,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
     //This is wrong!:
     for (int d = 0; d < m_numberOfDimensions; d++) {
         findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d), d);
+        //C.slice(d) = C.slice(d)%C.slice(d)/dot(C.slice(d),C.slice(d));
         //saveC %= C.slice(d);
     }
     saveC = C;
