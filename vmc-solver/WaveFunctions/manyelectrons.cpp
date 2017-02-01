@@ -899,6 +899,7 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
         }
 
         m_SPWFMat(0,0) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, r_i, 0);
+        //cout << m_SPWFMat << "    " << r_i[0] << endl;
 
         m_SPWFDMat(0,0) = m_system->getHamiltonian()->computeSPWFDerivative(n, r_i, 0);
 

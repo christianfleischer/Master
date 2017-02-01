@@ -19,13 +19,13 @@ int main() {
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
     int nMax 					= 20;
-    int nPrimeMax               = 20;
-    int numberOfDimensions      = 2;
+    int nPrimeMax               = 4;
+    int numberOfDimensions      = 1;
     double distanceToWall       = 3.;
 
     vec L(3);
     L.fill(0.);
-    L(0) = 5.;
+    L(0) = 0.;
 
     int numberOfEigstates;
 

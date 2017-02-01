@@ -17,6 +17,7 @@ SOURCES += main.cpp \
     InitialStates/initialstate.cpp \
     InitialStates/randomuniform.cpp \
     Math/random.cpp \
+    Math/factorial.cpp \
     sampler.cpp \
     WaveFunctions/simplegaussian.cpp \
     Hamiltonians/harmonicoscillatorrepulsive.cpp \
@@ -43,6 +44,7 @@ HEADERS += \
     InitialStates/initialstate.h \
     InitialStates/randomuniform.h \
     Math/random.h \
+    Math/factorial.h \
     sampler.h \
     WaveFunctions/simplegaussian.h \
     Hamiltonians/harmonicoscillatorrepulsive.h \

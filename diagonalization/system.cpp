@@ -137,6 +137,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     }
 
 
+
     m_psi = saveSepEigenvector;
 
     m_eigvals = eigvals;
@@ -170,6 +171,17 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
 }
 
 mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &saveC) {
+
+
+    for (int i = 0; i < m_N-10; i++) {
+    cout << m_psi.slice(0).col(0)(i) << "    " << r(i) << endl;
+    }
+
+//    int i = 1;
+//    while (i > 0) {
+//        int a = 0;
+//    }
+
     mat rCut = zeros(m_N-1, m_numberOfDimensions);
 
     for (int d=0; d < m_numberOfDimensions; d++) {

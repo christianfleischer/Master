@@ -7,6 +7,7 @@
 #include "../particle.h"
 #include "../Hamiltonians/hamiltonian.h"
 #include <iostream>
+#include "Math/factorial.h"
 
 ManyElectronsCoefficients::ManyElectronsCoefficients(System* system, double alpha, double beta, double omega, double C, bool Jastrow) :
         WaveFunction(system) {
@@ -643,7 +644,7 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
         m_cDeterminant = det(cCoeffProd);
     }
     else { m_cDeterminant = 1.; }
-    cout << m_cDeterminant << endl;
+    //cout << m_cDeterminant << endl;
 
     // Below m_numberOfParticle instead of m_halfNumberOfParticles. Can't have half of one particle.
     m_spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
@@ -701,6 +702,7 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
     }
 
     m_SPWFMat(0,0) = m_spinUpSlater(0,0);
+    //cout << m_SPWFMat << "     " << r[0] << endl;
     m_spinDownSlater(0,0) = m_spinUpSlater(0,0);
 
     m_spinUpSlaterInverse = m_spinUpSlater.i();
@@ -1158,10 +1160,10 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
     m_system->getHamiltonian()->setExpFactor(expFactor);
 
     if (m_numberOfParticles == 1) {
-        vec n(m_numberOfDimensions);
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            n[d] = m_quantumNumbers(0, d);
-        }
+//        vec n(m_numberOfDimensions);
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            n[d] = m_quantumNumbers(0, d);
+//        }
 
         m_SPWFMat(0,0) = 0;
 
@@ -1169,7 +1171,7 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 
         m_SPWFDDMat(0,0) = 0;
 
-        vec nTemp(m_numberOfDimensions);
+//        vec nTemp(m_numberOfDimensions);
 //        for (int m = 0; m < m_nPrimeMax; m++) {
 //            nTemp = conv_to<vec>::from(m_quantumNumbers.row(0));
 //            double C = 1;
@@ -1194,6 +1196,7 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
                 }
                 m_SPWFMat(0,0) += term;
             }
+            cout << m_SPWFMat << "     " << r_i[0] << endl;
         }
         //m_SPWFMat = sqrt(m_SPWFMat%m_SPWFMat/dot(m_SPWFMat,m_SPWFMat));
     }
@@ -1296,10 +1299,27 @@ void ManyElectronsCoefficients::updateJastrow(int randomParticle) {
 
 double ManyElectronsCoefficients::harmonicOscillatorBasis(double x, int nx) {
 
-    double x2 = x*x;
-    double expFactor = exp(-0.5*m_omega*x2);
+    double nFac = factorial(nx);
 
-    double waveFunction = expFactor*m_system->getHamiltonian()->computeHermitePolynomial(nx, x);
+    double n2 = pow(2., nx);
+    double pi4 = pow(M_PI, -0.25);
+    double omega4 = pow(m_omega, 0.25);
+    double constant = omega4*pi4/sqrt(nFac*n2);
 
-    return waveFunction;
+    double xAbs2 = x*x;
+
+    double wavefunc = exp(-0.5*m_omega*xAbs2);
+
+    //m_system->getHamiltonian()->set
+    double phi = constant*wavefunc*m_system->getHamiltonian()->computeHermitePolynomial(nx, x);
+
+    return phi;
+
+
+//    double x2 = x*x;
+//    double expFactor = exp(-0.5*m_omega*x2);
+
+//    double waveFunction = expFactor*m_system->getHamiltonian()->computeHermitePolynomial(nx, x);
+
+//    return waveFunction;
 }
