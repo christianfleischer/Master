@@ -9,7 +9,7 @@ System::System(double omega, int numberOfDimensions, double h, int N) {
     setStepLength(h);
 }
 
-void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat) {
+void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential) {
     double Constant = 1./(m_h*m_h);
     mat V(N+1, m_numberOfDimensions);
     for (int d = 0; d < m_numberOfDimensions; d++) {
@@ -19,6 +19,7 @@ void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat) {
         diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
     }
 
+    savePotential = V;
     return;
 }
 

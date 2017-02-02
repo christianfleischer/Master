@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pylab as plt
-
+import sys
+'''
 N = 200 
 
 h = 10./N
@@ -16,3 +17,20 @@ for i in range(int(N/2)):
 
 plt.plot(rho,V)
 plt.show()
+'''
+positionvectors = np.loadtxt('../diagonalization/PlotAndData/Positionvectors.dat')
+potential = np.loadtxt('../diagonalization/PlotAndData/Potential.dat')
+constants = np.loadtxt('../diagonalization/PlotAndData/Constants.dat')
+
+omega, nDim, Lx, Ly, Lz, N, numEigFunctions, h = constants
+N = int(N)-1
+
+# Position vector:
+r = np.zeros((nDim, N))
+for d in range(int(nDim)):
+    r[d] = positionvectors[:,d]
+
+plt.plot(r[0], potential[1:-1])
+plt.show()
+
+

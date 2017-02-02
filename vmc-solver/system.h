@@ -60,6 +60,9 @@ public:
     void setSquareWellFlag(bool squareWell)                { m_squareWell = squareWell; }
     bool getSquareWellFlag()                               { return m_squareWell; }
 
+    void setL(vec L)                                       { m_L = L; }
+    vec getL()                                             { return m_L; }
+
 private:
     int                             m_numberOfParticles = 0;
     int                             m_numberOfDimensions = 0;
@@ -83,6 +86,7 @@ private:
     FILE*                           m_outfileP;
     bool                            m_doubleWell = false;
     bool                            m_squareWell = false;
+    vec                             m_L;
 };
 
 #endif // PROJECT2_SYSTEM_H

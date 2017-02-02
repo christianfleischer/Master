@@ -19,7 +19,7 @@ int main() {
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
     int nMax 					= 20;
-    int nPrimeMax               = 4;
+    int nPrimeMax               = 5;
     int numberOfDimensions      = 1;
     double distanceToWall       = 3.;
 
@@ -64,6 +64,7 @@ int main() {
     mat SavePositionvector      = zeros(N-1, numberOfDimensions+1);
     cube supPosSep				= zeros(N-1, nPrimeMax, numberOfDimensions);
     cube saveC = ones(nMax, nPrimeMax, numberOfDimensions);
+    mat savePotential(N+1, numberOfDimensions);
 
     for (int d = 0; d < numberOfDimensions; d++) {
         SavePositionvector.col(d)   = r.col(d).subvec(1, N-1);    //Saves the y vector for output.
@@ -80,7 +81,7 @@ int main() {
     //system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
     //system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
 
-    system->diagonalizeMatrix(r, L, N, diagMat);
+    system->diagonalizeMatrix(r, L, N, diagMat, savePotential);
     system->findEigenstate(eigvals, eigvecs, diagMat,
                            saveEigenvector, saveSepEigenvector,
                            numberOfEigstates, nMax);
@@ -97,6 +98,7 @@ int main() {
     saveC.save("../diagonalization/PlotAndData/Coefficients.dat", arma_ascii);
     //saveEigenvector.print();
     eigvals.save("../diagonalization/PlotAndData/Eigenvalues.dat", arma_ascii);
+    savePotential.save("../diagonalization/PlotAndData/Potential.dat", raw_ascii);
 
     cout << endl << "eigvals, Armadillo:" << endl;
     int displayVals = 15;

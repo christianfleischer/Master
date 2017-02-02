@@ -41,7 +41,7 @@ int main(int nargs, char* args[]) {
     timeStart = MPI_Wtime();
 
     int numberOfDimensions  = 1;
-    int numberOfParticles   = 1;
+    int numberOfParticles   = 4;
     int numberOfSteps       = (int) 1e5;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
     double alpha            = 1.;//0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
@@ -58,7 +58,7 @@ int main(int nargs, char* args[]) {
 
     vec L(3);
     L.fill(0.);
-    L(0) = 5.;
+    L(0) = 0.;
 
     bool analyticalKinetic  = false;
     bool importanceSampling = false;
@@ -76,7 +76,7 @@ int main(int nargs, char* args[]) {
 
     bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
 
-    bool doubleWell         = false;
+    bool doubleWell         = true;
     bool finiteWell         = false;
     bool squareWell         = false;
 
@@ -105,6 +105,7 @@ int main(int nargs, char* args[]) {
     if (quantumDots) {
         if (doubleWell) {
             system->setDoubleWellFlag   (doubleWell);
+            system->setL                (L);
             system->setHamiltonian      (new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion));
         }
         else if (finiteWell) {

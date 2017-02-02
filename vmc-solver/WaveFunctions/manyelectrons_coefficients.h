@@ -47,6 +47,7 @@ private:
     double m_metropolisRatio = 0;
     double m_ratioSlaterDet = 0;
     mat m_quantumNumbers;
+    mat m_quantumNumbersDouble;
     mat m_spinUpSlater;
     mat m_spinDownSlater;
     mat m_spinUpSlaterInverse;
