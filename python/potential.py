@@ -34,3 +34,5 @@ plt.plot(r[0], potential[1:-1])
 plt.show()
 
 
+
+

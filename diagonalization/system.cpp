@@ -122,6 +122,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
             saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
         }
 
+
         for (int i = 0; i < numberOfEigstates; i++) {
             int nx = m_qNumbers(i, 0);
             int ny = m_qNumbers(i, 1);
@@ -168,6 +169,16 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
         //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }
     cout << upLine;
+
+//    for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+//        for (int nx = 0; nx < nMax; nx+=2) {
+//            C(nx, nPrime) = C(nx/2, nPrime);
+//            if (nx+1 < nMax) {
+//                C(nx+1, nPrime) = C(nx/2, nPrime);
+//            }
+//        }
+//    }
+
     C *= m_h;
 }
 

@@ -836,17 +836,20 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
     }
 
     bool overlappingWells = true;
-    for (int d = 0; d < m_numberOfDimensions; d++) {
-        if (m_system->getL()(d) != 0) { overlappingWells = false; }
+    if (m_system->getDoubleWellFlag()) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            if (m_system->getL()(d) != 0) { overlappingWells = false; }
+        }
     }
 
     if (m_system->getDoubleWellFlag() && m_numberOfParticles > 2 && !overlappingWells) {
         //mat quantumNumbersDoubleWell = zeros<mat>(m_halfNumberOfParticles, m_numberOfDimensions);
-        for (int p = 0; p < m_halfNumberOfParticles; p+=2) {
+        m_quantumNumbersDouble = m_quantumNumbers;
+        for (int p = 0; p < m_numberOfEigstates; p+=2) {
             for (int d = 0; d < m_numberOfDimensions; d++) {
-                m_quantumNumbersDouble(p, d) = m_quantumNumbers(p/2, d);
-                if (p+1 < m_halfNumberOfParticles) {
-                    m_quantumNumbersDouble(p+1, d) = m_quantumNumbers(p/2, d);
+                m_quantumNumbers(p, d) = m_quantumNumbers(p/2, d);
+                if (p+1 < m_numberOfEigstates) {
+                    m_quantumNumbers(p+1, d) = m_quantumNumbers(p/2, d);
                 }
             }
         }
@@ -854,16 +857,20 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         //m_quantumNumbers = quantumNumbersDoubleWell;
     }
     else { m_quantumNumbersDouble = m_quantumNumbers; }
+    m_quantumNumbers = m_quantumNumbersDouble;
+    //m_quantumNumbersDouble = m_quantumNumbers;
+    //cout << m_quantumNumbers << endl;
+    //cout << m_quantumNumbersDouble << endl;
 
-    //----Square well----
-    if (m_system->getSquareWellFlag()) {
-        for (int p = 0; p < m_halfNumberOfParticles; p++) {
-            for (int d = 0; d < m_numberOfDimensions; d++) {
-                m_quantumNumbers(p, d) += 1;
-            }
-        }
-    }
-    //----Square well----
+//    //----Square well----
+//    if (m_system->getSquareWellFlag()) {
+//        for (int p = 0; p < m_halfNumberOfParticles; p++) {
+//            for (int d = 0; d < m_numberOfDimensions; d++) {
+//                m_quantumNumbers(p, d) += 1;
+//            }
+//        }
+//    }
+//    //----Square well----
 
     if (m_cCoefficients.slice(0).is_square()) {
         mat cCoeffProd = m_cCoefficients.slice(0);
@@ -873,7 +880,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         m_cDeterminant = det(cCoeffProd);
     }
     else { m_cDeterminant = 1.; }
-    cout << m_cDeterminant << endl;
+    //cout << m_cDeterminant << endl;
 
     m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     int half = m_halfNumberOfParticles;

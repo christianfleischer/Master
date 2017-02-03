@@ -20,12 +20,12 @@ int main() {
     double V0                   = 1.;
     int nMax 					= 20;
     int nPrimeMax               = 5;
-    int numberOfDimensions      = 1;
+    int numberOfDimensions      = 2;
     double distanceToWall       = 3.;
 
     vec L(3);
     L.fill(0.);
-    L(0) = 0.;
+    L(0) = 5.;
 
     int numberOfEigstates;
 
