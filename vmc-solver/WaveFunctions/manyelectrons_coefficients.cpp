@@ -842,19 +842,19 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         }
     }
 
-    if (m_system->getDoubleWellFlag() && m_numberOfParticles > 2 && !overlappingWells) {
-        //mat quantumNumbersDoubleWell = zeros<mat>(m_halfNumberOfParticles, m_numberOfDimensions);
+    if (m_system->getDoubleWellFlag() /*&& m_numberOfParticles > 2*/ && !overlappingWells) {
+        mat quantumNumbersDoubleWell = zeros<mat>(m_numberOfEigstates, m_numberOfDimensions);
         m_quantumNumbersDouble = m_quantumNumbers;
         for (int p = 0; p < m_numberOfEigstates; p+=2) {
             for (int d = 0; d < m_numberOfDimensions; d++) {
-                m_quantumNumbers(p, d) = m_quantumNumbers(p/2, d);
+                quantumNumbersDoubleWell(p, d) = m_quantumNumbers(p/2, d);
                 if (p+1 < m_numberOfEigstates) {
-                    m_quantumNumbers(p+1, d) = m_quantumNumbers(p/2, d);
+                    quantumNumbersDoubleWell(p+1, d) = m_quantumNumbers(p/2, d);
                 }
             }
         }
 
-        //m_quantumNumbers = quantumNumbersDoubleWell;
+        m_quantumNumbers = quantumNumbersDoubleWell;
     }
     else { m_quantumNumbersDouble = m_quantumNumbers; }
     m_quantumNumbers = m_quantumNumbersDouble;
@@ -930,6 +930,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             for (int d = 0; d < m_numberOfDimensions; d++) {
                 if (m_system->getDoubleWellFlag()) {
                     n[d] = m_quantumNumbersDouble(j, d);
+                    cout << n[d] << endl;
                 }
                 else {
                     n[d] = m_quantumNumbers(j, d);

@@ -138,6 +138,18 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
         cout << "Number of dimensions must be 1, 2 or 3." << endl;
     }
 
+//    mat temp = zeros(numberOfEigstates, m_numberOfDimensions);
+//    for (int p = 0; p < numberOfEigstates; p+=2) {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            temp(p, d) = m_qNumbers(p/2, d);
+//            if (p+1 < numberOfEigstates) {
+//                temp(p+1, d) = m_qNumbers(p/2, d);
+//            }
+//        }
+//    }
+//    m_qNumbers = temp;
+//    cout << m_qNumbers << endl;
+
 
 
     m_psi = saveSepEigenvector;
@@ -185,9 +197,9 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
 mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &saveC) {
 
 
-    for (int i = 0; i < m_N-10; i++) {
-    cout << m_psi.slice(0).col(0)(i) << "    " << r(i) << endl;
-    }
+//    for (int i = 0; i < m_N-10; i++) {
+//    cout << m_psi.slice(0).col(0)(i) << "    " << r(i) << endl;
+//    }
 
 //    int i = 1;
 //    while (i > 0) {
