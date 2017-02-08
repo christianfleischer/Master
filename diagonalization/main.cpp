@@ -14,8 +14,8 @@ using namespace arma;
 int main() {
 
     int N                       = 1000;
-    double posMin               = -10;
-    double posMax               = 10;
+    double posMin               = -20;
+    double posMax               = 20;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
     int nMax 					= 20;

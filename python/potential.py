@@ -33,6 +33,9 @@ for d in range(int(nDim)):
 plt.plot(r[0], potential[1:-1])
 plt.show()
 
+for i in range(N):
+    print potential[i,0]
+
 
 
 
