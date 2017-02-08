@@ -25,7 +25,7 @@ int main() {
 
     vec L(3);
     L.fill(0.);
-    L(0) = 5.;
+    L(0) = 0.;
 
     int numberOfEigstates;
 

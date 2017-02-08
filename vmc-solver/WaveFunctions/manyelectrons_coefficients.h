@@ -32,6 +32,8 @@ public:
     void updateSPWFMat(int randomParticle);
     void updateJastrow(int randomParticle);
     double harmonicOscillatorBasis(double x, int nx);
+    double harmonicOscillatorBasisDerivative(double x, int nx);
+    double harmonicOscillatorBasisDoubleDerivative(vec r, vec n, int d);
 
 private:
     int m_numberOfParticles = 0;
