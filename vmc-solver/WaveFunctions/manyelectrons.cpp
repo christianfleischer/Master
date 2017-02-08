@@ -711,6 +711,7 @@ void ManyElectrons::setUpSlaterDet() {
         }
     }
 
+    cout << m_spinUpSlater << endl;
     m_spinUpSlaterInverse = m_spinUpSlater.i();
     m_spinDownSlaterInverse = m_spinDownSlater.i();
 }

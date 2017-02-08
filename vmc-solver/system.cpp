@@ -178,6 +178,8 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
 
     // Compute final expectation values
     m_sampler->computeAverages();
+    cout << m_particles[0]->getPosition()[0] << endl;
+    cout << m_particles[1]->getPosition()[0] << endl;
 }
 
 void System::optimizeParameters(System* system, double alpha, double beta) {
