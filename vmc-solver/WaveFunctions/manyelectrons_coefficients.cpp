@@ -692,15 +692,20 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
 
     for (int eig = 0; eig < m_numberOfEigstates; eig++) {
         double term = 1;
-//        double termDD = 1;
+        vec termD(m_numberOfDimensions);
+        double termDD = 0;
+        double coefficients = 1;
         for (int d = 0; d < m_numberOfDimensions; d++) {
             double qNum = m_quantumNumbers(eig, d);
-//            vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
+            vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
             term *= m_cCoefficients(qNum, 0, d)*harmonicOscillatorBasis(r[d], qNum); //SWITCH OUT m for n[d].
-//            termDD *= m_cCoefficients(qNum, 0, d)*harmonicOscillatorBasisDoubleDerivative(r, qNums, d);
+            termD[d] = harmonicOscillatorBasisDerivative(r, qNums, d);
+            termDD += harmonicOscillatorBasisDoubleDerivative(r, qNums, d);
+            coefficients *= m_cCoefficients(qNum, 0, d);
         }
         m_spinUpSlater(0,0) += term;
-//        m_SPWFDDMat(0,0) += termDD;
+        m_SPWFDMat(0,0) += coefficients*termD;
+        m_SPWFDDMat(0,0) += coefficients*termDD;
     }
 
     m_SPWFMat(0,0) = m_spinUpSlater(0,0);
@@ -975,18 +980,20 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
             for (int eig = 0; eig < m_numberOfEigstates; eig++) {
                 double term = 1;
-//                vec termD(m_numberOfDimensions);
-//                double termDD = 1;
+                vec termD(m_numberOfDimensions);
+                double termDD = 0;
+                double coefficients = 1;
                 for (int d = 0; d < m_numberOfDimensions; d++) {
                     double qNum = m_quantumNumbers(eig, d);
-//                    vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
+                    vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
                     term *= m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasis(rSpinUp[d], qNum);
-//                    termD[d] = m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasisDerivative(rSpinUp[d], qNum);
-//                    termDD *= m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasisDoubleDerivative(rSpinUp, qNums, d);
+                    termD[d] = harmonicOscillatorBasisDerivative(rSpinUp, qNums, d);
+                    termDD += harmonicOscillatorBasisDoubleDerivative(rSpinUp, qNums, d);
+                    coefficients *= m_cCoefficients(qNum, n[d], d);
                 }
                 m_spinUpSlater(i,j) += term;
-//                m_SPWFDMat(i,j) += termD;
-//                m_SPWFDDMat(i,j) += termDD;
+                m_SPWFDMat(i,j) += coefficients*termD;
+                m_SPWFDDMat(i,j) += coefficients*termDD;
             }
 
             m_SPWFMat(i,j) = m_spinUpSlater(i,j);
@@ -1014,18 +1021,20 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
             for (int eig = 0; eig < m_numberOfEigstates; eig++) {
                 double term = 1;
-//                vec termD(m_numberOfDimensions);
-//                double termDD = 1;
+                vec termD(m_numberOfDimensions);
+                double termDD = 0;
+                double coefficients = 1;
                 for (int d = 0; d < m_numberOfDimensions; d++) {
                     double qNum = m_quantumNumbers(eig, d);
-//                    vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
+                    vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
                     term *= m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasis(rSpinDown[d], qNum);
-//                    termD[d] = m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasisDerivative(rSpinDown[d], qNum);
-//                    termDD *= m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasisDoubleDerivative(rSpinDown, qNums, d);
+                    termD[d] = harmonicOscillatorBasisDerivative(rSpinDown, qNums, d);
+                    termDD += harmonicOscillatorBasisDoubleDerivative(rSpinDown, qNums, d);
+                    coefficients *= m_cCoefficients(qNum, n[d], d);
                 }
                 m_spinDownSlater(i,j) += term;
-//                m_SPWFDMat(i+m_halfNumberOfParticles, j) += termD;
-//                m_SPWFDDMat(i+m_halfNumberOfParticles, j) += termDD;
+                m_SPWFDMat(i+m_halfNumberOfParticles, j) += coefficients*termD;
+                m_SPWFDDMat(i+m_halfNumberOfParticles, j) += coefficients*termDD;
             }
 
             m_SPWFMat(i+m_halfNumberOfParticles, j) = m_spinDownSlater(i,j);
@@ -1250,16 +1259,21 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 //        }
         for (int eig = 0; eig < m_numberOfEigstates; eig++) {
             double term = 1;
-//            double termDD = 1;
+            vec termD(m_numberOfDimensions);
+            double termDD = 0;
+            double coefficients = 1;
             for (int d = 0; d < m_numberOfDimensions; d++) {
                 double qNum = m_quantumNumbers(eig, d);
-//                vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
+                vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
                 term *= m_cCoefficients(qNum, 0, d)*harmonicOscillatorBasis(r_i[d], qNum);
-//                termDD *= m_cCoefficients(qNum, 0, d)*harmonicOscillatorBasisDoubleDerivative(r_i, qNums, d);
+                termD[d] = harmonicOscillatorBasisDerivative(r_i, qNums, d);
+                termDD += harmonicOscillatorBasisDoubleDerivative(r_i, qNums, d);
+                coefficients *= m_cCoefficients(qNum, 0, d);
                 //cout << m_cCoefficients(qNum, m, d) << endl;
             }
             m_SPWFMat(0,0) += term;
-//            m_SPWFDDMat(0,0) += termDD;
+            m_SPWFDMat(0,0) += coefficients*termD;
+            m_SPWFDDMat(0,0) += coefficients*termDD;
         }
         //cout << m_SPWFMat << "     " << r_i[0] << endl;
         //m_SPWFMat = sqrt(m_SPWFMat%m_SPWFMat/dot(m_SPWFMat,m_SPWFMat));
@@ -1302,19 +1316,21 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 
             for (int eig = 0; eig < m_numberOfEigstates; eig++) {
                 double term = 1;
-//                vec termD(m_numberOfDimensions);
-//                double termDD = 1;
+                vec termD(m_numberOfDimensions);
+                double termDD = 0;
+                double coefficients = 1;
                 for (int d = 0; d < m_numberOfDimensions; d++) {
                     double qNum = m_quantumNumbers(eig, d);
-//                    vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
+                    vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
                     term *= m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasis(r_i[d], qNum);
-//                    termD[d] = m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasisDerivative(r_i[d], qNum);
-//                    termDD *= m_cCoefficients(qNum, n[d], d)*harmonicOscillatorBasisDoubleDerivative(r_i, qNums, d);
+                    termD[d] = harmonicOscillatorBasisDerivative(r_i, qNums, d);
+                    termDD += harmonicOscillatorBasisDoubleDerivative(r_i, qNums, d);
+                    coefficients *= m_cCoefficients(qNum, n[d], d);
                     //cout << m_cCoefficients(qNum, m, d) << endl;
                 }
                 m_SPWFMat(i,j) += term;
-//                m_SPWFDMat(i,j) += termD;
-//                m_SPWFDDMat(i,j) += termDD;
+                m_SPWFDMat(i,j) += coefficients*termD;
+                m_SPWFDDMat(i,j) += coefficients*termDD;
             }
             //cout << m_SPWFMat << "     " << r_i[0] << endl;
 
@@ -1410,36 +1426,43 @@ double ManyElectronsCoefficients::harmonicOscillatorBasis(double x, int nx) {
 //    return waveFunction;
 }
 
-double ManyElectronsCoefficients::harmonicOscillatorBasisDerivative(double x, int nx) {
+double ManyElectronsCoefficients::harmonicOscillatorBasisDerivative(vec r, vec n, int d) {
 
-    double nFac = factorial(nx);
+    vec constant(m_numberOfDimensions);
+    for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+        double nFac = factorial(n[dim]);
+        double n2 = pow(2., n[dim]);
+        double pi4 = pow(M_PI, -0.25);
+        double omega4 = pow(m_omega, 0.25);
+        constant[dim] = omega4*pi4/sqrt(nFac*n2);
+    }
 
-    double n2 = pow(2., nx);
-    double pi4 = pow(M_PI, -0.25);
-    double omega4 = pow(m_omega, 0.25);
-    double constant = omega4*pi4/sqrt(nFac*n2);
-
-    double xAbs2 = x*x;
+    double xAbs2 = r[d]*r[d];
 
     double wavefunc = exp(-0.5*m_omega*xAbs2);
 
-    double hermitePolynomial = m_system->getHamiltonian()->computeHermitePolynomial(nx, x);
-    double hermitePolynomialDerivative = m_system->getHamiltonian()->computeHermitePolynomialDerivative(nx, x);
+    double hermitePolynomial = m_system->getHamiltonian()->computeHermitePolynomial(n[d], r[d]);
+    double hermitePolynomialDerivative = m_system->getHamiltonian()->computeHermitePolynomialDerivative(n[d], r[d]);
 
-    double phiD = constant*(wavefunc*hermitePolynomialDerivative
-                           -m_omega*x*wavefunc*hermitePolynomial);
+    double phiD = constant[d]*(wavefunc*hermitePolynomialDerivative
+                           -m_omega*r[d]*wavefunc*hermitePolynomial);
+    for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+        if (d != dim) phiD *= constant[dim]*exp(-0.5*m_omega*r[dim]*r[dim])*m_system->getHamiltonian()->computeHermitePolynomial(n[dim], r[dim]);
+    }
 
     return phiD;
 }
 
 double ManyElectronsCoefficients::harmonicOscillatorBasisDoubleDerivative(vec r, vec n, int d) {
 
-    double nFac = factorial(n[d]);
-
-    double n2 = pow(2., n[d]);
-    double pi4 = pow(M_PI, -0.25);
-    double omega4 = pow(m_omega, 0.25);
-    double constant = omega4*pi4/sqrt(nFac*n2);
+    vec constant(m_numberOfDimensions);
+    for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+        double nFac = factorial(n[dim]);
+        double n2 = pow(2., n[dim]);
+        double pi4 = pow(M_PI, -0.25);
+        double omega4 = pow(m_omega, 0.25);
+        constant[dim] = omega4*pi4/sqrt(nFac*n2);
+    }
 
     double xAbs2 = r[d]*r[d];
 
@@ -1449,12 +1472,12 @@ double ManyElectronsCoefficients::harmonicOscillatorBasisDoubleDerivative(vec r,
     double hermitePolynomialDerivative = m_system->getHamiltonian()->computeHermitePolynomialDerivative(n[d], r[d]);
     double hermitePolynomialDoubleDerivative = m_system->getHamiltonian()->computeHermitePolynomialDoubleDerivative(n[d], r[d]);
 
-    double phiDD = constant*(wavefunc*hermitePolynomialDoubleDerivative
+    double phiDD = constant[d]*(wavefunc*hermitePolynomialDoubleDerivative
                             -m_omega*wavefunc*hermitePolynomial
                             -2*m_omega*r[d]*wavefunc*hermitePolynomialDerivative
                             +m_omega*m_omega*r[d]*r[d]*wavefunc*hermitePolynomial);
     for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-        if (d != dim) phiDD *= m_system->getHamiltonian()->computeHermitePolynomial(n[dim], r[dim]);
+        if (d != dim) phiDD *= constant[dim]*exp(-0.5*m_omega*r[dim]*r[dim])*m_system->getHamiltonian()->computeHermitePolynomial(n[dim], r[dim]);
     }
 
     return phiDD;

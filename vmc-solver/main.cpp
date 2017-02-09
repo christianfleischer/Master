@@ -40,8 +40,8 @@ int main(int nargs, char* args[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     timeStart = MPI_Wtime();
 
-    int numberOfDimensions  = 2;
-    int numberOfParticles   = 1;
+    int numberOfDimensions  = 1;
+    int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e5;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
     double alpha            = 1.;//0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
@@ -60,7 +60,7 @@ int main(int nargs, char* args[]) {
     L.fill(0.);
     L(0) = 0.;
 
-    bool analyticalKinetic  = false;
+    bool analyticalKinetic  = true;
     bool importanceSampling = false;
     bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
