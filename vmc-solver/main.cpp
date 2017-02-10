@@ -58,10 +58,10 @@ int main(int nargs, char* args[]) {
 
     vec L(3);
     L.fill(0.);
-    L(0) = 0.;
+    L(0) = 5.;
 
     bool analyticalKinetic  = true;
-    bool importanceSampling = false;
+    bool importanceSampling = true;
     bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
@@ -76,7 +76,7 @@ int main(int nargs, char* args[]) {
 
     bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
 
-    bool doubleWell         = false;
+    bool doubleWell         = true;
     bool finiteWell         = false;
     bool squareWell         = false;
 
