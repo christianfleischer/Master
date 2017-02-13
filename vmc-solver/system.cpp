@@ -375,7 +375,12 @@ void System::setSavePositions(bool savePositions) {
 }
 
 
-void System::retrieveFromFile(string fileName, cube &loadCoefficients) {
+void System::retrieveCoefficientsFromFile(string fileName, cube &loadCoefficients) {
     loadCoefficients.load(fileName, arma_ascii);
+    return;
+}
+
+void System::retrieveConstantsFromFile(string fileName, vec &loadConstants) {
+    loadConstants.load(fileName, raw_ascii);
     return;
 }

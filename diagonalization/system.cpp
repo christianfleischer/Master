@@ -191,7 +191,27 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
 //        }
 //    }
 
+//    cout << endl << endl << endl;
+//    double test = 0;
+//    for (int i = 0; i < m_N-1; i++) {
+//        test += (m_psi.slice(currentDim).col(0)(i) - m_waveFunction->harmonicOscillatorBasis(x, 0)(i))
+//               *(m_psi.slice(currentDim).col(0)(i) - m_waveFunction->harmonicOscillatorBasis(x, 0)(i));
+//    }
+//    cout << sqrt(test) << endl;
+
+
     C *= m_h;
+
+//    double p = 0;
+//    for (int nx = 0; nx < nMax; nx++) {
+//        p += C(nx, 0)*C(nx, 0);
+//    }
+//    cout << p << endl;
+
+//    double a = 1;
+//    while (a > 0) {
+//        double b = 0;
+//    }
 }
 
 mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &saveC) {

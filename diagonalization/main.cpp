@@ -15,7 +15,7 @@ int main() {
 
     int N                       = 1000;         //Need 1540 for nMax=20 in 3D.
     double posMin               = -20;
-    double posMax               = 20;
+    double posMax               = 30;
     double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
     int nMax 					= 20;

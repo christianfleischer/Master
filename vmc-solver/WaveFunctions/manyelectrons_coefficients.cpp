@@ -9,10 +9,11 @@
 #include <iostream>
 #include "Math/factorial.h"
 
-ManyElectronsCoefficients::ManyElectronsCoefficients(System* system, double alpha, double beta, double omega, double C, bool Jastrow) :
+ManyElectronsCoefficients::ManyElectronsCoefficients(System* system, double alpha, double beta, double omega, double omegaCoeff, double C, bool Jastrow) :
         WaveFunction(system) {
     assert(omega > 0);
     m_omega = omega;
+    m_omegaCoeff = omegaCoeff;
     assert(alpha >= 0);
     assert(system->getNumberOfDimensions() > 0 && system->getNumberOfDimensions() <= 3);
     m_numberOfDimensions = system->getNumberOfDimensions();
@@ -504,7 +505,7 @@ double ManyElectronsCoefficients::computeMetropolisRatio(std::vector<Particle *>
 
 void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
 
-    m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
+    m_system->retrieveCoefficientsFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
 
     vec cColVec = m_cCoefficients.slice(0).col(0);
     int nMaxCoeff = cColVec.size();
@@ -719,7 +720,7 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
 void ManyElectronsCoefficients::setUpSlaterDet() {
     // Function for setting up the Slater determinant at the begining of the simulation.
 
-    m_system->retrieveFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
+    m_system->retrieveCoefficientsFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
 
     vec cColVec = m_cCoefficients.slice(0).col(0);
     int nMaxCoeff = cColVec.size();
@@ -1482,3 +1483,69 @@ double ManyElectronsCoefficients::harmonicOscillatorBasisDoubleDerivative(vec r,
 
     return phiDD;
 }
+
+//double ManyElectronsCoefficients::computeHermitePolynomial(int nValue, double position) {
+//    // Computes Hermite polynomials.
+//    double alphaSqrt = 1;//sqrt(m_alpha);
+//    double omegaSqrt = sqrt(m_omegaCoeff);
+//    double factor = 2*alphaSqrt*omegaSqrt*position;
+
+//    double HermitePolynomialPP = 0;                 // H_{n-2}
+//    double HermitePolynomialP = 1;                  // H_{n-1}
+//    double HermitePolynomial = HermitePolynomialP;  // H_n
+
+//    for (int n=1; n <= nValue; n++) {
+//        HermitePolynomial = factor*HermitePolynomialP - 2*(n-1)*HermitePolynomialPP;
+//        HermitePolynomialPP = HermitePolynomialP;
+//        HermitePolynomialP = HermitePolynomial;
+//    }
+
+//    return HermitePolynomial;
+
+//}
+
+//double ManyElectronsCoefficients::computeHermitePolynomialDerivative(int nValue, double position) {
+//    // Computes Hermite polynomials differentiated w.r.t. position.
+//    double alphaSqrt = 1;//sqrt(m_alpha);
+//    double omegaSqrt = sqrt(m_omegaCoeff);
+//    double factor1 = 2*alphaSqrt*omegaSqrt;
+//    double factor2 = 2*alphaSqrt*omegaSqrt*position;
+
+//    double HPDerivativePP = 0;              // d/dx H_{n-2}
+//    double HPDerivativeP = 0;               // d/dx H_{n-1}
+//    double HPDerivative = HPDerivativeP;    // d/dx H_n
+
+//    for (int n=1; n <= nValue; n++) {
+//        HPDerivative = factor1*computeHermitePolynomial(n-1, position)
+//                      +factor2*HPDerivativeP
+//                      -2*(n-1)*HPDerivativePP;
+//        HPDerivativePP = HPDerivativeP;
+//        HPDerivativeP = HPDerivative;
+//    }
+
+//    return HPDerivative;
+
+//}
+
+//double ManyElectronsCoefficients::computeHermitePolynomialDoubleDerivative(int nValue, double position) {
+//    // Computes Hermite polynomials twice differentiated w.r.t. position.
+//    double alphaSqrt = 1;//sqrt(m_alpha);
+//    double omegaSqrt = sqrt(m_omegaCoeff);
+//    double factor1 = 4*alphaSqrt*omegaSqrt;
+//    double factor2 = 2*alphaSqrt*omegaSqrt*position;
+
+//    double HPDoubleDerivativePP = 0;                    // d/dx d/dx H_{n-2}
+//    double HPDoubleDerivativeP = 0;                     // d/dx d/dx H_{n-1}
+//    double HPDoubleDerivative = HPDoubleDerivativeP;    // d/dx d/dx H_n
+
+//    for (int n=1; n <= nValue; n++) {
+//        HPDoubleDerivative = factor1*computeHermitePolynomialDerivative(n-1, position)
+//                            +factor2*HPDoubleDerivativeP
+//                            -2*(n-1)*HPDoubleDerivativePP;
+//        HPDoubleDerivativePP = HPDoubleDerivativeP;
+//        HPDoubleDerivativeP = HPDoubleDerivative;
+//    }
+
+//    return HPDoubleDerivative;
+
+//}

@@ -41,7 +41,7 @@ int main(int nargs, char* args[]) {
     timeStart = MPI_Wtime();
 
     int numberOfDimensions  = 1;
-    int numberOfParticles   = 2;
+    int numberOfParticles   = 6;
     int numberOfSteps       = (int) 1e5;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
     double alpha            = 1.;//0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
@@ -61,7 +61,7 @@ int main(int nargs, char* args[]) {
     L(0) = 5.;
 
     bool analyticalKinetic  = true;
-    bool importanceSampling = true;
+    bool importanceSampling = false;
     bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
@@ -123,7 +123,10 @@ int main(int nargs, char* args[]) {
         }
         else {
             if (useCoeff) {
-                system->setWaveFunction (new ManyElectronsCoefficients(system, alpha, beta, omega, C, Jastrow));
+                vec constants;
+                system->retrieveConstantsFromFile("../diagonalization/PlotAndData/Constants.dat", constants);
+                double omegaCoeff = constants(0);
+                system->setWaveFunction (new ManyElectronsCoefficients(system, alpha, beta, omega, omegaCoeff, C, Jastrow));
             }
             else {
                 system->setWaveFunction (new ManyElectrons(system, alpha, beta, omega, C, Jastrow));
