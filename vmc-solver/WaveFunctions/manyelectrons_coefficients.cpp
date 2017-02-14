@@ -1414,7 +1414,7 @@ double ManyElectronsCoefficients::harmonicOscillatorBasis(double x, int nx) {
 
     double wavefunc = exp(-0.5*m_omega*xAbs2);
 
-    double phi = constant*wavefunc*m_system->getHamiltonian()->computeHermitePolynomial(nx, x);
+    double phi = constant*wavefunc*computeHermitePolynomial(nx, x);
 
     return phi;
 
@@ -1434,21 +1434,21 @@ double ManyElectronsCoefficients::harmonicOscillatorBasisDerivative(vec r, vec n
         double nFac = factorial(n[dim]);
         double n2 = pow(2., n[dim]);
         double pi4 = pow(M_PI, -0.25);
-        double omega4 = pow(m_omega, 0.25);
+        double omega4 = pow(m_omegaCoeff, 0.25);
         constant[dim] = omega4*pi4/sqrt(nFac*n2);
     }
 
     double xAbs2 = r[d]*r[d];
 
-    double wavefunc = exp(-0.5*m_omega*xAbs2);
+    double wavefunc = exp(-0.5*m_omegaCoeff*xAbs2);
 
-    double hermitePolynomial = m_system->getHamiltonian()->computeHermitePolynomial(n[d], r[d]);
-    double hermitePolynomialDerivative = m_system->getHamiltonian()->computeHermitePolynomialDerivative(n[d], r[d]);
+    double hermitePolynomial = computeHermitePolynomial(n[d], r[d]);
+    double hermitePolynomialDerivative = computeHermitePolynomialDerivative(n[d], r[d]);
 
     double phiD = constant[d]*(wavefunc*hermitePolynomialDerivative
-                           -m_omega*r[d]*wavefunc*hermitePolynomial);
+                           -m_omegaCoeff*r[d]*wavefunc*hermitePolynomial);
     for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-        if (d != dim) phiD *= constant[dim]*exp(-0.5*m_omega*r[dim]*r[dim])*m_system->getHamiltonian()->computeHermitePolynomial(n[dim], r[dim]);
+        if (d != dim) phiD *= constant[dim]*exp(-0.5*m_omegaCoeff*r[dim]*r[dim])*computeHermitePolynomial(n[dim], r[dim]);
     }
 
     return phiD;
@@ -1469,83 +1469,83 @@ double ManyElectronsCoefficients::harmonicOscillatorBasisDoubleDerivative(vec r,
 
     double wavefunc = exp(-0.5*m_omega*xAbs2);
 
-    double hermitePolynomial = m_system->getHamiltonian()->computeHermitePolynomial(n[d], r[d]);
-    double hermitePolynomialDerivative = m_system->getHamiltonian()->computeHermitePolynomialDerivative(n[d], r[d]);
-    double hermitePolynomialDoubleDerivative = m_system->getHamiltonian()->computeHermitePolynomialDoubleDerivative(n[d], r[d]);
+    double hermitePolynomial = computeHermitePolynomial(n[d], r[d]);
+    double hermitePolynomialDerivative = computeHermitePolynomialDerivative(n[d], r[d]);
+    double hermitePolynomialDoubleDerivative = computeHermitePolynomialDoubleDerivative(n[d], r[d]);
 
     double phiDD = constant[d]*(wavefunc*hermitePolynomialDoubleDerivative
                             -m_omega*wavefunc*hermitePolynomial
                             -2*m_omega*r[d]*wavefunc*hermitePolynomialDerivative
                             +m_omega*m_omega*r[d]*r[d]*wavefunc*hermitePolynomial);
     for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-        if (d != dim) phiDD *= constant[dim]*exp(-0.5*m_omega*r[dim]*r[dim])*m_system->getHamiltonian()->computeHermitePolynomial(n[dim], r[dim]);
+        if (d != dim) phiDD *= constant[dim]*exp(-0.5*m_omega*r[dim]*r[dim])*computeHermitePolynomial(n[dim], r[dim]);
     }
 
     return phiDD;
 }
 
-//double ManyElectronsCoefficients::computeHermitePolynomial(int nValue, double position) {
-//    // Computes Hermite polynomials.
-//    double alphaSqrt = 1;//sqrt(m_alpha);
-//    double omegaSqrt = sqrt(m_omegaCoeff);
-//    double factor = 2*alphaSqrt*omegaSqrt*position;
+double ManyElectronsCoefficients::computeHermitePolynomial(int nValue, double position) {
+    // Computes Hermite polynomials.
+    double alphaSqrt = 1;//sqrt(m_alpha);
+    double omegaSqrt = sqrt(m_omega);
+    double factor = 2*alphaSqrt*omegaSqrt*position;
 
-//    double HermitePolynomialPP = 0;                 // H_{n-2}
-//    double HermitePolynomialP = 1;                  // H_{n-1}
-//    double HermitePolynomial = HermitePolynomialP;  // H_n
+    double HermitePolynomialPP = 0;                 // H_{n-2}
+    double HermitePolynomialP = 1;                  // H_{n-1}
+    double HermitePolynomial = HermitePolynomialP;  // H_n
 
-//    for (int n=1; n <= nValue; n++) {
-//        HermitePolynomial = factor*HermitePolynomialP - 2*(n-1)*HermitePolynomialPP;
-//        HermitePolynomialPP = HermitePolynomialP;
-//        HermitePolynomialP = HermitePolynomial;
-//    }
+    for (int n=1; n <= nValue; n++) {
+        HermitePolynomial = factor*HermitePolynomialP - 2*(n-1)*HermitePolynomialPP;
+        HermitePolynomialPP = HermitePolynomialP;
+        HermitePolynomialP = HermitePolynomial;
+    }
 
-//    return HermitePolynomial;
+    return HermitePolynomial;
 
-//}
+}
 
-//double ManyElectronsCoefficients::computeHermitePolynomialDerivative(int nValue, double position) {
-//    // Computes Hermite polynomials differentiated w.r.t. position.
-//    double alphaSqrt = 1;//sqrt(m_alpha);
-//    double omegaSqrt = sqrt(m_omegaCoeff);
-//    double factor1 = 2*alphaSqrt*omegaSqrt;
-//    double factor2 = 2*alphaSqrt*omegaSqrt*position;
+double ManyElectronsCoefficients::computeHermitePolynomialDerivative(int nValue, double position) {
+    // Computes Hermite polynomials differentiated w.r.t. position.
+    double alphaSqrt = 1;//sqrt(m_alpha);
+    double omegaSqrt = sqrt(m_omega);
+    double factor1 = 2*alphaSqrt*omegaSqrt;
+    double factor2 = 2*alphaSqrt*omegaSqrt*position;
 
-//    double HPDerivativePP = 0;              // d/dx H_{n-2}
-//    double HPDerivativeP = 0;               // d/dx H_{n-1}
-//    double HPDerivative = HPDerivativeP;    // d/dx H_n
+    double HPDerivativePP = 0;              // d/dx H_{n-2}
+    double HPDerivativeP = 0;               // d/dx H_{n-1}
+    double HPDerivative = HPDerivativeP;    // d/dx H_n
 
-//    for (int n=1; n <= nValue; n++) {
-//        HPDerivative = factor1*computeHermitePolynomial(n-1, position)
-//                      +factor2*HPDerivativeP
-//                      -2*(n-1)*HPDerivativePP;
-//        HPDerivativePP = HPDerivativeP;
-//        HPDerivativeP = HPDerivative;
-//    }
+    for (int n=1; n <= nValue; n++) {
+        HPDerivative = factor1*computeHermitePolynomial(n-1, position)
+                      +factor2*HPDerivativeP
+                      -2*(n-1)*HPDerivativePP;
+        HPDerivativePP = HPDerivativeP;
+        HPDerivativeP = HPDerivative;
+    }
 
-//    return HPDerivative;
+    return HPDerivative;
 
-//}
+}
 
-//double ManyElectronsCoefficients::computeHermitePolynomialDoubleDerivative(int nValue, double position) {
-//    // Computes Hermite polynomials twice differentiated w.r.t. position.
-//    double alphaSqrt = 1;//sqrt(m_alpha);
-//    double omegaSqrt = sqrt(m_omegaCoeff);
-//    double factor1 = 4*alphaSqrt*omegaSqrt;
-//    double factor2 = 2*alphaSqrt*omegaSqrt*position;
+double ManyElectronsCoefficients::computeHermitePolynomialDoubleDerivative(int nValue, double position) {
+    // Computes Hermite polynomials twice differentiated w.r.t. position.
+    double alphaSqrt = 1;//sqrt(m_alpha);
+    double omegaSqrt = sqrt(m_omega);
+    double factor1 = 4*alphaSqrt*omegaSqrt;
+    double factor2 = 2*alphaSqrt*omegaSqrt*position;
 
-//    double HPDoubleDerivativePP = 0;                    // d/dx d/dx H_{n-2}
-//    double HPDoubleDerivativeP = 0;                     // d/dx d/dx H_{n-1}
-//    double HPDoubleDerivative = HPDoubleDerivativeP;    // d/dx d/dx H_n
+    double HPDoubleDerivativePP = 0;                    // d/dx d/dx H_{n-2}
+    double HPDoubleDerivativeP = 0;                     // d/dx d/dx H_{n-1}
+    double HPDoubleDerivative = HPDoubleDerivativeP;    // d/dx d/dx H_n
 
-//    for (int n=1; n <= nValue; n++) {
-//        HPDoubleDerivative = factor1*computeHermitePolynomialDerivative(n-1, position)
-//                            +factor2*HPDoubleDerivativeP
-//                            -2*(n-1)*HPDoubleDerivativePP;
-//        HPDoubleDerivativePP = HPDoubleDerivativeP;
-//        HPDoubleDerivativeP = HPDoubleDerivative;
-//    }
+    for (int n=1; n <= nValue; n++) {
+        HPDoubleDerivative = factor1*computeHermitePolynomialDerivative(n-1, position)
+                            +factor2*HPDoubleDerivativeP
+                            -2*(n-1)*HPDoubleDerivativePP;
+        HPDoubleDerivativePP = HPDoubleDerivativeP;
+        HPDoubleDerivativeP = HPDoubleDerivative;
+    }
 
-//    return HPDoubleDerivative;
+    return HPDoubleDerivative;
 
-//}
+}
