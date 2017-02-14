@@ -39,11 +39,11 @@ SUITE(VMCsolver) {
     TEST(Initialization) {
 
         // Initialize MPI parallelization
-        MPI_Comm_size(MPI_COMM_WORLD, &wrapper->m_numprocs);
-        MPI_Comm_rank(MPI_COMM_WORLD, &wrapper->m_my_rank);
+        //MPI_Comm_size(MPI_COMM_WORLD, &wrapper->m_numprocs);
+        //MPI_Comm_rank(MPI_COMM_WORLD, &wrapper->m_my_rank);
         wrapper->m_numprocs = 1;
         wrapper->m_my_rank = 0;
-        wrapper->m_timeStart = MPI_Wtime();
+        //wrapper->m_timeStart = MPI_Wtime();
         wrapper->m_numberOfDimensions  = 2;
         vec L(wrapper->m_numberOfDimensions);
         L.fill(0.);
@@ -117,17 +117,17 @@ SUITE(VMCsolver) {
 
         system->runMetropolisSteps          (wrapper->m_numMyCycles, wrapper->m_importanceSampling, wrapper->m_showProgress, wrapper->m_printToTerminal);
 
-        system->MPI_CleanUp                 (wrapper->m_totalE, wrapper->m_totalKE, wrapper->m_totalPE, wrapper->m_totalVariance, wrapper->m_totalAcceptanceRate, wrapper->m_finalMeanDistance,
-                                             wrapper->m_timeStart, wrapper->m_timeEnd, wrapper->m_totalTime, wrapper->m_numprocs, wrapper->m_numberOfSteps);
+        //system->MPI_CleanUp                 (wrapper->m_totalE, wrapper->m_totalKE, wrapper->m_totalPE, wrapper->m_totalVariance, wrapper->m_totalAcceptanceRate, wrapper->m_finalMeanDistance,
+        //                                     wrapper->m_timeStart, wrapper->m_timeEnd, wrapper->m_totalTime, wrapper->m_numprocs, wrapper->m_numberOfSteps);
         // Merge the files from the nodes into one data file
-        system->mergeOutputFiles            (wrapper->m_numprocs);
+        //system->mergeOutputFiles            (wrapper->m_numprocs);
     }
 }
 
 
 
 int main(int nargs, char* args[]) {
-    MPI_Init(&nargs, &args);
+    //MPI_Init(&nargs, &args);
     return RunAllTests();
 }
 
