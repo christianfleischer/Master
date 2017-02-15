@@ -1,6 +1,7 @@
 #ifndef PROJECT2_PARTICLE_H
 #define PROJECT2_PARTICLE_H
 #include <vector>
+#include <unittest++/UnitTest++.h>
 
 class Particle {
 public:

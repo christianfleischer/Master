@@ -80,7 +80,7 @@ int main(int nargs, char* args[]) {
     bool finiteWell         = false;
     bool squareWell         = false;
 
-    bool runTests           = false;
+    bool runTests           = true;
 
     int numMyCycles = numberOfSteps/numprocs;
 
