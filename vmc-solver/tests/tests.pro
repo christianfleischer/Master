@@ -9,6 +9,7 @@ QMAKE_CXXFLAGS_RELEASE -= -O2
 QMAKE_CXXFLAGS_RELEASE *= -O3
 
 SOURCES += main.cpp \
+    wrapper.cpp \
     ../system.cpp \
     ../Hamiltonians/hamiltonian.cpp \
     ../Hamiltonians/harmonicoscillator.cpp \
@@ -34,6 +35,7 @@ SOURCES += main.cpp \
 LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
 HEADERS += \
+    wrapper.h \
     ../system.h \
     ../Hamiltonians/hamiltonian.h \
     ../Hamiltonians/harmonicoscillator.h \
