@@ -12,7 +12,7 @@ SOURCES += main.cpp \
     WaveFunctions/finitewell.cpp \
     WaveFunctions/squarewell.cpp
 
-LIBS += -llapack -lblas -larmadillo
+LIBS += -llapack -lopenblas -larmadillo
 
 HEADERS += system.h \
     WaveFunctions/wavefunction.h \

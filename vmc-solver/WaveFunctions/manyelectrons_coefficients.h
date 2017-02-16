@@ -6,7 +6,7 @@ using namespace arma;
 
 class ManyElectronsCoefficients : public WaveFunction {
 public:
-    ManyElectronsCoefficients(class System* system, double alpha, double beta, double omega, double omegaCoeff, double C, bool Jastrow);
+    ManyElectronsCoefficients(class System* system, double alpha, double beta, double omega, double C, bool Jastrow);
     double evaluate(std::vector<class Particle*> particles);
     double computeDoubleDerivative(std::vector<class Particle*> particles);
     double computeMetropolisRatio(std::vector<Particle *> particles, int randomParticle,
@@ -47,7 +47,6 @@ private:
     int m_k = 0;
     int m_numberOfEigstates = 0;
     int m_nPrimeMax = 0;
-    double m_omegaCoeff = 0;
     double m_omega = 0;
     double m_alpha = 0;
     double m_alphaOmega = 0;

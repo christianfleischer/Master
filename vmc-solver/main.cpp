@@ -40,10 +40,10 @@ int main(int nargs, char* args[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     timeStart = MPI_Wtime();
 
-    int numberOfDimensions  = 1;
-    int numberOfParticles   = 6;
-    int numberOfSteps       = (int) 1e5;              // Monte Carlo cycles
-    double omega            = 0.5;                     // Oscillator frequency.
+    int numberOfDimensions  = 2;
+    int numberOfParticles   = 8;
+    int numberOfSteps       = (int) 1e4;              // Monte Carlo cycles
+    double omega            = 1.;                     // Oscillator frequency.
     double alpha            = 1.;//0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
     double beta             = 0.40691;//2.82843;      // Variational parameter.         //3D: 0.376667
     double gamma            = 2.82843;
@@ -59,9 +59,10 @@ int main(int nargs, char* args[]) {
     vec L(3);
     L.fill(0.);
     L(0) = 5.;
+    L(1) = 5.;
 
     bool analyticalKinetic  = true;
-    bool importanceSampling = false;
+    bool importanceSampling = true;
     bool repulsion          = false;                   // Switch for interacting system or not. (Coulomb for manybody qdot)
     bool quantumDots        = true;                   // Switch for quantum dot system.
     bool twobodyQD          = false;                  // Switch for twobody quantum dot system. (no Slater)
@@ -125,8 +126,8 @@ int main(int nargs, char* args[]) {
             if (useCoeff) {
                 vec constants;
                 system->retrieveConstantsFromFile("../diagonalization/PlotAndData/Constants.dat", constants);
-                double omegaCoeff = constants(0);
-                system->setWaveFunction (new ManyElectronsCoefficients(system, alpha, beta, omega, omegaCoeff, C, Jastrow));
+                assert(omega == constants(0));
+                system->setWaveFunction (new ManyElectronsCoefficients(system, alpha, beta, omega, C, Jastrow));
             }
             else {
                 system->setWaveFunction (new ManyElectrons(system, alpha, beta, omega, C, Jastrow));
