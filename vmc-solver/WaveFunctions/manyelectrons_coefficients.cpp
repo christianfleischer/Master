@@ -940,7 +940,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             for (int d = 0; d < m_numberOfDimensions; d++) {
                 if (m_system->getDoubleWellFlag()) {
                     n[d] = m_quantumNumbersDouble(j, d);
-                    cout << n[d] << endl;
+                    //cout << n[d] << endl;
                 }
                 else {
                     n[d] = m_quantumNumbers(j, d);
@@ -1049,7 +1049,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
     }
 
 
-    cout << m_spinUpSlater << endl;
+    //cout << m_spinUpSlater << endl;
     m_spinUpSlaterInverse = m_spinUpSlater.i();
     m_spinDownSlaterInverse = m_spinDownSlater.i();
 }

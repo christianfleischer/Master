@@ -333,29 +333,29 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
 //        supPos.col(nPrime) = plusTerm;
     }
 
-    else if (m_numberOfDimensions == 3) {
+//    else if (m_numberOfDimensions == 3) {
 
-        for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
-            for (int i = 0; i < m_numberOfEigstates; i++) {
-                int nx = m_qNumbers(i, 0);
-                int ny = m_qNumbers(i, 1);
-                int nz = m_qNumbers(i, 2);
+//        for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+//            for (int i = 0; i < m_numberOfEigstates; i++) {
+//                int nx = m_qNumbers(i, 0);
+//                int ny = m_qNumbers(i, 1);
+//                int nz = m_qNumbers(i, 2);
 
-                vec plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
-                vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
-                vec plusTermZ = C(nz, nPrime, 2)*m_waveFunction->harmonicOscillatorBasis(rCut.col(2), nz);
+//                vec plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+//                vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+//                vec plusTermZ = C(nz, nPrime, 2)*m_waveFunction->harmonicOscillatorBasis(rCut.col(2), nz);
 
-                supPos.col(nPrime) += plusTermX%plusTermY%plusTermZ;
-                supPosSep.slice(0).col(nPrime) += plusTermX;
-                supPosSep.slice(1).col(nPrime) += plusTermY;
-                supPosSep.slice(2).col(nPrime) += plusTermZ;
-            }
-        }
-    }
+//                supPos.col(nPrime) += plusTermX%plusTermY%plusTermZ;
+//                supPosSep.slice(0).col(nPrime) += plusTermX;
+//                supPosSep.slice(1).col(nPrime) += plusTermY;
+//                supPosSep.slice(2).col(nPrime) += plusTermZ;
+//            }
+//        }
+//    }
 
-    else {
-        cout << "Number of dimensions must be 1, 2 or 3." << endl;
-    }
+//    else {
+//        cout << "Number of dimensions must be 1, 2 or 3." << endl;
+//    }
 
     return supPos;
 }
