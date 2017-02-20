@@ -41,7 +41,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     m_qNumbers = zeros(numberOfEigstates, m_numberOfDimensions);
     m_numberOfEigstates = numberOfEigstates;
 
-    if (m_numberOfDimensions == 1) {
+    if (m_numberOfDimensions == m_numberOfDimensions) {
         for (int i = 0; i < numberOfEigstates; i++) {
             m_qNumbers(i, 0) = i;
         }

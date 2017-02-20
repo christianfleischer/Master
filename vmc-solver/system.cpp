@@ -132,7 +132,7 @@ double System::calculateGreensFunction(std::vector<double> positionOld, std::vec
 void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSampling,
                                 bool showProgress, bool printToTerminal) {
     // Initialize Monte Carlo simulation
-    m_particles                 = m_initialState->getParticles();
+    //m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
     m_sampler->setNumberOfMetropolisSteps(numberOfMetropolisSteps);
@@ -322,6 +322,7 @@ void System::setWaveFunction(WaveFunction* waveFunction) {
 
 void System::setInitialState(InitialState* initialState) {
     m_initialState = initialState;
+    m_particles = initialState->getParticles();
 }
 
 void System::setNumberOfMetropolisSteps(int numberOfMetropolisSteps) {

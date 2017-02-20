@@ -31,7 +31,8 @@ SOURCES += main.cpp \
     WaveFunctions/manyelectrons_coefficients.cpp \
     Hamiltonians/squarewell.cpp \
     Hamiltonians/finiteharmonicoscillator.cpp \
-    Hamiltonians/doubleharmonicoscillator.cpp
+    Hamiltonians/doubleharmonicoscillator.cpp \
+    HermitePolynomials/hermitepolynomials.cpp
 
 LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
@@ -58,7 +59,8 @@ HEADERS += \
     WaveFunctions/manyelectrons_coefficients.h \
     Hamiltonians/squarewell.h \
     Hamiltonians/finiteharmonicoscillator.h \
-    Hamiltonians/doubleharmonicoscillator.h
+    Hamiltonians/doubleharmonicoscillator.h \
+    HermitePolynomials/hermitepolynomials.h
 
 # MPI Settings
 QMAKE_CXX = mpicxx

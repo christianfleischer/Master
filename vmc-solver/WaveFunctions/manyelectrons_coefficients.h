@@ -32,7 +32,7 @@ public:
     void updateSPWFMat(int randomParticle);
     void updateJastrow(int randomParticle);
 
-    double harmonicOscillatorBasis(double x, int nx);
+    double harmonicOscillatorBasis(double x, int nx, int d);
     double harmonicOscillatorBasisDerivative(vec r, vec n, int d);
     double harmonicOscillatorBasisDoubleDerivative(vec r, vec n, int d);
 
@@ -72,6 +72,7 @@ private:
     mat m_JastrowGradOld;
     mat m_a;
     bool m_Jastrow = false;
+    vec m_expFactorsDim;
 };
 
 #endif // PROJECT2_MANYELECTRONSCOEFFICIENTS_H

@@ -526,7 +526,7 @@ void ManyElectrons::setUpSlaterDetOneParticle() {
 
     m_SPWFDMat(0,0) = zeros<vec>(m_numberOfDimensions);
 
-    std::vector<double> r = m_system->getInitialState()->getParticles()[0]->getPosition();
+    std::vector<double> r = m_system->getParticles()[0]->getPosition();
     double r2 = 0;
 
     vec n(m_numberOfDimensions);
@@ -666,10 +666,10 @@ void ManyElectrons::setUpSlaterDet() {
     }
 
     for (int i=0; i < m_halfNumberOfParticles; i++) {
-        std::vector<double> rSpinUp = m_system->getInitialState()->getParticles()[i]->getPosition();
+        std::vector<double> rSpinUp = m_system->getParticles()[i]->getPosition();
 //        double xSpinUp = rSpinUp[0];
 //        double ySpinUp = rSpinUp[1];
-        std::vector<double> rSpinDown = m_system->getInitialState()->getParticles()[i+m_halfNumberOfParticles]->getPosition();
+        std::vector<double> rSpinDown = m_system->getParticles()[i+m_halfNumberOfParticles]->getPosition();
 //        double xSpinDown = rSpinDown[0];
 //        double ySpinDown = rSpinDown[1];
 
@@ -721,10 +721,10 @@ void ManyElectrons::setUpDistances() {
     m_distances = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
 
     for (int i=0; i<m_numberOfParticles; i++) {
-        std::vector<double> r_i = m_system->getInitialState()->getParticles()[i]->getPosition();
+        std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
 
         for (int j=i+1; j<m_numberOfParticles; j++) {
-            std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
+            std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
             double r_ij = 0;
 
             for (int d = 0; d < m_numberOfDimensions; d++) {
@@ -742,9 +742,9 @@ void ManyElectrons::setUpJastrowMat() {
     double beta = m_parameters[1];
 
     for (int i=0; i<m_numberOfParticles; i++) {
-        std::vector<double> r_i = m_system->getInitialState()->getParticles()[i]->getPosition();
+        std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
         for (int j=0; j < i; j++) {
-            std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
+            std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
 
@@ -755,7 +755,7 @@ void ManyElectrons::setUpJastrowMat() {
         }
 
         for (int j=i+1; j < m_numberOfParticles; j++) {
-            std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
+            std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
 
