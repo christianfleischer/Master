@@ -322,6 +322,7 @@ void System::setWaveFunction(WaveFunction* waveFunction) {
 
 void System::setInitialState(InitialState* initialState) {
     m_initialState = initialState;
+    m_particles = initialState->getParticles();
 }
 
 void System::setNumberOfMetropolisSteps(int numberOfMetropolisSteps) {

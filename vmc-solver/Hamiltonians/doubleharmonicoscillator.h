@@ -2,6 +2,10 @@
 #define DOUBLEHARMONICOSCILLATOR_H
 #include "hamiltonian.h"
 #include <vector>
+#include "unittest++/UnitTest++.h"
+#include <armadillo>
+#include "InitialStates/randomuniform.h"
+#include "WaveFunctions/manyelectrons.h"
 
 class DoubleHarmonicOscillator : public Hamiltonian {
 public:

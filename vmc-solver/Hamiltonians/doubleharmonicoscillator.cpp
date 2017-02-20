@@ -373,3 +373,38 @@ double DoubleHarmonicOscillator::computeHermitePolynomialAlphaDerivative(int nVa
 
     return HPDerivative;
 }
+
+
+SUITE(DoubleHarmonicOscillatorWellPotentialTests) {
+    class DoubleHarmonicOscillatorFixture {
+    public:
+        double alpha = 1;
+        double omega = 1;
+        double beta = 0;
+        double normConst = 1.;
+
+        bool Jastrow = false;
+        bool analyticalKinetic = true;
+        bool repulsion = false;
+
+        int numberOfDimensions = 2;
+        int numberOfParticles = 2;
+        int my_rank = 0;
+
+    };
+
+    TEST_FIXTURE(DoubleHarmonicOscillatorFixture, computeLocalEnergyTest) {
+        vec L(3);
+        L.fill(0.);
+        L(0) = 5.;
+        System* system = new System();
+        system->setInitialState(new RandomUniform(system, numberOfDimensions, numberOfParticles, my_rank));
+        system->setHamiltonian(new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion));
+        system->setWaveFunction (new ManyElectrons(system, alpha, beta, omega, normConst, Jastrow));
+
+        std::vector<double> energies = system->getHamiltonian()->computeLocalEnergy(system->getParticles());
+        cout << energies[0] << endl;
+        //TODO: ADD TEST FOR ENERGIES.
+    }
+}
+
