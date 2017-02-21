@@ -14,6 +14,7 @@ public:
     virtual std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r, int j) { j = j; n = n; return r; }
     virtual double computeSPWFDoubleDerivative(vec n, std::vector<double> r, int j) { return n[0]*r[0]*j; }
     virtual double computeSPWFAlphaDerivative(vec n, std::vector<double> r, int j) { return n[0]*r[0]*j; }
+    virtual double computeHermitePolynomial(int n, double position ) {n = n; position = position;}
     double getAnalytic(){ return m_analyticalKinetic; }
     void setExpFactor(double expFactor) { m_expFactor = expFactor; }
     void setAlpha(double alpha) { m_alpha =  alpha; }

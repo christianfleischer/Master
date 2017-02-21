@@ -404,6 +404,13 @@ SUITE(DoubleHarmonicOscillatorWellPotentialTests) {
 
         std::vector<double> energies = system->getHamiltonian()->computeLocalEnergy(system->getParticles());
         cout << energies[0] << endl;
+        int n = 1;
+        int x = 1;
+
+        cout << system->getHamiltonian()->computeHermitePolynomial(n, x) << endl;
+
+
+
         //TODO: ADD TEST FOR ENERGIES.
     }
 }
