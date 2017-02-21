@@ -13,14 +13,14 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 11500;         //Need 1600 for nMax=20 in 3D.
+    int N                       = 1000;         //Need 1600 for nMax=20 in 3D.
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
     int nMax 					= 40;
     int nPrimeMax               = 10;
-    int numberOfDimensions      = 3;
+    int numberOfDimensions      = 2;
     double distanceToWall       = 3.;
 
     vec L(3);
