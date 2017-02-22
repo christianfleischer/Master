@@ -14,8 +14,8 @@ void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePote
     mat V(N+1, m_numberOfDimensions);
     for (int d = 0; d < m_numberOfDimensions; d++) {
         V.col(d) = m_waveFunction->potential(r.col(d), L(d));
-        diagMat.slice(d).diag(0)  =  2*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
-        diagMat.slice(d).diag(1)  = -Constant*ones(N-2);               //Set e_i elements in A
+        diagMat.slice(d).diag(0)  =  1*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
+        diagMat.slice(d).diag(1)  = -0.5*Constant*ones(N-2);               //Set e_i elements in A
         diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
     }
 
