@@ -388,30 +388,80 @@ SUITE(DoubleHarmonicOscillatorWellPotentialTests) {
         bool repulsion = false;
 
         int numberOfDimensions = 2;
-        int numberOfParticles = 2;
+        int numberOfParticles = 1;
         int my_rank = 0;
+
+        vec L = vec(3);
+
+        System* system = new System();
+
+        void initiateVector(vec L) {
+            L.fill(0.);
+            L(0) = 5.;
+        }
+
+        void initiateSystem(System* system, vec L, int numberOfDimensions, int numberOfParticles, int my_rank, double omega,
+                            bool analyticalKinetic, bool repulsion, double Jastrow, double normConst,
+                            double alpha, double beta) {
+            system->setInitialState(new RandomUniform(system, numberOfDimensions, numberOfParticles, my_rank));
+            system->setHamiltonian(new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion));
+            system->setWaveFunction (new ManyElectrons(system, alpha, beta, omega, normConst, Jastrow));
+
+        }
 
     };
 
-    TEST_FIXTURE(DoubleHarmonicOscillatorFixture, computeLocalEnergyTest) {
-        vec L(3);
-        L.fill(0.);
-        L(0) = 5.;
-        System* system = new System();
+    TEST_FIXTURE(DoubleHarmonicOscillatorFixture, ComputeLocalEnergyTest) {
+        //initiateSystem(system, L, numberOfDimensions, numberOfParticles, my_rank, omega,
+        //                    analyticalKinetic, repulsion, Jastrow, normConst,
+        //                    alpha, beta);
+        //double x = system->getParticles()[0]->getPosition()[0];
+        //double y = system->getParticles()[0]->getPosition()[1];
+
+
+        initiateVector(L);
+
+        DoubleHarmonicOscillator* potential = new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion);
+
+        system->setNumberOfParticles(numberOfParticles);
+        system->setNumberOfDimensions(numberOfDimensions);
+
+        system->setHamiltonian(potential);
         system->setInitialState(new RandomUniform(system, numberOfDimensions, numberOfParticles, my_rank));
-        system->setHamiltonian(new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion));
-        system->setWaveFunction (new ManyElectrons(system, alpha, beta, omega, normConst, Jastrow));
+        system->setWaveFunction(new ManyElectrons(system, alpha, beta, omega, normConst, Jastrow));
 
-        std::vector<double> energies = system->getHamiltonian()->computeLocalEnergy(system->getParticles());
-        cout << energies[0] << endl;
-        int n = 1;
-        int x = 1;
+        std::vector<double> energies = potential->computeLocalEnergy(system->getParticles());
 
-        cout << system->getHamiltonian()->computeHermitePolynomial(n, x) << endl;
+        //TODO: Create test for local energy.
+
+    }
+    TEST_FIXTURE(DoubleHarmonicOscillatorFixture, ComputeHermitePolynomialTest) {
+        //initiateSystem(system, L, numberOfDimensions, numberOfParticles, my_rank, omega,
+        //                    analyticalKinetic, repulsion, Jastrow, normConst,
+        //                    alpha, beta);
 
 
+        DoubleHarmonicOscillator* potential = new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion);
+        potential->setAlpha(alpha);
 
-        //TODO: ADD TEST FOR ENERGIES.
+        int x1 = 1;
+        int x2 = -2;
+
+        //Check the first Hermite polynomials for x1 = 1
+        CHECK_EQUAL(1, potential->computeHermitePolynomial(0, x1));
+        CHECK_EQUAL(2, potential->computeHermitePolynomial(1, x1));
+        CHECK_EQUAL(2, potential->computeHermitePolynomial(2, x1));
+        CHECK_EQUAL(-4, potential->computeHermitePolynomial(3, x1));
+        CHECK_EQUAL(-20, potential->computeHermitePolynomial(4, x1));
+        CHECK_EQUAL(-8, potential->computeHermitePolynomial(5, x1));
+
+        //Check the first Hermite polynomials for x2 = -2
+        CHECK_EQUAL(1, potential->computeHermitePolynomial(0, x2));
+        CHECK_EQUAL(-4, potential->computeHermitePolynomial(1, x2));
+        CHECK_EQUAL(14, potential->computeHermitePolynomial(2, x2));
+        CHECK_EQUAL(-40, potential->computeHermitePolynomial(3, x2));
+        CHECK_EQUAL(76, potential->computeHermitePolynomial(4, x2));
+        CHECK_EQUAL(16, potential->computeHermitePolynomial(5, x2));
     }
 }
 
