@@ -99,7 +99,7 @@ double ManyElectronsCoefficients::evaluate(std::vector<class Particle*> particle
 std::vector<double> ManyElectronsCoefficients::computeDerivative(std::vector<class Particle*> particles) {
     //Calculates ∇ψ/ψ for the wave function.
 
-    int i = m_system->getRandomParticle();
+    int i = m_system->getCurrentParticle();
     int numberOfParticles = m_system->getNumberOfParticles();
     std::vector<double> derivative(numberOfParticles*m_numberOfDimensions);
 
@@ -415,23 +415,23 @@ std::vector<double> ManyElectronsCoefficients::computeDerivativeWrtParameters(st
 }
 
 double ManyElectronsCoefficients::computeMetropolisRatio(std::vector<Particle *> particles,
-                                            int randomParticle, std::vector<double> positionChange) {
+                                            int currentParticle, std::vector<double> positionChange) {
     // Function for calculating the wave function part of the Metropolis ratio,
     // both the Slater part and the Jastrow part.
 
-    //std::vector<double> positionOld = particles[randomParticle]->getPosition();
+    //std::vector<double> positionOld = particles[currentParticle]->getPosition();
     m_distancesOld = m_distances;
 
     for (int i=0; i<m_numberOfDimensions; i++) {
-        particles[randomParticle]->adjustPosition(positionChange[i], i);
+        particles[currentParticle]->adjustPosition(positionChange[i], i);
     }
 
-    //std::vector<double> positionNew = particles[randomParticle]->getPosition();
-    m_system->getWaveFunction()->updateDistances(randomParticle);
-    m_system->getWaveFunction()->updateSPWFMat(randomParticle);
-    m_system->getWaveFunction()->updateJastrow(randomParticle);
+    //std::vector<double> positionNew = particles[currentParticle]->getPosition();
+    m_system->getWaveFunction()->updateDistances(currentParticle);
+    m_system->getWaveFunction()->updateSPWFMat(currentParticle);
+    m_system->getWaveFunction()->updateJastrow(currentParticle);
 
-    int i = randomParticle;
+    int i = currentParticle;
     double ratioSlaterDet = 0;
 
     if (i < m_halfNumberOfParticles) {
@@ -703,12 +703,12 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
         double coefficients = 1;
         vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            term *= m_cCoefficients(qNums[d], 0, d)*harmonicOscillatorBasis(r[d], qNums[d], d); //SWITCH OUT m for n[d].
+            term *= harmonicOscillatorBasis(r[d], qNums[d], d); //SWITCH OUT m for n[d].
             termD[d] = harmonicOscillatorBasisDerivative(r, qNums, d);
             termDD += harmonicOscillatorBasisDoubleDerivative(r, qNums, d);
             coefficients *= m_cCoefficients(qNums[d], 0, d);
         }
-        m_spinUpSlater(0,0) += term;
+        m_spinUpSlater(0,0) += coefficients*term;
         m_SPWFDMat(0,0) += coefficients*termD;
         m_SPWFDDMat(0,0) += coefficients*termDD;
     }
@@ -1043,12 +1043,12 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                 double coefficients = 1;
                 vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
                 for (int d = 0; d < m_numberOfDimensions; d++) {
-                    term *= m_cCoefficients(qNums[d], n[d], d)*harmonicOscillatorBasis(rSpinDown[d], qNums[d], d);
+                    term *= harmonicOscillatorBasis(rSpinDown[d], qNums[d], d);
                     termD[d] = harmonicOscillatorBasisDerivative(rSpinDown, qNums, d);
                     termDD += harmonicOscillatorBasisDoubleDerivative(rSpinDown, qNums, d);
                     coefficients *= m_cCoefficients(qNums[d], n[d], d);
                 }
-                m_spinDownSlater(i,j) += term;
+                m_spinDownSlater(i,j) += coefficients*term;
                 m_SPWFDMat(i+m_halfNumberOfParticles, j) += coefficients*termD;
                 m_SPWFDDMat(i+m_halfNumberOfParticles, j) += coefficients*termDD;
             }
@@ -1125,9 +1125,9 @@ void ManyElectronsCoefficients::setUpJastrowMat() {
     }
 }
 
-void ManyElectronsCoefficients::updateSlaterDet(int randomParticle) {
+void ManyElectronsCoefficients::updateSlaterDet(int currentParticle) {
     // Function for updating the Slater determinant after every accepted metropolis step.
-    int i = randomParticle;
+    int i = currentParticle;
     //std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
 
     if (i < m_halfNumberOfParticles) {
@@ -1205,9 +1205,9 @@ void ManyElectronsCoefficients::updateSlaterDet(int randomParticle) {
     }
 }
 
-void ManyElectronsCoefficients::updateDistances(int randomParticle) {
+void ManyElectronsCoefficients::updateDistances(int currentParticle) {
     // Function for updating the distances between electrons.
-    int i = randomParticle;
+    int i = currentParticle;
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
 
     for (int j=0; j<i; j++) {
@@ -1232,9 +1232,9 @@ void ManyElectronsCoefficients::updateDistances(int randomParticle) {
 
 }
 
-void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
+void ManyElectronsCoefficients::updateSPWFMat(int currentParticle) {
 
-    int i = randomParticle;
+    int i = currentParticle;
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
     double alpha = m_parameters[0];
 
@@ -1334,6 +1334,7 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 //                m_SPWFDDMat(i,j) += C*m_system->getHamiltonian()->computeSPWFDoubleDerivative(nTemp, r_i, j);
 //            }
 
+
             for (int eig = 0; eig < m_numberOfEigstates; eig++) {
                 double term = 1;
                 vec termD(m_numberOfDimensions);
@@ -1341,13 +1342,13 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
                 double coefficients = 1;
                 vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
                 for (int d = 0; d < m_numberOfDimensions; d++) {
-                    term *= m_cCoefficients(qNums[d], n[d], d)*harmonicOscillatorBasis(r_i[d], qNums[d], d);
+                    term *= harmonicOscillatorBasis(r_i[d], qNums[d], d);
                     termD[d] = harmonicOscillatorBasisDerivative(r_i, qNums, d);
                     termDD += harmonicOscillatorBasisDoubleDerivative(r_i, qNums, d);
                     coefficients *= m_cCoefficients(qNums[d], n[d], d);
                     //cout << m_cCoefficients(qNum, m, d) << endl;
                 }
-                m_SPWFMat(i,j) += term;
+                m_SPWFMat(i,j) += coefficients*term;
                 m_SPWFDMat(i,j) += coefficients*termD;
                 m_SPWFDDMat(i,j) += coefficients*termDD;
             }
@@ -1364,9 +1365,9 @@ void ManyElectronsCoefficients::updateSPWFMat(int randomParticle) {
 
 }
 
-void ManyElectronsCoefficients::updateJastrow(int randomParticle) {
+void ManyElectronsCoefficients::updateJastrow(int currentParticle) {
 
-    int p = randomParticle;
+    int p = currentParticle;
     std::vector<double> r_p = m_system->getParticles()[p]->getPosition();
     double beta = m_parameters[1];
     m_JastrowMatOld = m_JastrowMat;

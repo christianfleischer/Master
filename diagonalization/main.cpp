@@ -19,8 +19,8 @@ int main() {
     double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
     int nMax 					= 40;
-    int nPrimeMax               = 1;
-    int numberOfDimensions      = 2;
+    int nPrimeMax               = 2;
+    int numberOfDimensions      = 1;
     double distanceToWall       = 3.;
 
     vec L(3);
@@ -44,7 +44,7 @@ int main() {
     assert(nPrimeMax <= numberOfEigstates);
 
     //Set up the vector x and the matrix A:
-    double h                    = (posMax-posMin)/N;
+    double h = (posMax-posMin)/N;
     mat r = zeros(N+1,numberOfDimensions);
     vec rAbs = zeros(N+1);
 
@@ -105,8 +105,9 @@ int main() {
     int displayVals = 15;
     std::vector<string> dim = {"x", "y", "z"};
     for (int i = 0; i < displayVals; ++i) {
+        cout << i+1 << ":";
         for (int d = 0; d < numberOfDimensions; d++) {
-            cout << i+1 << ": E"<< dim[d] <<": " << eigvals.col(d)(i);
+            cout << " E"<< dim[d] <<": " << eigvals.col(d)(i);
         }
         cout << endl;
     }

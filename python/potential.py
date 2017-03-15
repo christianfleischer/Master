@@ -31,6 +31,12 @@ for d in range(int(nDim)):
     r[d] = positionvectors[:,d]
 
 plt.plot(r[0], potential[1:-1])
+plt.title("1D Finite Square Well Potential")
+plt.legend(["Finite Square Well Potential"])
+plt.xlabel("r")
+plt.ylabel("V(r)")
+plt.ylim([-0.1, 1.2])
+plt.plot(r[0], np.zeros(len(r[0])), "--")
 plt.show()
 
 for i in range(N):

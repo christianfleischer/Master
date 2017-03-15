@@ -10,12 +10,12 @@ System::System(double omega, int numberOfDimensions, double h, int N) {
 }
 
 void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential) {
-    double Constant = 1./(m_h*m_h);
+    double Constant = 1./(2*m_h*m_h);
     mat V(N+1, m_numberOfDimensions);
     for (int d = 0; d < m_numberOfDimensions; d++) {
         V.col(d) = m_waveFunction->potential(r.col(d), L(d));
-        diagMat.slice(d).diag(0)  =  1*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
-        diagMat.slice(d).diag(1)  = -0.5*Constant*ones(N-2);               //Set e_i elements in A
+        diagMat.slice(d).diag(0)  =  2.*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
+        diagMat.slice(d).diag(1)  = -1.*Constant*ones(N-2);               //Set e_i elements in A
         diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
     }
 
@@ -191,16 +191,15 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
 //        }
 //    }
 
+    C *= m_h;
+
 //    cout << endl << endl << endl;
 //    double test = 0;
 //    for (int i = 0; i < m_N-1; i++) {
-//        test += (m_psi.slice(currentDim).col(0)(i) - m_waveFunction->harmonicOscillatorBasis(x, 0)(i))
-//               *(m_psi.slice(currentDim).col(0)(i) - m_waveFunction->harmonicOscillatorBasis(x, 0)(i));
+//        test += (m_psi.slice(currentDim).col(0)(i) - C(0,0)*m_waveFunction->harmonicOscillatorBasis(x, 0)(i))
+//               *(m_psi.slice(currentDim).col(0)(i) - C(0,0)*m_waveFunction->harmonicOscillatorBasis(x, 0)(i));
 //    }
 //    cout << sqrt(test) << endl;
-
-
-    C *= m_h;
 
 //    double p = 0;
 //    for (int nx = 0; nx < nMax; nx++) {
