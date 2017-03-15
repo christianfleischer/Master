@@ -13,19 +13,20 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 1000;
+    int N                       = 1000;         //Need 1600 for nMax=20 in 3D.
     double posMin               = -10;
     double posMax               = 10;
-    double omega_r              = 0.5;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
+    double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
     double V0                   = 1.;
-    int nMax 					= 20;
-    int nPrimeMax               = 20;
-    int numberOfDimensions      = 2;
+    int nMax 					= 40;
+    int nPrimeMax               = 2;
+    int numberOfDimensions      = 1;
     double distanceToWall       = 3.;
 
     vec L(3);
     L.fill(0.);
     L(0) = 5.;
+    //L(1) = 5.;
 
     int numberOfEigstates;
 
@@ -43,7 +44,7 @@ int main() {
     assert(nPrimeMax <= numberOfEigstates);
 
     //Set up the vector x and the matrix A:
-    double h                    = (posMax-posMin)/N;
+    double h = (posMax-posMin)/N;
     mat r = zeros(N+1,numberOfDimensions);
     vec rAbs = zeros(N+1);
 
@@ -64,6 +65,7 @@ int main() {
     mat SavePositionvector      = zeros(N-1, numberOfDimensions+1);
     cube supPosSep				= zeros(N-1, nPrimeMax, numberOfDimensions);
     cube saveC = ones(nMax, nPrimeMax, numberOfDimensions);
+    mat savePotential(N+1, numberOfDimensions);
 
     for (int d = 0; d < numberOfDimensions; d++) {
         SavePositionvector.col(d)   = r.col(d).subvec(1, N-1);    //Saves the y vector for output.
@@ -80,7 +82,7 @@ int main() {
     //system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
     //system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
 
-    system->diagonalizeMatrix(r, L, N, diagMat);
+    system->diagonalizeMatrix(r, L, N, diagMat, savePotential);
     system->findEigenstate(eigvals, eigvecs, diagMat,
                            saveEigenvector, saveSepEigenvector,
                            numberOfEigstates, nMax);
@@ -97,13 +99,15 @@ int main() {
     saveC.save("../diagonalization/PlotAndData/Coefficients.dat", arma_ascii);
     //saveEigenvector.print();
     eigvals.save("../diagonalization/PlotAndData/Eigenvalues.dat", arma_ascii);
+    savePotential.save("../diagonalization/PlotAndData/Potential.dat", raw_ascii);
 
     cout << endl << "eigvals, Armadillo:" << endl;
     int displayVals = 15;
     std::vector<string> dim = {"x", "y", "z"};
     for (int i = 0; i < displayVals; ++i) {
+        cout << i+1 << ":";
         for (int d = 0; d < numberOfDimensions; d++) {
-            cout << i+1 << ": E"<< dim[d] <<": " << eigvals.col(d)(i);
+            cout << " E"<< dim[d] <<": " << eigvals.col(d)(i);
         }
         cout << endl;
     }

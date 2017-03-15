@@ -19,6 +19,11 @@ public:
     void setAlpha(double alpha) { m_alpha =  alpha; }
     virtual vec getWellDistance()   { return zeros(1); }
 
+    virtual double computeHermitePolynomial(int nValue, double position) { return nValue*position; }
+    virtual double computeHermitePolynomialDerivative(int nValue, double position) { return nValue*position; }
+    virtual double computeHermitePolynomialDoubleDerivative(int nValue, double position) { return nValue*position; }
+    virtual double computeHermitePolynomialAlphaDerivative(int nValue, double position) { return nValue*position; }
+
 protected:
     class System* m_system = nullptr;
     bool m_analyticalKinetic = false;

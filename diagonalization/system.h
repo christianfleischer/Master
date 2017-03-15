@@ -8,7 +8,7 @@ using namespace arma;
 class System {
 public:
     System(double omega, int numberOfDimensions, double h, int N);
-    void diagonalizeMatrix(mat r, vec L, int N, cube &diagMat);
+    void diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential);
     void findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, mat &saveEigenvector, cube &saveSeparateEigenvector, int numberOfEigstates, int nMax);
     void findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim);
     mat findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &saveC);

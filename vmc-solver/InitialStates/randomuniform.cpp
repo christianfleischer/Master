@@ -48,7 +48,7 @@ void RandomUniform::setupInitialState() {
              * obviously NOT a good idea).
              */
 
-            double pos = Random::nextDouble();
+            double pos = pow(-1, i)*Random::nextDouble();
             position.push_back(pos);
 
 

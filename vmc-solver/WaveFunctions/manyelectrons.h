@@ -9,7 +9,7 @@ public:
     ManyElectrons(class System* system, double alpha, double beta, double omega, double C, bool Jastrow);
     double evaluate(std::vector<class Particle*> particles);
     double computeDoubleDerivative(std::vector<class Particle*> particles);
-    double computeMetropolisRatio(std::vector<Particle *> particles, int randomParticle,
+    double computeMetropolisRatio(std::vector<Particle *> particles, int currentParticle,
                                   std::vector<double> positionChange);
     std::vector<double> computeDerivative(std::vector<class Particle*> particles);
     std::vector<double> computeDerivativeWrtParameters(std::vector<Particle *> particles);
@@ -19,10 +19,10 @@ public:
     void setUpSlaterDetOneParticle();
     void setUpDistances();
     void setUpJastrowMat();
-    void updateSlaterDet(int randomParticle);
-    void updateDistances(int randomParticle);
-    void updateSPWFMat(int randomParticle);
-    void updateJastrow(int randomParticle);
+    void updateSlaterDet(int currentParticle);
+    void updateDistances(int currentParticle);
+    void updateSPWFMat(int currentParticle);
+    void updateJastrow(int currentParticle);
 
 private:
     int m_numberOfParticles = 0;

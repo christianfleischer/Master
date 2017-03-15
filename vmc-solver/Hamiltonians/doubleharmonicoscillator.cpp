@@ -107,6 +107,7 @@ double DoubleHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<dou
     int sign = -2*(j%2)+1;
     //cout << sign << endl;
 
+    if (m_system->getNumberOfParticles() == 1) { waveFunction_p = 0; }
     double waveFunction = waveFunction_p + sign*waveFunction_m;
 
 //    double waveFunction = computeHermitePolynomial(nx, x)
@@ -158,6 +159,12 @@ std::vector<double> DoubleHarmonicOscillator::computeSPWFDerivative(vec n, std::
     }
 
     int sign = -2*(j%2)+1;
+
+    if (m_system->getNumberOfParticles() == 1) {
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            derivative_p[d] = 0;
+        }
+    }
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
         derivative[d] = derivative_p[d] + sign*derivative_m[d];
@@ -230,6 +237,8 @@ double DoubleHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<
     doubleDerivative_m *= expFactor_m;
 
     int sign = -2*(j%2)+1;
+
+    if (m_system->getNumberOfParticles() == 1) { doubleDerivative_p = 0; }
 
     doubleDerivative = doubleDerivative_p + sign*doubleDerivative_m;
 

@@ -98,7 +98,7 @@ double ManyElectrons::evaluate(std::vector<class Particle*> particles) {
 std::vector<double> ManyElectrons::computeDerivative(std::vector<class Particle*> particles) {
     //Calculates ∇ψ/ψ for the wave function.
 
-    int i = m_system->getRandomParticle();
+    int i = m_system->getCurrentParticle();
     int numberOfParticles = m_system->getNumberOfParticles();
     std::vector<double> derivative(numberOfParticles*m_numberOfDimensions);
 
@@ -414,23 +414,23 @@ std::vector<double> ManyElectrons::computeDerivativeWrtParameters(std::vector<Pa
 }
 
 double ManyElectrons::computeMetropolisRatio(std::vector<Particle *> particles,
-                                            int randomParticle, std::vector<double> positionChange) {
+                                            int currentParticle, std::vector<double> positionChange) {
     // Function for calculating the wave function part of the Metropolis ratio,
     // both the Slater part and the Jastrow part.
 
-    //std::vector<double> positionOld = particles[randomParticle]->getPosition();
+    //std::vector<double> positionOld = particles[currentParticle]->getPosition();
     m_distancesOld = m_distances;
 
     for (int i=0; i<m_numberOfDimensions; i++) {
-        particles[randomParticle]->adjustPosition(positionChange[i], i);
+        particles[currentParticle]->adjustPosition(positionChange[i], i);
     }
 
-    //std::vector<double> positionNew = particles[randomParticle]->getPosition();
-    m_system->getWaveFunction()->updateDistances(randomParticle);
-    m_system->getWaveFunction()->updateSPWFMat(randomParticle);
-    m_system->getWaveFunction()->updateJastrow(randomParticle);
+    //std::vector<double> positionNew = particles[currentParticle]->getPosition();
+    m_system->getWaveFunction()->updateDistances(currentParticle);
+    m_system->getWaveFunction()->updateSPWFMat(currentParticle);
+    m_system->getWaveFunction()->updateJastrow(currentParticle);
 
-    int i = randomParticle;
+    int i = currentParticle;
     double ratioSlaterDet = 0;
 
     if (i < m_halfNumberOfParticles) {
@@ -526,7 +526,7 @@ void ManyElectrons::setUpSlaterDetOneParticle() {
 
     m_SPWFDMat(0,0) = zeros<vec>(m_numberOfDimensions);
 
-    std::vector<double> r = m_system->getInitialState()->getParticles()[0]->getPosition();
+    std::vector<double> r = m_system->getParticles()[0]->getPosition();
     double r2 = 0;
 
     vec n(m_numberOfDimensions);
@@ -666,10 +666,10 @@ void ManyElectrons::setUpSlaterDet() {
     }
 
     for (int i=0; i < m_halfNumberOfParticles; i++) {
-        std::vector<double> rSpinUp = m_system->getInitialState()->getParticles()[i]->getPosition();
+        std::vector<double> rSpinUp = m_system->getParticles()[i]->getPosition();
 //        double xSpinUp = rSpinUp[0];
 //        double ySpinUp = rSpinUp[1];
-        std::vector<double> rSpinDown = m_system->getInitialState()->getParticles()[i+m_halfNumberOfParticles]->getPosition();
+        std::vector<double> rSpinDown = m_system->getParticles()[i+m_halfNumberOfParticles]->getPosition();
 //        double xSpinDown = rSpinDown[0];
 //        double ySpinDown = rSpinDown[1];
 
@@ -711,6 +711,7 @@ void ManyElectrons::setUpSlaterDet() {
         }
     }
 
+    //cout << m_spinUpSlater << endl;
     m_spinUpSlaterInverse = m_spinUpSlater.i();
     m_spinDownSlaterInverse = m_spinDownSlater.i();
 }
@@ -720,10 +721,10 @@ void ManyElectrons::setUpDistances() {
     m_distances = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
 
     for (int i=0; i<m_numberOfParticles; i++) {
-        std::vector<double> r_i = m_system->getInitialState()->getParticles()[i]->getPosition();
+        std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
 
         for (int j=i+1; j<m_numberOfParticles; j++) {
-            std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
+            std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
             double r_ij = 0;
 
             for (int d = 0; d < m_numberOfDimensions; d++) {
@@ -741,9 +742,9 @@ void ManyElectrons::setUpJastrowMat() {
     double beta = m_parameters[1];
 
     for (int i=0; i<m_numberOfParticles; i++) {
-        std::vector<double> r_i = m_system->getInitialState()->getParticles()[i]->getPosition();
+        std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
         for (int j=0; j < i; j++) {
-            std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
+            std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
 
@@ -754,7 +755,7 @@ void ManyElectrons::setUpJastrowMat() {
         }
 
         for (int j=i+1; j < m_numberOfParticles; j++) {
-            std::vector<double> r_j = m_system->getInitialState()->getParticles()[j]->getPosition();
+            std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
 
@@ -771,9 +772,9 @@ void ManyElectrons::setUpJastrowMat() {
     }
 }
 
-void ManyElectrons::updateSlaterDet(int randomParticle) {
+void ManyElectrons::updateSlaterDet(int currentParticle) {
     // Function for updating the Slater determinant after every accepted metropolis step.
-    int i = randomParticle;
+    int i = currentParticle;
     //std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
 
     if (i < m_halfNumberOfParticles) {
@@ -851,9 +852,9 @@ void ManyElectrons::updateSlaterDet(int randomParticle) {
     }
 }
 
-void ManyElectrons::updateDistances(int randomParticle) {
+void ManyElectrons::updateDistances(int currentParticle) {
     // Function for updating the distances between electrons.
-    int i = randomParticle;
+    int i = currentParticle;
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
 
     for (int j=0; j<i; j++) {
@@ -878,9 +879,9 @@ void ManyElectrons::updateDistances(int randomParticle) {
 
 }
 
-void ManyElectrons::updateSPWFMat(int randomParticle) {
+void ManyElectrons::updateSPWFMat(int currentParticle) {
 
-    int i = randomParticle;
+    int i = currentParticle;
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
     double alpha = m_parameters[0];
 
@@ -899,6 +900,7 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
         }
 
         m_SPWFMat(0,0) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, r_i, 0);
+        //cout << m_SPWFMat << "    " << r_i[0] << endl;
 
         m_SPWFDMat(0,0) = m_system->getHamiltonian()->computeSPWFDerivative(n, r_i, 0);
 
@@ -946,9 +948,9 @@ void ManyElectrons::updateSPWFMat(int randomParticle) {
 
 }
 
-void ManyElectrons::updateJastrow(int randomParticle) {
+void ManyElectrons::updateJastrow(int currentParticle) {
 
-    int p = randomParticle;
+    int p = currentParticle;
     std::vector<double> r_p = m_system->getParticles()[p]->getPosition();
     double beta = m_parameters[1];
     m_JastrowMatOld = m_JastrowMat;

@@ -39,7 +39,7 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
         bool isOutside = false;
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            if (abs(r_i[d]) > m_distToWall) { //MAKE SURE ABS RETURNS FLOAT!!!
+            if (abs(r_i[d]) >= m_distToWall) { //MAKE SURE ABS RETURNS FLOAT!!!
                 isOutside = true;
             }
         }

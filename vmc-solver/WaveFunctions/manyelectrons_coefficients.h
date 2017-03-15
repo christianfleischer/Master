@@ -9,7 +9,7 @@ public:
     ManyElectronsCoefficients(class System* system, double alpha, double beta, double omega, double C, bool Jastrow);
     double evaluate(std::vector<class Particle*> particles);
     double computeDoubleDerivative(std::vector<class Particle*> particles);
-    double computeMetropolisRatio(std::vector<Particle *> particles, int randomParticle,
+    double computeMetropolisRatio(std::vector<Particle *> particles, int currentParticle,
                                   std::vector<double> positionChange);
     //double computeHermitePolynomial(int nValue, double position);
     //double computeHermitePolynomialDerivative(int nValue, double position);
@@ -27,10 +27,18 @@ public:
     void setUpSlaterDetOneParticle();
     void setUpDistances();
     void setUpJastrowMat();
-    void updateSlaterDet(int randomParticle);
-    void updateDistances(int randomParticle);
-    void updateSPWFMat(int randomParticle);
-    void updateJastrow(int randomParticle);
+    void updateSlaterDet(int currentParticle);
+    void updateDistances(int currentParticle);
+    void updateSPWFMat(int currentParticle);
+    void updateJastrow(int currentParticle);
+
+    double harmonicOscillatorBasis(double x, int nx, int d);
+    double harmonicOscillatorBasisDerivative(vec r, vec n, int d);
+    double harmonicOscillatorBasisDoubleDerivative(vec r, vec n, int d);
+
+    double computeHermitePolynomial(int nValue, double position);
+    double computeHermitePolynomialDerivative(int nValue, double position);
+    double computeHermitePolynomialDoubleDerivative(int nValue, double position);
 
 private:
     int m_numberOfParticles = 0;
@@ -46,6 +54,7 @@ private:
     double m_metropolisRatio = 0;
     double m_ratioSlaterDet = 0;
     mat m_quantumNumbers;
+    mat m_quantumNumbersDouble;
     mat m_spinUpSlater;
     mat m_spinDownSlater;
     mat m_spinUpSlaterInverse;
@@ -63,6 +72,7 @@ private:
     mat m_JastrowGradOld;
     mat m_a;
     bool m_Jastrow = false;
+    vec m_expFactorsDim;
 };
 
 #endif // PROJECT2_MANYELECTRONSCOEFFICIENTS_H

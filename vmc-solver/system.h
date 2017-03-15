@@ -8,8 +8,8 @@ using namespace arma;
 
 class System {
 public:
-    bool metropolisStep             ();
-    bool metropolisStepImpSampling  ();
+    bool metropolisStep             (int currentParticle);
+    bool metropolisStepImpSampling  (int currentParticle);
     void runMetropolisSteps         (int numberOfMetropolisSteps, bool importanceSampling,
                                      bool showProgress, bool printToTerminal);
     void optimizeParameters         (System* system, double alpha, double beta);
@@ -29,13 +29,14 @@ public:
     void setWaveFunction            (class WaveFunction* waveFunction);
     void setInitialState            (class InitialState* initialState);
     void setNumberOfMetropolisSteps (int numberOfMetropolisSteps);
-    void setRandomParticle          (int randomParticle);
+    void setCurrentParticle         (int currentParticle);
     void setMyRank                  (int my_rank);
     void setNumProcs                (int numprocs);
     void setComputationTime         (double computationTime);
     void setSaveEnergies            (bool saveEnergies);
     void setSavePositions           (bool savePositions);
-    void retrieveFromFile			(std::string fileName, cube &loadCoefficients);
+    void retrieveCoefficientsFromFile			(std::string fileName, cube &loadCoefficients);
+    void retrieveConstantsFromFile              (std::string fileName, vec &loadConstants);
     class WaveFunction*             getWaveFunction()   { return m_waveFunction; }
     class Hamiltonian*              getHamiltonian()    { return m_hamiltonian; }
     class Sampler*                  getSampler()        { return m_sampler; }
@@ -44,7 +45,7 @@ public:
     int getNumberOfParticles()          { return m_numberOfParticles; }
     int getNumberOfDimensions()         { return m_numberOfDimensions; }
     int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }
-    int getRandomParticle()             { return m_randomParticle; }
+    int getCurrentParticle()             { return m_currentParticle; }
     int getMyRank()                     { return m_my_rank; }
     int getNumProcs()                   { return m_numprocs; }
     double getEquilibrationFraction()   { return m_equilibrationFraction; }
@@ -60,11 +61,14 @@ public:
     void setSquareWellFlag(bool squareWell)                { m_squareWell = squareWell; }
     bool getSquareWellFlag()                               { return m_squareWell; }
 
+    void setL(vec L)                                       { m_L = L; }
+    vec getL()                                             { return m_L; }
+
 private:
     int                             m_numberOfParticles = 0;
     int                             m_numberOfDimensions = 0;
     int                             m_numberOfMetropolisSteps = 0;
-    int                             m_randomParticle = 0;
+    int                             m_currentParticle = 0;
     int                             m_my_rank = 0;
     int                             m_numprocs = 0;
     double                          m_equilibrationFraction = 0.0;
@@ -83,6 +87,7 @@ private:
     FILE*                           m_outfileP;
     bool                            m_doubleWell = false;
     bool                            m_squareWell = false;
+    vec                             m_L;
 };
 
 #endif // PROJECT2_SYSTEM_H
