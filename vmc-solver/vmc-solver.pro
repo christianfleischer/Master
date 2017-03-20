@@ -32,7 +32,8 @@ SOURCES += main.cpp \
     Hamiltonians/squarewell.cpp \
     Hamiltonians/finiteharmonicoscillator.cpp \
     Hamiltonians/doubleharmonicoscillator.cpp \
-    HermitePolynomials/hermitepolynomials.cpp
+    HermitePolynomials/hermitepolynomials.cpp \
+    DMC/dmc.cpp
     DMC/walker.cpp
 
 LIBS += -llapack -lblas -larmadillo -lUnitTest++
@@ -61,7 +62,8 @@ HEADERS += \
     Hamiltonians/squarewell.h \
     Hamiltonians/finiteharmonicoscillator.h \
     Hamiltonians/doubleharmonicoscillator.h \
-    HermitePolynomials/hermitepolynomials.h
+    HermitePolynomials/hermitepolynomials.h \
+    DMC/dmc.h
     DMC/walker.h
 
 # MPI Settings
