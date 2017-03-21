@@ -33,6 +33,7 @@ SOURCES += main.cpp \
     Hamiltonians/finiteharmonicoscillator.cpp \
     Hamiltonians/doubleharmonicoscillator.cpp \
     HermitePolynomials/hermitepolynomials.cpp
+    DMC/walker.cpp
 
 LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
@@ -61,6 +62,7 @@ HEADERS += \
     Hamiltonians/finiteharmonicoscillator.h \
     Hamiltonians/doubleharmonicoscillator.h \
     HermitePolynomials/hermitepolynomials.h
+    DMC/walker.h
 
 # MPI Settings
 QMAKE_CXX = mpicxx
