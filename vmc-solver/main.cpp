@@ -75,7 +75,7 @@ int main(int nargs, char* args[]) {
     bool showProgress       = true;
     bool printToTerminal    = true;
 
-    bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
+    bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
 
     bool doubleWell         = true;
     bool finiteWell         = false;
@@ -90,8 +90,13 @@ int main(int nargs, char* args[]) {
 //    cout << " Importance Sampling : " << importanceSampling << endl;
 //    cout << " Repulsion : " << repulsion << endl;
 
+    int VMC_runs = 2; // Number of VMC configurations to save.
+    System** setOfWalkers;
+    setOfWalkers = new System*[VMC_runs];
+
     // Initiate System
     System* system = new System();
+
     // RandomUniform creates a random initial state
     system->setInitialState             (new RandomUniform(system, numberOfDimensions, numberOfParticles, my_rank));
     // Select which Hamiltonian and trial wave function to use (interacting or non-interacting)
@@ -147,11 +152,17 @@ int main(int nargs, char* args[]) {
     system->setSavePositions            (savePositions);
     // Start Monte Carlo simulation
     system->runMetropolisSteps          (numMyCycles, importanceSampling, showProgress, printToTerminal);
+
     // Compute MPI averages etc.
     system->MPI_CleanUp                 (totalE, totalKE, totalPE, totalVariance, totalAcceptanceRate, finalMeanDistance,
                                          timeStart, timeEnd, totalTime, numprocs, numberOfSteps);
+
     // Merge the files from the nodes into one data file
     system->mergeOutputFiles            (numprocs);
+
+
+    //cout << setOfWalkers[0]->getParticles()[0]->getPosition()[0] << endl;
+    //cout << setOfWalkers[1]->getParticles()[0]->getPosition()[0] << endl;
 
     if (runTests) { return RunAllTests(); }
     else { return 0; }

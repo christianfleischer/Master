@@ -18,14 +18,14 @@ void DMC::runDMC() {
     //equlibration steps:
     for (int cycle = 1; cycle <= m_numberOfEquilibrationSteps; cycle++) {
         for (int iWalker = 0; iWalker < m_numberOfWalkers; iWalker++) {
-            moveWalker(iWalker);
+            moveWalkerDMC(iWalker);
         }
     }
 
     //actual dmc steps:
     for (int cycle = 1; cycle <= m_numberOfWalkers; cycle++) {
         for (int iWalker = 0; iWalker < m_numberOfWalkers; iWalker++) {
-            moveWalker(iWalker);
+            moveWalkerDMC(iWalker);
         }
 
     }
@@ -37,22 +37,24 @@ void DMC::setEquilibrationSteps(int equilibration) {
     m_numberOfEquilibrationSteps = equilibration;
 }
 
+void DMC::copyWalker(Walker* originalWalker, Walker* newWalker) {
+    newWalker->setPosition(originalWalker->getPosition());
+    newWalker->setE(originalWalker->getE());
+}
 
-void DMC::moveWalker(int iWalker) {
-    m_trialWalker = m_setOfWalkers[iWalker];
+void DMC::moveWalkerDMC(int iWalker) {
+    copyWalker(m_setOfWalkers[iWalker], m_trialWalker);
 
     for (int currentParticle = 0; currentParticle < m_numberOfParticles; currentParticle++){
         bool acceptedStep;
         // Ask Metropolis step functions whether the step was accepted or not
-        acceptedStep = m_system->metropolisStepImpSampling(currentParticle);
+        acceptedStep = m_trialWalker->getSystem()->metropolisStepImpSampling(currentParticle);
 
-        /* This is the sampling part of the iteration:
-         *
-        if (i >= equilibrationSteps){
-            // Sample energy etc.
-            m_sampler->sample(acceptedStep);
-        }
-        *
-        End of Sampling */
+        //This is the sampling part of the iteration:
+
+        //if (i >= m_trialWalker->getSystem()->getNumberOfMetropolisSteps()){
+        //    // Sample energy etc.
+        //    m_trialWalker->getSystem()->m_sampler->sample(acceptedStep);
+        //}
     }
 }

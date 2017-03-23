@@ -257,7 +257,7 @@ void System::MPI_CleanUp(double &totalE, double &totalKE, double &totalPE,
     }
     if (m_saveEnergies) fclose(m_outfileE);
     if (m_savePositions) fclose(m_outfileP);
-    MPI_Finalize();
+    //MPI_Finalize();
 }
 
 void System::mergeOutputFiles(int numprocs) {
@@ -386,3 +386,4 @@ void System::retrieveConstantsFromFile(string fileName, vec &loadConstants) {
     loadConstants.load(fileName, raw_ascii);
     return;
 }
+

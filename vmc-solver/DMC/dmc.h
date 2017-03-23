@@ -8,13 +8,15 @@ class DMC
 public:
     DMC(System* system, int N_c);
     void setEquilibrationSteps(int equilibration);
-    void moveWalker(int iWalker);
+    void moveWalkerDMC(int iWalker);
     void runDMC();
+    void copyWalker(Walker* originalWalker, Walker* newWalker);
 private:
     int m_numberOfWalkers;
     int m_numberOfEquilibrationSteps = 0.1*m_numberOfWalkers;
     int m_numberOfParticles;
     int m_numberOfDimensions;
+
 
     System* m_system;
 

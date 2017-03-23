@@ -7,3 +7,7 @@ Walker::Walker(int numberOfParticles, int numberOfDimensions)
     m_numberOfDimensions = numberOfDimensions;
 
 }
+
+void Walker::setPosition(mat position) {
+    m_r = position;
+}
