@@ -3,6 +3,7 @@
 #include <vector>
 #include <armadillo>
 #include <iostream>
+#include "DMC/walker.h"
 
 using namespace arma;
 
@@ -10,6 +11,7 @@ class System {
 public:
     bool metropolisStep             (int currentParticle);
     bool metropolisStepImpSampling  (int currentParticle);
+    bool metropolisStepImpSamplingDMC  (int currentParticle, class Walker* trialWalker);
     void runMetropolisSteps         (int numberOfMetropolisSteps, bool importanceSampling,
                                      bool showProgress, bool printToTerminal);
     void optimizeParameters         (System* system, double alpha, double beta);
@@ -35,6 +37,7 @@ public:
     void setComputationTime         (double computationTime);
     void setSaveEnergies            (bool saveEnergies);
     void setSavePositions           (bool savePositions);
+    void setWalkers                 (std::vector<class Walker*> walkers);
     void retrieveCoefficientsFromFile			(std::string fileName, cube &loadCoefficients);
     void retrieveConstantsFromFile              (std::string fileName, vec &loadConstants);
     class WaveFunction*             getWaveFunction()   { return m_waveFunction; }
@@ -42,10 +45,11 @@ public:
     class Sampler*                  getSampler()        { return m_sampler; }
     class InitialState*             getInitialState()   { return m_initialState; }
     std::vector<class Particle*>    getParticles()      { return m_particles; }
+    std::vector<class Walker*>      getWalkers()      { return m_walkers; }
     int getNumberOfParticles()          { return m_numberOfParticles; }
     int getNumberOfDimensions()         { return m_numberOfDimensions; }
     int getNumberOfMetropolisSteps()    { return m_numberOfMetropolisSteps; }
-    int getCurrentParticle()             { return m_currentParticle; }
+    int getCurrentParticle()            { return m_currentParticle; }
     int getMyRank()                     { return m_my_rank; }
     int getNumProcs()                   { return m_numprocs; }
     double getEquilibrationFraction()   { return m_equilibrationFraction; }
@@ -80,6 +84,7 @@ private:
     class InitialState*             m_initialState = nullptr;
     class Sampler*                  m_sampler = nullptr;
     std::vector<class Particle*>    m_particles = std::vector<class Particle*>();
+    std::vector<class Walker*>      m_walkers = std::vector<class Walker*>();
     bool                            m_printToTerminal = false;
     bool                            m_saveEnergies = false;
     FILE*                           m_outfileE;

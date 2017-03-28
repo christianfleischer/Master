@@ -2,6 +2,9 @@
 #include <cassert>
 #include "sampler.h"
 #include "particle.h"
+#include "DMC/walker.h"
+#include "DMC/dmc.h"
+#include <mpi.h>
 #include "WaveFunctions/wavefunction.h"
 #include "Hamiltonians/hamiltonian.h"
 #include "InitialStates/initialstate.h"
@@ -12,7 +15,6 @@
 #include <armadillo>
 #include <cmath>
 #include <time.h>
-#include <mpi.h>
 
 using namespace std;
 using namespace arma;
@@ -387,3 +389,60 @@ void System::retrieveConstantsFromFile(string fileName, vec &loadConstants) {
     return;
 }
 
+
+void System::setWalkers(std::vector<Walker*> walkers) {
+    m_walkers = walkers;
+}
+
+
+bool System::metropolisStepImpSamplingDMC(int currentParticle, Walker* trialWalker){
+
+//    // Choose a random particle to change the position of
+//    int randomParticle = Random::nextInt(m_numberOfParticles);
+//    setRandomParticle(randomParticle);
+    setCurrentParticle(currentParticle);
+    std::vector<class Particle*> particles = trialWalker->getParticles();
+    WaveFunction* waveFunction = trialWalker->getWaveFunction();
+
+    std::vector<double> positionChange(m_numberOfDimensions);
+    double D = 0.5;
+
+    // Keep old position for Greens function
+    std::vector<double> positionOld = particles[currentParticle/*randomParticle*/]->getPosition();
+
+    // Change position of current particle
+    for (int i=0; i < m_numberOfDimensions; i++){
+        positionChange[i] = Random::nextGaussian(0., sqrt(m_dt)) + D*m_dt*quantumForce()[i];
+    }
+
+    double qratio = waveFunction->computeMetropolisRatio(particles, currentParticle/*randomParticle*/, positionChange);
+
+    // Keep new position for Greens function
+    std::vector<double> positionNew = particles[currentParticle/*randomParticle*/]->getPosition();
+
+    // Evaluate Greens functions and find Metropolis-Hastings ratio:
+    double GreensFunctionNew = calculateGreensFunction(positionNew, positionOld);
+
+    for (int i=0; i < m_numberOfDimensions; i++){
+        particles[currentParticle/*randomParticle*/]->adjustPosition(-positionChange[i], i);
+    }
+
+    double GreensFunctionOld = calculateGreensFunction(positionOld, positionNew);
+
+    qratio *= GreensFunctionNew / GreensFunctionOld;
+
+    // If move is accepted give the random particle the new position, otherwise keep the old position
+    if (Random::nextDouble() <= qratio){
+        for (int i=0; i<m_numberOfDimensions; i++){
+            particles[currentParticle/*randomParticle*/]->adjustPosition(positionChange[i], i);
+        }
+        waveFunction->updateSlaterDet(currentParticle/*randomParticle*/);
+        return true;
+    }
+
+    waveFunction->updateDistances(currentParticle/*randomParticle*/);
+    waveFunction->updateSPWFMat(currentParticle/*randomParticle*/);
+    waveFunction->updateJastrow(currentParticle/*randomParticle*/);
+
+    return false;
+}

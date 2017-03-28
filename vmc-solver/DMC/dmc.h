@@ -6,11 +6,11 @@
 class DMC
 {
 public:
-    DMC(System* system, int N_c);
+    DMC(class System* system, int N_c);
     void setEquilibrationSteps(int equilibration);
-    void moveWalkerDMC(int iWalker);
+    void moveWalker(int iWalker);
     void runDMC();
-    void copyWalker(Walker* originalWalker, Walker* newWalker);
+    void copyWalker(class Walker* originalWalker, Walker* newWalker);
 private:
     int m_numberOfWalkers;
     int m_numberOfEquilibrationSteps = 0.1*m_numberOfWalkers;
@@ -18,10 +18,10 @@ private:
     int m_numberOfDimensions;
 
 
-    System* m_system;
+    class System* m_system;
 
-    Walker* m_trialWalker;
-    Walker** m_setOfWalkers;
+    class Walker* m_trialWalker;
+    std::vector<class Walker*> m_setOfWalkers;
 };
 
 #endif // DMC_H

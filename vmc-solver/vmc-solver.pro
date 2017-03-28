@@ -34,7 +34,8 @@ SOURCES += main.cpp \
     Hamiltonians/doubleharmonicoscillator.cpp \
     HermitePolynomials/hermitepolynomials.cpp \
     DMC/dmc.cpp \
-    DMC/walker.cpp
+    DMC/walker.cpp \
+    WaveFunctions/manyelectronsDMC.cpp
 
 LIBS += -llapack -lblas -larmadillo -lUnitTest++
 
@@ -64,7 +65,8 @@ HEADERS += \
     Hamiltonians/doubleharmonicoscillator.h \
     HermitePolynomials/hermitepolynomials.h \
     DMC/dmc.h \
-    DMC/walker.h
+    DMC/walker.h \
+    WaveFunctions/manyelectronsDMC.h
 
 # MPI Settings
 QMAKE_CXX = mpicxx

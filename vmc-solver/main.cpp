@@ -40,7 +40,7 @@ int main(int nargs, char* args[]) {
     MPI_Comm_rank(MPI_COMM_WORLD, &my_rank);
     timeStart = MPI_Wtime();
 
-    int numberOfDimensions  = 1;
+    int numberOfDimensions  = 2;
     int numberOfParticles   = 2;
     int numberOfSteps       = (int) 1e4;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
@@ -90,12 +90,14 @@ int main(int nargs, char* args[]) {
 //    cout << " Importance Sampling : " << importanceSampling << endl;
 //    cout << " Repulsion : " << repulsion << endl;
 
-    int VMC_runs = 2; // Number of VMC configurations to save.
-    System** setOfWalkers;
-    setOfWalkers = new System*[VMC_runs];
+    int numberOfDMCWalkers = 10; // Number of VMC configurations to save.
+    std::vector<class Walker*> setOfWalkers(numberOfDMCWalkers);
 
     // Initiate System
     System* system = new System();
+
+    // Set the set of walkers
+    system->setWalkers(setOfWalkers);
 
     // RandomUniform creates a random initial state
     system->setInitialState             (new RandomUniform(system, numberOfDimensions, numberOfParticles, my_rank));
