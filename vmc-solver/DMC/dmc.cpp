@@ -42,7 +42,7 @@ void DMC::setEquilibrationSteps(int equilibration) {
 }
 
 void DMC::copyWalker(Walker* originalWalker, Walker* newWalker) {
-    newWalker->setPosition(originalWalker->getPosition());
+    newWalker->setParticles(originalWalker->getParticles());
     newWalker->setE(originalWalker->getE());
 
     //These are the values that are needed in the wavefunction:

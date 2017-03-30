@@ -1002,3 +1002,27 @@ void ManyElectrons::updateJastrow(int currentParticle) {
         }
     }
 }
+
+void ManyElectrons::setSPWFMat(mat SPWFMat) {
+    m_SPWFMat = SPWFMat;
+}
+
+void ManyElectrons::setSPWFDMat(field<vec> SPWFDMat) {
+    m_SPWFDMat = SPWFDMat;
+}
+
+void ManyElectrons::setSPWFDDMat(mat SPWFDDMat) {
+    m_SPWFDDMat = SPWFDDMat;
+}
+
+mat ManyElectrons::getSPWFMat() {
+    return m_SPWFMat;
+}
+
+field<vec> ManyElectrons::getSPWFDMat() {
+    return m_SPWFDMat;
+}
+
+mat ManyElectrons::getSPWFDDMat() {
+    return m_SPWFDDMat;
+}

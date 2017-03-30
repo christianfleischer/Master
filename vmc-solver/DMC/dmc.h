@@ -9,7 +9,7 @@ public:
     void setEquilibrationSteps(int equilibration);
     void moveWalker(int iWalker);
     void runDMC();
-    void copyWalker(class Walker* originalWalker, Walker* newWalker);
+    void copyWalker(class Walker* originalWalker, class Walker* newWalker);
 
 private:
     int m_numberOfWalkers;

@@ -10,6 +10,7 @@
 #include "WaveFunctions/twoelectrons.h"
 #include "WaveFunctions/manyelectrons.h"
 #include "WaveFunctions/manyelectronsDMC.h"
+#include "DMC/dmc.h"
 #include "WaveFunctions/manyelectrons_coefficients.h"
 #include "Hamiltonians/hamiltonian.h"
 #include "Hamiltonians/harmonicoscillator.h"
@@ -91,14 +92,10 @@ int main(int nargs, char* args[]) {
 //    cout << " Importance Sampling : " << importanceSampling << endl;
 //    cout << " Repulsion : " << repulsion << endl;
 
-    int numberOfDMCWalkers = 10; // Number of VMC configurations to save.
-    std::vector<class Walker*> setOfWalkers(numberOfDMCWalkers);
 
     // Initiate System
     System* system = new System();
 
-    // Set the set of walkers
-    system->setWalkers(setOfWalkers);
 
     // RandomUniform creates a random initial state
     system->setInitialState             (new RandomUniform(system, numberOfDimensions, numberOfParticles, my_rank));
@@ -153,6 +150,22 @@ int main(int nargs, char* args[]) {
     }
     system->setSaveEnergies             (saveEnergies);
     system->setSavePositions            (savePositions);
+
+
+
+    // Set the set of walkers
+    int numberOfDMCWalkers = 1000; // Number of VMC configurations to save.
+    system->setNumberOfDMCWalkers(numberOfDMCWalkers);
+    std::vector<class Walker*> setOfWalkers(numberOfDMCWalkers);
+    for (int k = 0; k < numberOfDMCWalkers; k++) {
+        setOfWalkers[k] = new Walker(numberOfParticles, numberOfDimensions);
+        setOfWalkers[k]->setWaveFunction(new ManyElectronsDMC(system, alpha, beta, omega, C, Jastrow));
+    }
+    system->setWalkers(setOfWalkers);
+
+    //Initiate the system walker. The VMC walker.
+    system->setSystemWalker(new Walker(numberOfParticles, numberOfDimensions));
+
     // Start Monte Carlo simulation
     system->runMetropolisSteps          (numMyCycles, importanceSampling, showProgress, printToTerminal);
 
@@ -164,8 +177,9 @@ int main(int nargs, char* args[]) {
     system->mergeOutputFiles            (numprocs);
 
 
-    //cout << setOfWalkers[0]->getParticles()[0]->getPosition()[0] << endl;
-    //cout << setOfWalkers[1]->getParticles()[0]->getPosition()[0] << endl;
+    DMC* dmcrun = new DMC(system, numberOfDMCWalkers);
+    dmcrun->runDMC();
+
 
     if (runTests) { return RunAllTests(); }
     else { return 0; }

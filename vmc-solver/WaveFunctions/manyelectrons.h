@@ -19,10 +19,19 @@ public:
     void setUpSlaterDetOneParticle();
     void setUpDistances();
     void setUpJastrowMat();
+
+    void setSPWFMat(mat SPWFMat);
+    void setSPWFDMat(field<vec> SPWFDMat);
+    void setSPWFDDMat(mat SPWFDDMat);
+
     void updateSlaterDet(int currentParticle);
     void updateDistances(int currentParticle);
     void updateSPWFMat(int currentParticle);
     void updateJastrow(int currentParticle);
+
+    mat getSPWFMat();
+    field<vec> getSPWFDMat();
+    mat getSPWFDDMat();
 
 private:
     int m_numberOfParticles = 0;

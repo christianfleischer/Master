@@ -22,8 +22,7 @@ public:
     double calculateGreensFunction  (std::vector<double> positionOld, std::vector<double> positionNew);
     std::vector<double> quantumForce();
     void setNumberOfParticles       (int numberOfParticles);
-    void setNumberOfDimensions      (int numberOfDimensions);
-    void setStepLength              (double stepLength);
+    void setNumberOfDimensions      (int numberOfDimensions); void setStepLength              (double stepLength);
     void setTimeStep                (double dt);
     void setEquilibrationFraction   (double equilibrationFraction);
     void setHamiltonian             (class Hamiltonian* hamiltonian);
@@ -37,6 +36,7 @@ public:
     void setSaveEnergies            (bool saveEnergies);
     void setSavePositions           (bool savePositions);
     void setWalkers                 (std::vector<class Walker*> walkers);
+
     void retrieveCoefficientsFromFile			(std::string fileName, cube &loadCoefficients);
     void retrieveConstantsFromFile              (std::string fileName, vec &loadConstants);
     class WaveFunction*             getWaveFunction()   { return m_waveFunction; }
@@ -63,6 +63,10 @@ public:
 
     void setSquareWellFlag(bool squareWell)                { m_squareWell = squareWell; }
     bool getSquareWellFlag()                               { return m_squareWell; }
+    void setSystemWalker(class Walker* walker);
+    void setNumberOfDMCWalkers(int numberOfDMCWalkers);
+
+    void saveWalker(class Walker* walker);
 
     void setL(vec L)                                       { m_L = L; }
     vec getL()                                             { return m_L; }
@@ -71,6 +75,7 @@ private:
     int                             m_numberOfParticles = 0;
     int                             m_numberOfDimensions = 0;
     int                             m_numberOfMetropolisSteps = 0;
+    int                             m_numberOfDMCWalkers = 0;
     int                             m_currentParticle = 0;
     int                             m_my_rank = 0;
     int                             m_numprocs = 0;
@@ -82,6 +87,7 @@ private:
     class Hamiltonian*              m_hamiltonian = nullptr;
     class InitialState*             m_initialState = nullptr;
     class Sampler*                  m_sampler = nullptr;
+    class Walker*                   m_systemWalker;
     std::vector<class Particle*>    m_particles = std::vector<class Particle*>();
     std::vector<class Walker*>      m_walkers = std::vector<class Walker*>();
     bool                            m_printToTerminal = false;

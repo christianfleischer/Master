@@ -19,6 +19,7 @@
 using namespace std;
 using namespace arma;
 
+
 bool System::metropolisStep(int currentParticle) {
     /* Perform the actual Metropolis step: Choose a particle at random and
      * change it's position by a random amount, and check if the step is
@@ -174,13 +175,15 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
                 m_sampler->sample(acceptedStep);
             }
         }
-        if (!i%1000) {
-            m_walkers[k]->set;
+
+
+
+        if (!(i%(m_numberOfMetropolisSteps/m_numberOfDMCWalkers))) {
+            saveWalker(m_walkers[k]);
             k++;
         }
     }
-
-    finish = clock();
+ finish = clock();
     m_computationTime = (finish-start)/ (double) CLOCKS_PER_SEC;
     m_printToTerminal = printToTerminal;//if (printToTerminal){;} //m_sampler->printOutputToTerminal();
 
@@ -450,4 +453,26 @@ bool System::metropolisStepImpSamplingDMC(int currentParticle, Walker* trialWalk
     waveFunction->updateJastrow(currentParticle/*randomParticle*/);
 
     return false;
+}
+
+void System::saveWalker(Walker* walker) {
+    mat SPWFMatOld = getWaveFunction()->getSPWFMat();
+    field<vec> SPWFDMatOld = getWaveFunction()->getSPWFDMat();
+    mat SPWFDDMatOld = getWaveFunction()->getSPWFDDMat();
+
+    walker->getWaveFunction()->setSPWFMat(SPWFMatOld);
+    walker->getWaveFunction()->setSPWFDMat(SPWFDMatOld);
+    walker->getWaveFunction()->setSPWFDDMat(SPWFDDMatOld);
+}
+
+void System::setSystemWalker(Walker *walker) {
+    m_systemWalker = walker;
+    m_systemWalker->setSystem(this);
+    m_systemWalker->setWaveFunction(m_waveFunction);
+    m_systemWalker->setParticles(getParticles());
+}
+
+
+void System::setNumberOfDMCWalkers(int numberOfDMCWalkers) {
+    m_numberOfDMCWalkers = numberOfDMCWalkers;
 }
