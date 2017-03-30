@@ -33,6 +33,8 @@ public:
     field<vec> getSPWFDMat() { return m_SPWFDMat; }
     mat getSPWFDDMat() {return m_SPWFDDMat; }
 
+    void testFunc();
+
 private:
     int m_numberOfParticles = 0;
     int m_halfNumberOfParticles = 0;
