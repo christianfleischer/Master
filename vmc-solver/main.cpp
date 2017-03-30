@@ -9,6 +9,7 @@
 #include "WaveFunctions/repulsivegaussian.h"
 #include "WaveFunctions/twoelectrons.h"
 #include "WaveFunctions/manyelectrons.h"
+#include "WaveFunctions/manyelectronsDMC.h"
 #include "WaveFunctions/manyelectrons_coefficients.h"
 #include "Hamiltonians/hamiltonian.h"
 #include "Hamiltonians/harmonicoscillator.h"

@@ -3,7 +3,6 @@
 #include <vector>
 #include <armadillo>
 #include <iostream>
-#include "DMC/walker.h"
 
 using namespace arma;
 

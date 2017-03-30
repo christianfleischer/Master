@@ -1,10 +1,12 @@
-#ifndef WALKER_H
-#define WALKER_H
+#ifndef PROJECT2_WALKER_H
+#define PROJECT2_WALKER_H
 #include <armadillo>
 #include "system.h"
 #include "dmc.h"
 #include "../InitialStates/initialstate.h"
 #include "../InitialStates/randomuniform.h"
+#include "../WaveFunctions/wavefunction.h"
+
 using namespace arma;
 
 
@@ -56,4 +58,4 @@ private:
     FILE*                           m_outfileP;
 };
 
-#endif // WALKER_H
+#endif // PROJECT2_WALKER_H

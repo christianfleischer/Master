@@ -1,5 +1,7 @@
 #include "dmc.h"
 #include "walker.h"
+#include "../WaveFunctions/manyelectronsDMC.h"
+#include <armadillo>
 
 DMC::DMC(System* system, int N_c)
 {
@@ -40,6 +42,18 @@ void DMC::setEquilibrationSteps(int equilibration) {
 void DMC::copyWalker(Walker* originalWalker, Walker* newWalker) {
     newWalker->setPosition(originalWalker->getPosition());
     newWalker->setE(originalWalker->getE());
+
+    WaveFunction* test = new ManyElectronsDMC(m_system, 1, 1, 1, 1, false);
+    test->getSPWFMat();
+
+    //These are the values that are needed in the wavefunction:
+    mat SPWFMatOld = originalWalker->getWaveFunction()->getSPWFMat();
+    field<vec> SPWFDMatOld = originalWalker->getWaveFunction()->getSPWFDMat();
+    mat SPWFDDMatOld = originalWalker->getWaveFunction()->getSPWFDDMat();
+
+    newWalker->getWaveFunction()->setSPWFMat(SPWFMatOld);
+    newWalker->getWaveFunction()->setSPWFDMat(SPWFDMatOld);
+    newWalker->getWaveFunction()->setSPWFDDMat(SPWFDDMatOld);
 }
 
 void DMC::moveWalker(int currentWalker) {

@@ -1,6 +1,6 @@
-#ifndef DMC_H
-#define DMC_H
-#include "walker.h"
+#ifndef PROJECT2_DMC_H
+#define PROJECT2_DMC_H
+#include <armadillo>
 #include "system.h"
 
 class DMC
@@ -24,4 +24,4 @@ private:
     std::vector<class Walker*> m_setOfWalkers;
 };
 
-#endif // DMC_H
+#endif // PROJECT2_DMC_H
