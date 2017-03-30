@@ -1,6 +1,8 @@
 #include "dmc.h"
 #include "walker.h"
+#include "../WaveFunctions/wavefunction.h"
 #include "../WaveFunctions/manyelectronsDMC.h"
+#include "system.h"
 #include <armadillo>
 
 DMC::DMC(System* system, int N_c)
@@ -43,9 +45,6 @@ void DMC::copyWalker(Walker* originalWalker, Walker* newWalker) {
     newWalker->setPosition(originalWalker->getPosition());
     newWalker->setE(originalWalker->getE());
 
-    WaveFunction* test = new ManyElectronsDMC(m_system, 1, 1, 1, 1, false);
-    test->getSPWFMat();
-
     //These are the values that are needed in the wavefunction:
     mat SPWFMatOld = originalWalker->getWaveFunction()->getSPWFMat();
     field<vec> SPWFDMatOld = originalWalker->getWaveFunction()->getSPWFDMat();
@@ -58,8 +57,7 @@ void DMC::copyWalker(Walker* originalWalker, Walker* newWalker) {
 
 void DMC::moveWalker(int currentWalker) {
     copyWalker(m_setOfWalkers[currentWalker], m_trialWalker);
-    int blockSize = 5;
-    for (int block = 0; block < blockSize; block++) {
+    for (int block = 0; block < m_blockSize; block++) {
         double localE = m_setOfWalkers[currentWalker]->getE();
 
         for (int currentParticle = 0; currentParticle < m_numberOfParticles; currentParticle++){

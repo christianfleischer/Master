@@ -1,7 +1,6 @@
 #include "walker.h"
 #include "dmc.h"
 #include "../WaveFunctions/wavefunction.h"
-#include "../WaveFunctions/manyelectronsDMC.h"
 
 Walker::Walker(int numberOfParticles, int numberOfDimensions)
 {

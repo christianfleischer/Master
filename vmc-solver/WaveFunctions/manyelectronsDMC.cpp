@@ -1015,4 +1015,14 @@ void ManyElectronsDMC::setSPWFDDMat(mat SPWFDDMat) {
     m_SPWFDDMat = SPWFDDMat;
 }
 
-void ManyElectronsDMC::testFunc() { getSPWFDDMat(); }
+mat ManyElectronsDMC::getSPWFMat() {
+    return m_SPWFMat;
+}
+
+field<vec> ManyElectronsDMC::getSPWFDMat() {
+    return m_SPWFDMat;
+}
+
+mat ManyElectronsDMC::getSPWFDDMat() {
+    return m_SPWFDDMat;
+}

@@ -29,11 +29,9 @@ public:
     void updateSPWFMat(int currentParticle);
     void updateJastrow(int currentParticle);
 
-    mat getSPWFMat() { return m_SPWFMat; }
-    field<vec> getSPWFDMat() { return m_SPWFDMat; }
-    mat getSPWFDDMat() {return m_SPWFDDMat; }
-
-    void testFunc();
+    mat getSPWFMat();
+    field<vec> getSPWFDMat();
+    mat getSPWFDDMat();
 
 private:
     int m_numberOfParticles = 0;

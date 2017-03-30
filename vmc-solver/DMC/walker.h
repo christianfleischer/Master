@@ -1,11 +1,7 @@
 #ifndef PROJECT2_WALKER_H
 #define PROJECT2_WALKER_H
 #include <armadillo>
-#include "system.h"
-#include "dmc.h"
 #include "../InitialStates/initialstate.h"
-#include "../InitialStates/randomuniform.h"
-#include "../WaveFunctions/wavefunction.h"
 
 using namespace arma;
 
@@ -20,6 +16,8 @@ public:
     void                            setE(double energy) {m_E = energy; }
     void                            setPosition(mat position);
     void                            setInitialState(InitialState* initialState);
+
+    class Sampler*                  m_sampler = nullptr;
 
     int                             getNumberOfParticles() { return m_numberOfParticles; }
     int                             getNumberOfDimensions() { return m_numberOfDimensions; }
@@ -51,7 +49,6 @@ private:
 
     class WaveFunction*             m_waveFunction = nullptr;
     class InitialState*             m_initialState = nullptr;
-    class Sampler*                  m_sampler = nullptr;
     class System*                   m_system = nullptr;
 
     FILE*                           m_outfileE;

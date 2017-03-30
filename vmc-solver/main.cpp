@@ -97,10 +97,6 @@ int main(int nargs, char* args[]) {
     // Initiate System
     System* system = new System();
 
-    WaveFunction* test = new ManyElectrons(system, alpha, beta, omega, C, Jastrow);
-    test->();
-
-
     // Set the set of walkers
     system->setWalkers(setOfWalkers);
 

@@ -22,6 +22,14 @@ public:
     virtual void updateSPWFMat(int currentParticle) { currentParticle = currentParticle; }
     virtual void updateJastrow(int currentParticle) { currentParticle = currentParticle; }
 
+    virtual void setSPWFMat(mat SPWFMat) { SPWFMat = SPWFMat; }
+    virtual void setSPWFDMat(field<vec> SPWFDMat) { SPWFDMat = SPWFDMat; }
+    virtual void setSPWFDDMat(mat SPWFDDMat) { SPWFDDMat = SPWFDDMat; }
+
+    virtual mat getSPWFMat() { int dummy = 1; }
+    virtual field<vec> getSPWFDMat() { int dummy = 1; }
+    virtual mat getSPWFDDMat() { int dummy = 1; }
+
 protected:
     int     m_numberOfParameters = 0;
     std::vector<double> m_parameters = std::vector<double>();

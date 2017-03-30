@@ -1,7 +1,6 @@
 #ifndef PROJECT2_DMC_H
 #define PROJECT2_DMC_H
 #include <armadillo>
-#include "system.h"
 
 class DMC
 {
@@ -11,11 +10,13 @@ public:
     void moveWalker(int iWalker);
     void runDMC();
     void copyWalker(class Walker* originalWalker, Walker* newWalker);
+
 private:
     int m_numberOfWalkers;
     int m_numberOfEquilibrationSteps = 0.1*m_numberOfWalkers;
     int m_numberOfParticles;
     int m_numberOfDimensions;
+    int m_blockSize;
 
 
     class System* m_system;

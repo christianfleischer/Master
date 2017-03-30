@@ -146,6 +146,7 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
     int percent = numberOfMetropolisSteps/100;
     int progress = 0;
     double equilibrationSteps = m_equilibrationFraction*numberOfMetropolisSteps;
+    int k = 0;
 
     for (int i = 0; i < numberOfMetropolisSteps; i++) {
         // Update progress
@@ -172,6 +173,10 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
                 // Sample energy etc.
                 m_sampler->sample(acceptedStep);
             }
+        }
+        if (!i%1000) {
+            m_walkers[k]->set;
+            k++;
         }
     }
 
@@ -400,7 +405,7 @@ bool System::metropolisStepImpSamplingDMC(int currentParticle, Walker* trialWalk
 //    // Choose a random particle to change the position of
 //    int randomParticle = Random::nextInt(m_numberOfParticles);
 //    setRandomParticle(randomParticle);
-    setCurrentParticle(currentParticle);
+    //setCurrentParticle(currentParticle);
     std::vector<class Particle*> particles = trialWalker->getParticles();
     WaveFunction* waveFunction = trialWalker->getWaveFunction();
 
