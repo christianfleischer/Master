@@ -154,7 +154,7 @@ int main(int nargs, char* args[]) {
 
 
     // Set the set of walkers
-    int numberOfDMCWalkers = 1000; // Number of VMC configurations to save.
+    int numberOfDMCWalkers = 10; // Number of VMC configurations to save.
     system->setNumberOfDMCWalkers(numberOfDMCWalkers);
     std::vector<class Walker*> setOfWalkers(numberOfDMCWalkers);
     for (int k = 0; k < numberOfDMCWalkers; k++) {
@@ -162,6 +162,7 @@ int main(int nargs, char* args[]) {
         setOfWalkers[k]->setWaveFunction(new ManyElectronsDMC(system, alpha, beta, omega, C, Jastrow));
     }
     system->setWalkers(setOfWalkers);
+
 
     //Initiate the system walker. The VMC walker.
     system->setSystemWalker(new Walker(numberOfParticles, numberOfDimensions));
@@ -178,6 +179,8 @@ int main(int nargs, char* args[]) {
 
 
     DMC* dmcrun = new DMC(system, numberOfDMCWalkers);
+    dmcrun->setEquilibrationSteps(equilibration);
+    dmcrun->setParameters(alpha, beta, omega, C, Jastrow);
     dmcrun->runDMC();
 
 

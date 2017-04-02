@@ -45,7 +45,7 @@ private:
     double                          m_dt = 0.01;
     double                          m_computationTime = 0;
 
-    std::vector<class Particle*>    m_particles = std::vector<class Particle*>();
+    std::vector<class Particle*>    m_particles;// = std::vector<class Particle*>();
 
     class InitialState*             m_initialState = nullptr;
     class System*                   m_system = nullptr;

@@ -179,6 +179,8 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
 
 
         if (!(i%(m_numberOfMetropolisSteps/m_numberOfDMCWalkers))) {
+            m_sampler->computeAverages();
+            cout << "k, " << k << " energy : " << m_sampler->getKineticEnergy() << endl;
             saveWalker(m_walkers[k]);
             k++;
         }
@@ -400,6 +402,10 @@ void System::retrieveConstantsFromFile(string fileName, vec &loadConstants) {
 
 void System::setWalkers(std::vector<Walker*> walkers) {
     m_walkers = walkers;
+    for (int k = 0; k < m_numberOfDMCWalkers; k++) {
+        m_walkers[k]->setParticles(walkers[k]->getParticles());
+        //cout << m_walkers[k]->getParticles().size() << endl;
+    }
 }
 
 
@@ -456,6 +462,7 @@ bool System::metropolisStepImpSamplingDMC(int currentParticle, Walker* trialWalk
 }
 
 void System::saveWalker(Walker* walker) {
+    //Copying the slater determinant matrix elements needed:
     mat SPWFMatOld = getWaveFunction()->getSPWFMat();
     field<vec> SPWFDMatOld = getWaveFunction()->getSPWFDMat();
     mat SPWFDDMatOld = getWaveFunction()->getSPWFDDMat();
@@ -463,6 +470,13 @@ void System::saveWalker(Walker* walker) {
     walker->getWaveFunction()->setSPWFMat(SPWFMatOld);
     walker->getWaveFunction()->setSPWFDMat(SPWFDMatOld);
     walker->getWaveFunction()->setSPWFDDMat(SPWFDDMatOld);
+
+    //Copying the particles positions of the walker:
+    for (int i = 0; i < walker->getNumberOfParticles(); i++) {
+        for (int j = 0; j < walker->getNumberOfParticles(); j++) {
+            walker->getParticles()[i]->setPosition(getParticles()[i]->getPosition());
+        }
+    }
 }
 
 void System::setSystemWalker(Walker *walker) {
