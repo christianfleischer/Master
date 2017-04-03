@@ -24,7 +24,7 @@ public:
 
     int                             getNumberOfParticles() { return m_numberOfParticles; }
     int                             getNumberOfDimensions() { return m_numberOfDimensions; }
-    double                          getE() { return m_E; }
+    double                          getLocalE() { return m_E; }
     class InitialState*             getInitialState()   { return m_initialState; }
     class System*                   getSystem()        { return m_system; }
     class WaveFunction*             getWaveFunction()   { return m_waveFunction; }

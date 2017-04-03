@@ -65,7 +65,7 @@ void DMC::moveWalker(int currentWalker) {
     copyWalker(m_setOfWalkers[currentWalker], m_trialWalker);
 
     for (int block = 0; block < m_blockSize; block++) {
-        double localE = m_setOfWalkers[currentWalker]->getE();
+        double LocalEOld = m_setOfWalkers[currentWalker]->getLocalE();
 
         for (int currentParticle = 0; currentParticle < m_numberOfParticles; currentParticle++){
             bool acceptedStep;
