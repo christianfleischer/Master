@@ -179,7 +179,6 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
 
 
         if (!(i%(m_numberOfMetropolisSteps/m_numberOfDMCWalkers))) {
-            m_sampler->computeAverages();
             cout << "k, " << k << " energy : " << m_sampler->getKineticEnergy() << endl;
             saveWalker(m_walkers[k]);
             k++;

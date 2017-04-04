@@ -3,6 +3,7 @@
 #include "../WaveFunctions/wavefunction.h"
 #include "../WaveFunctions/manyelectronsDMC.h"
 #include "system.h"
+#include "Hamiltonians/hamiltonian.h"
 #include "particle.h"
 #include <armadillo>
 
@@ -49,7 +50,7 @@ void DMC::copyWalker(Walker* originalWalker, Walker* newWalker) {
     //Copy wavefunction:
     newWalker->setWaveFunction(new ManyElectronsDMC(m_system, m_alpha, m_beta, m_omega, m_C, m_Jastrow));
 
-    newWalker->setE(originalWalker->getE());
+    newWalker->setLocalE(originalWalker->getLocalE());
 
     //These are the values that are needed in the wavefunction:
     mat SPWFMatOld = originalWalker->getWaveFunction()->getSPWFMat();
@@ -65,7 +66,11 @@ void DMC::moveWalker(int currentWalker) {
     copyWalker(m_setOfWalkers[currentWalker], m_trialWalker);
 
     for (int block = 0; block < m_blockSize; block++) {
-        double LocalEOld = m_setOfWalkers[currentWalker]->getLocalE();
+        double localEOld = m_setOfWalkers[currentWalker]->getLocalE();
+        std::vector<double> energies = m_system->getHamiltonian()->computeLocalEnergy(m_setOfWalkers[currentWalker]->getParticles());
+        double localEnergy = energies[0];
+        m_setOfWalkers[currentWalker]->setLocalE(localEnergy);
+
 
         for (int currentParticle = 0; currentParticle < m_numberOfParticles; currentParticle++){
             bool acceptedStep;

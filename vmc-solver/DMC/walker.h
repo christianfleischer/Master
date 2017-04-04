@@ -14,7 +14,7 @@ public:
 
     void                            killWalker() { m_isAlive = false; }
     void                            reviveWalker() { m_isAlive = true; }
-    void                            setE(double energy) {m_E = energy; }
+    void                            setLocalE(double energy) { m_E = energy; }
     void                            setInitialState(InitialState* initialState);
     void                            setWaveFunction(class WaveFunction* waveFunction);
     void                            setParticles(std::vector<class Particle*> particles);
