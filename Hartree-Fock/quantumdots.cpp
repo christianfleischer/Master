@@ -128,6 +128,9 @@ void QuantumDots::create4DMatrix(double**** &matrix, int dim1, int dim2, int dim
 
 void QuantumDots::fillTwoBodyMatrix() {
     // Precalculate two body elements.
+    double**** twoBodyMatrixPol;
+    int dim = m_numberOfStates;
+    create4DMatrix(twoBodyMatrixPol, dim, dim, dim, dim);
 
     for(int i = 0; i < m_numberOfStates; i++) {
         vec quantumNumbersAlpha = m_quantumStates[i].getQuantumNumbers();
@@ -154,15 +157,55 @@ void QuantumDots::fillTwoBodyMatrix() {
                     int smDelta = quantumNumbersDelta[2];
 
                     if ((smAlpha == smBeta && smGamma == smDelta)){
-                        m_twoBodyMatrix[i][k][j][l] = Coulomb_HO(m_omega, nAlpha, mAlpha, nGamma, mGamma, nBeta, mBeta,  nDelta, mDelta);
+                        twoBodyMatrixPol[i][k][j][l] = Coulomb_HO(m_omega, nAlpha, mAlpha, nGamma, mGamma, nBeta, mBeta,  nDelta, mDelta);
                     }
                     if ((smAlpha == smDelta && smGamma == smBeta)){
-                        m_twoBodyMatrix[i][k][l][j] = Coulomb_HO(m_omega, nAlpha, mAlpha, nGamma, mGamma, nDelta, mDelta, nBeta, mBeta);
+                        twoBodyMatrixPol[i][k][l][j] = Coulomb_HO(m_omega, nAlpha, mAlpha, nGamma, mGamma, nDelta, mDelta, nBeta, mBeta);
                     }
                 }
             }
         }
     }
+
+    double frac = 1./4;
+
+    for(int i = 0; i < m_numberOfStates; i++) {
+
+        for(int j = 0; j < m_numberOfStates; j++) {
+
+            for(int k = 0; k < m_numberOfStates; k++) {
+
+                for(int l = 0; l < m_numberOfStates; l++) {
+
+                    m_twoBodyMatrix[i][k][j][l] = /*frac**/(twoBodyMatrixPol[i][k][j][l]/* + twoBodyMatrixPol[i][k-2][j-2][l]
+                                                       +twoBodyMatrixPol[i][k-2][j][l-2] + twoBodyMatrixPol[i-2][k][j-2][l]
+                                                       +twoBodyMatrixPol[i-2][k][j][l-2] + twoBodyMatrixPol[i-2][k-2][j-2][l-2]*/);
+                    //cout << m_twoBodyMatrix[i][j][k][l] << endl;
+                }
+            }
+        }
+    }
+
+    int n = m_quantumStates[5].getQuantumNumbers()[0];
+    int m = m_quantumStates[5].getQuantumNumbers()[1];
+
+    int ny = (n - m + abs(m))/2.;
+    int nx = m + ny;
+
+    cout << nx << " " << ny << endl;
+
+
+
+
+
+    int i = 4;
+    int j = 4;
+    int k = 5;
+    int l = 5;
+    m_twoBodyMatrix[i][k][j][l] = frac*(twoBodyMatrixPol[i][k][j][l] + twoBodyMatrixPol[i][k-2][j-2][l]
+                                       +twoBodyMatrixPol[i][k-2][j][l-2] + twoBodyMatrixPol[i-2][k][j-2][l]
+                                       +twoBodyMatrixPol[i-2][k][j][l-2] + twoBodyMatrixPol[i-2][k-2][j-2][l-2]);
+    cout << m_twoBodyMatrix[i][k][j][l] << endl;
 }
 
 mat QuantumDots::computeDensityMatrix() {
@@ -296,10 +339,10 @@ void QuantumDots::computeHartreeFockEnergy(mat densityMatrix) {
     //cout << "Exchange " << ExchangePart << endl;
     cout << "===================================================================" << endl;
     cout << setprecision(12);
-    cout << "Num of electrons = " << m_numberOfParticles << endl;
-    cout << "Num of shells = " << m_numberOfShells << endl;
-    cout << "Omega = " << m_omega << endl;
-    cout << "Total energy " << HartreeFockEnergy << endl;
+    cout << "Number of electrons: " << m_numberOfParticles << endl;
+    cout << "Number of shells: " << m_numberOfShells << endl;
+    cout << "Omega: " << m_omega << endl;
+    cout << "Total energy: " << HartreeFockEnergy << endl;
     //writeToFile(HF_Energy, NumberOfParticles, m_EnergyCutOff, homega);
 }
 
@@ -315,8 +358,8 @@ void QuantumDots::runHartreeFock() {
 
     int i = 0;
     while (epsilon < difference && i < 1000){
-        mat x_DensityMatrix = computeDensityMatrix();
-        computeHartreeFockMatrix(x_DensityMatrix);
+        mat xDensityMatrix = computeDensityMatrix();
+        computeHartreeFockMatrix(xDensityMatrix);
         eig_sym(m_eigvals, m_eigvecs, m_HartreeFockMatrix);
 
         m_coefficients = m_eigvecs;
@@ -326,44 +369,11 @@ void QuantumDots::runHartreeFock() {
 
     }
 
-    mat y_DensityMatrix = computeDensityMatrix();
-    computeHartreeFockEnergy(y_DensityMatrix);
+    mat yDensityMatrix = computeDensityMatrix();
+    computeHartreeFockEnergy(yDensityMatrix);
     cout << "Number of iterations: " << i << endl;
+    cube saveC = zeros(m_numberOfStates, m_numberOfStates, 2);
+    saveC.slice(0) = m_coefficients;
+    saveC.save("../Hartree-Fock/Data/CoefficientsHF.dat", arma_ascii);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

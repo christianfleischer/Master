@@ -46,8 +46,10 @@ private:
     field<vec> m_SPWFDMat;
     mat m_SPWFDDMat;
     double m_cDeterminant;
-    cube m_JastrowMat;
-    cube m_JastrowMatOld;
+    mat m_JastrowMat;
+    mat m_JastrowMatOld;
+    cube m_dJastrowMat;
+    cube m_dJastrowMatOld;
     mat m_JastrowGrad;
     mat m_JastrowGradOld;
     mat m_a;

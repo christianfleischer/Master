@@ -46,6 +46,7 @@ private:
     int m_halfNumberOfParticles = 0;
     int m_k = 0;
     int m_numberOfEigstates = 0;
+    int m_numberOfCoeffEigstates = 0;
     int m_nPrimeMax = 0;
     double m_omega = 0;
     double m_alpha = 0;
@@ -66,8 +67,10 @@ private:
     mat m_SPWFDDMat;
     cube m_cCoefficients;
     double m_cDeterminant;
-    cube m_JastrowMat;
-    cube m_JastrowMatOld;
+    mat m_JastrowMat;
+    mat m_JastrowMatOld;
+    cube m_dJastrowMat;
+    cube m_dJastrowMatOld;
     mat m_JastrowGrad;
     mat m_JastrowGradOld;
     mat m_a;

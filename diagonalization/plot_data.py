@@ -103,7 +103,8 @@ def cOld(r,n):
 #    a.append(np.sqrt(np.dot(tmp1, tmp1)))
 
 # When we set psi = psix*psiy*psiz, we must normalize manually:
-print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
+for i in range(-1, 20):
+	print("<psi0|psi0>:   ", np.dot(psi[i],psi[i]))
 print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
 
 # plot(r[0], supCpp**2/np.dot(supCpp,supCpp), r[0], psi[0]**2/np.dot(psi[0],psi[0]), '+')

@@ -3,6 +3,8 @@
 #include "../Math/factorial.h"
 #include <cmath>
 
+using namespace std;
+
 DoubleWell::DoubleWell(System *system, double omega)
     : WaveFunction(system, omega) {
 

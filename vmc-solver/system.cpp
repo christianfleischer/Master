@@ -18,14 +18,13 @@ using namespace std;
 using namespace arma;
 
 bool System::metropolisStep(int currentParticle) {
-    /* Perform the actual Metropolis step: Choose a particle at random and
+    /* Perform the actual Metropolis step: Take the current particle and
      * change it's position by a random amount, and check if the step is
      * accepted by the Metropolis test (compare the wave function evaluated
      * at this new position with the one at the old position).
      */
 
     // Change position of current particle by a random amount creating a trial state
-    //int randomParticle = Random::nextInt(m_numberOfParticles);
     setCurrentParticle(currentParticle);
     std::vector<double> positionChange(m_numberOfDimensions);
 

@@ -9,7 +9,7 @@ class Hamiltonian {
 public:
     Hamiltonian(class System* system, bool analyticalKinetic);
     double computeKineticEnergy(std::vector<class Particle*> particles);
-    virtual std::vector<double> computeLocalEnergy(std::vector<class Particle*> particles) { particles = particles; }
+    virtual std::vector<double> computeLocalEnergy(std::vector<class Particle*> particles) = 0;// { particles = particles; }
     virtual double evaluateSingleParticleWF(vec n, std::vector<double> r, int j) { return n[0]*r[0]*j; }
     virtual std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r, int j) { j = j; n = n; return r; }
     virtual double computeSPWFDoubleDerivative(vec n, std::vector<double> r, int j) { return n[0]*r[0]*j; }

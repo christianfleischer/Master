@@ -7,7 +7,7 @@ using namespace arma;
 
 class System {
 public:
-    System(double omega, int numberOfDimensions, double h, int N);
+    System(double omega, int numberOfDimensions, double h, int N, bool createSupPos);
     void diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential);
     void findEigenstate(mat &eigvals, cube eigvecs, cube diagMat, mat &saveEigenvector, cube &saveSeparateEigenvector, int numberOfEigstates, int nMax);
     void findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim);
@@ -40,6 +40,7 @@ private:
     mat                     m_eigvals;
     cube                    m_psi;
     class WaveFunction*     m_waveFunction           = nullptr;
+    bool                    m_createSupPos           = false;
 };
 
 

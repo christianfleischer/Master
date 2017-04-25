@@ -9,6 +9,13 @@
 #include <iostream>
 #include "Math/factorial.h"
 
+using namespace std;
+
+bool energyLevelComparisonCoeff(const pair<int,double> &a,const pair<int,double> &b)
+{
+       return a.second<b.second;
+}
+
 ManyElectronsCoefficients::ManyElectronsCoefficients(System* system, double alpha, double beta, double omega, double C, bool Jastrow) :
         WaveFunction(system) {
     assert(omega > 0);
@@ -78,9 +85,11 @@ double ManyElectronsCoefficients::evaluate(std::vector<class Particle*> particle
             for (int j=i+1; j < m_numberOfParticles; j++) {
                 //std::vector<double> r_j = particles[j]->getPosition();
                 //double r_ij = (r_i[0] - r_j[0])*(r_i[0] - r_j[0]) + (r_i[1] - r_j[1])*(r_i[1] - r_j[1]);
-                double r_ij = m_distances(i,j);//sqrt(r_ij);
-                double denom = 1+beta*r_ij;
-                exponent += m_a(i,j)*r_ij/denom;
+//                double r_ij = m_distances(i,j);//sqrt(r_ij);
+//                double denom = 1+beta*r_ij;
+//                exponent += m_a(i,j)*r_ij/denom;
+
+                exponent += m_JastrowMat(i,j);
             }
         }
     }
@@ -255,86 +264,107 @@ double ManyElectronsCoefficients::computeDoubleDerivative(std::vector<class Part
         int dim = m_numberOfDimensions;
 
         for (int k=0; k < m_numberOfParticles; k++) {
-            std::vector<double> r_k = particles[k]->getPosition();
+
+//            std::vector<double> r_k = particles[k]->getPosition();
 
             for (int j=0; j < k; j++) {
-                std::vector<double> r_j = particles[j]->getPosition();
+//                std::vector<double> r_j = particles[j]->getPosition();
                 double r_kj = m_distances(k,j);//(r_k[0]-r_j[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_j[1])*(r_k[1]-r_j[1]);
                 //r_kj = sqrt(r_kj);
                 double denom_kj = (1+beta*r_kj);
                 jastrowSum2 += (dim-1)*m_a(k,j)/(r_kj*denom_kj*denom_kj) - 2*m_a(k,j)*beta/(denom_kj*denom_kj*denom_kj);
 
                 for (int i=0; i < k; i++) {
-                    std::vector<double> r_i = particles[i]->getPosition();
-                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
-                    //r_ki = sqrt(r_ki);
-                    double denom_ki = (1+beta*r_ki);
 
-                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
-                    double factor1 = 0;
                     for (int d = 0; d < m_numberOfDimensions; d++) {
-                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+                        jastrowSum1 += m_dJastrowMat(k,i,d)*m_dJastrowMat(k,j,d);
                     }
 
-                    factor1 /= r_ki*r_kj;
-                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
-                    jastrowSum1 += factor1*factor2;
+//                    std::vector<double> r_i = particles[i]->getPosition();
+//                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
+//                    //r_ki = sqrt(r_ki);
+//                    double denom_ki = (1+beta*r_ki);
+
+//                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
+//                    double factor1 = 0;
+//                    for (int d = 0; d < m_numberOfDimensions; d++) {
+//                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+//                    }
+
+//                    factor1 /= r_ki*r_kj;
+//                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
+//                    jastrowSum1 += factor1*factor2;
                 }
                 for (int i=k+1; i < m_numberOfParticles; i++) {
-                    std::vector<double> r_i = particles[i]->getPosition();
-                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
-                    //r_ki = sqrt(r_ki);
-                    double denom_ki = (1+beta*r_ki);
 
-                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
-                    double factor1 = 0;
                     for (int d = 0; d < m_numberOfDimensions; d++) {
-                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+                        jastrowSum1 += m_dJastrowMat(k,i,d)*m_dJastrowMat(k,j,d);
                     }
 
-                    factor1 /= r_ki*r_kj;
-                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
-                    jastrowSum1 += factor1*factor2;
+//                    std::vector<double> r_i = particles[i]->getPosition();
+//                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
+//                    //r_ki = sqrt(r_ki);
+//                    double denom_ki = (1+beta*r_ki);
+
+//                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
+//                    double factor1 = 0;
+//                    for (int d = 0; d < m_numberOfDimensions; d++) {
+//                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+//                    }
+
+//                    factor1 /= r_ki*r_kj;
+//                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
+//                    jastrowSum1 += factor1*factor2;
                 }
             }
             for (int j=k+1; j < m_numberOfParticles; j++) {
-                std::vector<double> r_j = particles[j]->getPosition();
-                double r_kj = m_distances(k,j);//(r_k[0]-r_j[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_j[1])*(r_k[1]-r_j[1]);
+//                std::vector<double> r_j = particles[j]->getPosition();
+//                double r_kj = m_distances(k,j);//(r_k[0]-r_j[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_j[1])*(r_k[1]-r_j[1]);
                 //r_kj = sqrt(r_kj);
-                double denom_kj = (1+beta*r_kj);
+//                double denom_kj = (1+beta*r_kj);
                 //jastrowSum2 += (d-1)*m_a(k,j)/(r_kj*denom_kj*denom_kj) - 2*m_a(k,j)*beta/(denom_kj*denom_kj*denom_kj);
 
                 for (int i=0; i < k; i++) {
-                    std::vector<double> r_i = particles[i]->getPosition();
-                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
-                    //r_ki = sqrt(r_ki);
-                    double denom_ki = (1+beta*r_ki);
 
-                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
-                    double factor1 = 0;
                     for (int d = 0; d < m_numberOfDimensions; d++) {
-                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+                        jastrowSum1 += m_dJastrowMat(k,i,d)*m_dJastrowMat(k,j,d);
                     }
 
-                    factor1 /= r_ki*r_kj;
-                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
-                    jastrowSum1 += factor1*factor2;
+//                    std::vector<double> r_i = particles[i]->getPosition();
+//                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
+//                    //r_ki = sqrt(r_ki);
+//                    double denom_ki = (1+beta*r_ki);
+
+//                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
+//                    double factor1 = 0;
+//                    for (int d = 0; d < m_numberOfDimensions; d++) {
+//                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+//                    }
+
+//                    factor1 /= r_ki*r_kj;
+//                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
+//                    jastrowSum1 += factor1*factor2;
                 }
                 for (int i=k+1; i < m_numberOfParticles; i++) {
-                    std::vector<double> r_i = particles[i]->getPosition();
-                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
-                    //r_ki = sqrt(r_ki);
-                    double denom_ki = (1+beta*r_ki);
 
-                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
-                    double factor1 = 0;
                     for (int d = 0; d < m_numberOfDimensions; d++) {
-                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+                        jastrowSum1 += m_dJastrowMat(k,i,d)*m_dJastrowMat(k,j,d);
                     }
 
-                    factor1 /= r_ki*r_kj;
-                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
-                    jastrowSum1 += factor1*factor2;
+//                    std::vector<double> r_i = particles[i]->getPosition();
+//                    double r_ki = m_distances(k,i);//(r_k[0]-r_i[0])*(r_k[0]-r_i[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_i[1]);
+//                    //r_ki = sqrt(r_ki);
+//                    double denom_ki = (1+beta*r_ki);
+
+//                    //double factor1 = (r_k[0]-r_i[0])*(r_k[0]-r_j[0]) + (r_k[1]-r_i[1])*(r_k[1]-r_j[1]);
+//                    double factor1 = 0;
+//                    for (int d = 0; d < m_numberOfDimensions; d++) {
+//                        factor1 += (r_k[d]-r_i[d])*(r_k[d]-r_j[d]);
+//                    }
+
+//                    factor1 /= r_ki*r_kj;
+//                    double factor2 = m_a(k,i)/(denom_ki*denom_ki) * m_a(k,j)/(denom_kj*denom_kj);
+//                    jastrowSum1 += factor1*factor2;
                 }
             }
         }
@@ -421,6 +451,7 @@ double ManyElectronsCoefficients::computeMetropolisRatio(std::vector<Particle *>
 
     //std::vector<double> positionOld = particles[currentParticle]->getPosition();
     m_distancesOld = m_distances;
+    m_JastrowMatOld = m_JastrowMat;
 
     for (int i=0; i<m_numberOfDimensions; i++) {
         particles[currentParticle]->adjustPosition(positionChange[i], i);
@@ -468,11 +499,14 @@ double ManyElectronsCoefficients::computeMetropolisRatio(std::vector<Particle *>
             //}
             //r_ijNew = sqrt(r_ijNew);
             //r_ijOld = sqrt(r_ijOld);
-            double r_ijNew = m_distances(i,j);
-            double r_ijOld = m_distancesOld(i,j);
+//            double r_ijNew = m_distances(i,j);
+//            double r_ijOld = m_distancesOld(i,j);
 
-            exponent += m_a(i,j)*r_ijNew / (1. + beta*r_ijNew);
-            exponent -= m_a(i,j)*r_ijOld / (1. + beta*r_ijOld);
+//            exponent += m_a(i,j)*r_ijNew / (1. + beta*r_ijNew);
+//            exponent -= m_a(i,j)*r_ijOld / (1. + beta*r_ijOld);
+
+            exponent += m_JastrowMat(i,j);
+            exponent -= m_JastrowMatOld(i,j);
         }
         for (int j=i+1; j < m_numberOfParticles; j++) {
             //double r_ijNew = 0;
@@ -487,11 +521,14 @@ double ManyElectronsCoefficients::computeMetropolisRatio(std::vector<Particle *>
             //}
             //r_ijNew = sqrt(r_ijNew);
             //r_ijOld = sqrt(r_ijOld);
-            double r_ijNew = m_distances(i,j);
-            double r_ijOld = m_distancesOld(i,j);
+//            double r_ijNew = m_distances(i,j);
+//            double r_ijOld = m_distancesOld(i,j);
 
-            exponent += m_a(i,j)*r_ijNew / (1. + beta*r_ijNew);
-            exponent -= m_a(i,j)*r_ijOld / (1. + beta*r_ijOld);
+//            exponent += m_a(i,j)*r_ijNew / (1. + beta*r_ijNew);
+//            exponent -= m_a(i,j)*r_ijOld / (1. + beta*r_ijOld);
+
+            exponent += m_JastrowMat(i,j);
+            exponent -= m_JastrowMatOld(i,j);
         }
     }
     double ratioJastrowFactor = exp(exponent);
@@ -628,13 +665,13 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
 //        }
     }
 
-    //----Square well----
-    if (m_system->getSquareWellFlag()) {
-        for (int d = 0; d < m_numberOfDimensions; d++) {
-            m_quantumNumbers(0, d) += 1;
-        }
-    }
-    //----Square well----
+//    //----Square well----
+//    if (m_system->getSquareWellFlag()) {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            m_quantumNumbers(0, d) += 1;
+//        }
+//    }
+//    //----Square well----
 
     if (m_cCoefficients.slice(0).is_square()) {
         mat cCoeffProd = m_cCoefficients.slice(0);
@@ -668,6 +705,10 @@ void ManyElectronsCoefficients::setUpSlaterDetOneParticle() {
         n[d] = m_quantumNumbers(0, d);
         r2 += r[d]*r[d];
     }
+
+    m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+    if (m_numberOfDimensions == 2) { m_a(0,0) = 1./3; }
+    else if (m_numberOfDimensions == 3) { m_a(0,0) = 1./4; }
 
     double expFactor = exp(-alpha*m_omega*(r2)*0.5);
 
@@ -725,16 +766,24 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
     // Function for setting up the Slater determinant at the begining of the simulation.
 
     m_system->retrieveCoefficientsFromFile("../diagonalization/PlotAndData/Coefficients.dat", m_cCoefficients);
+//    m_system->retrieveCoefficientsFromFile("../Hartree-Fock/Data/CoefficientsHF.dat", m_cCoefficients);
 
     vec cColVec = m_cCoefficients.slice(0).col(0);
     int nMaxCoeff = cColVec.size();
     int numberOfEigstates = 0;
+    int numberOfCoeffEigstates = 0;
+
+//    vec cColVecHF = m_cCoefficients.slice(0).col(0);
+//    int numberOfEigstates = cColVecHF.size();
 
     rowvec cRowVec = m_cCoefficients.slice(0).row(0);
     m_nPrimeMax = cRowVec.size();
+
+//    rowvec cRowVecHF = m_cCoefficients.slice(0).row(0);
+//    m_nPrimeMax = cRowVecHF.size();
     assert(m_nPrimeMax >= m_halfNumberOfParticles); //nPrimeMax needs to be larger than half the number of particles.
 
-    int nMax = 0;
+    int nMax = 1;
 
     if (m_numberOfDimensions == 1) {
         nMax = m_halfNumberOfParticles;
@@ -742,7 +791,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
     else if (m_numberOfDimensions == 2) {
         for (int n=1; n<=m_halfNumberOfParticles; n++) {
             numberOfEigstates = 0.5*n*n + 0.5*n;
-            if (numberOfEigstates == m_halfNumberOfParticles) {
+            if (numberOfEigstates >= m_halfNumberOfParticles) {
                 nMax = n;
                 break;
             }
@@ -751,16 +800,13 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
     else if (m_numberOfDimensions == 3) {
         for (int n=1; n<=m_halfNumberOfParticles; n++) {
             numberOfEigstates = (n*n*n + 3*n*n +2*n)/6.;
-            if (numberOfEigstates == m_halfNumberOfParticles) {
+            if (numberOfEigstates >= m_halfNumberOfParticles) {
                 nMax = n;
                 break;
             }
         }
     }
 
-    if (nMaxCoeff > nMax) {
-        nMax = nMaxCoeff;
-    }
 
     if (m_numberOfDimensions == 2) {
         //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
@@ -774,14 +820,32 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
     else { numberOfEigstates = nMax; }
 
+
+    if (m_numberOfDimensions == 2) {
+        //numberOfEigstates = int(0.5*(nMax+1)*(nMax+2));
+        numberOfCoeffEigstates = int(0.5*(nMaxCoeff)*(nMaxCoeff+1));
+    }
+
+    else if (m_numberOfDimensions == 3) {
+        //numberOfEigstates = int((nMax+1)*(nMax+2)*(nMax+3)/6.);
+        numberOfCoeffEigstates = int((nMaxCoeff)*(nMaxCoeff+1)*(nMaxCoeff+2)/6.);
+    }
+
+    else { numberOfCoeffEigstates = nMaxCoeff; }
+
+    if (numberOfCoeffEigstates > numberOfEigstates) {
+        numberOfEigstates = numberOfCoeffEigstates;
+    }
+
     m_numberOfEigstates = numberOfEigstates;
+    m_numberOfCoeffEigstates = numberOfCoeffEigstates;
 
 
     m_quantumNumbers = zeros<mat>(numberOfEigstates, m_numberOfDimensions);
     m_quantumNumbersDouble = zeros<mat>(numberOfEigstates, m_numberOfDimensions);
 
     if (m_numberOfDimensions == 1) {
-        for (int p = 0; p < numberOfEigstates; p++) {
+        for (int p = 0; p < m_numberOfEigstates; p++) {
             m_quantumNumbers(p, 0) = p;
         }
     }
@@ -791,7 +855,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         int nx = 0;
         int ny = 0;
 
-        for (int p = 0; p < numberOfEigstates; p++) {
+        for (int p = 0; p < m_numberOfEigstates; p++) {
             m_quantumNumbers(p, 0) = nx;    m_quantumNumbers(p, 1) = ny;
             if (ny == n) {
                 n++;
@@ -805,8 +869,16 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         }
     }
     else {
+        int n = 0;
+        if (nMaxCoeff > nMax) {
+            n = nMaxCoeff;
+        }
+        else {
+            n = nMax;
+        }
+
         int j = 0;
-        for (int i=0; i<nMax; i++) {
+        for (int i=0; i<n/*5*/; i++) {
             for (int nx = 0; nx <= i; nx++) {
                 for (int ny = 0; ny <= i; ny++) {
                     for (int nz = 0; nz <= i; nz++) {
@@ -820,6 +892,30 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                 }
             }
         }
+
+        pair<int, int> mapping;
+        vector<pair<int, int>> sortingVector;
+
+        for (int i = 0; i < m_numberOfEigstates; i++) {
+            int nx = m_quantumNumbers(i,0);
+            int ny = m_quantumNumbers(i,1);
+            int nz = m_quantumNumbers(i,2);
+
+            mapping = make_pair(i, nx+ny+nz);
+            sortingVector.push_back(mapping);
+        }
+
+        sort(sortingVector.begin(), sortingVector.end(), energyLevelComparisonCoeff);
+        mat quantumNumbersSorted = zeros<mat>(m_numberOfEigstates, m_numberOfDimensions);
+
+        for (int i = 0; i < m_numberOfEigstates; i++) {
+            quantumNumbersSorted(i,0) = m_quantumNumbers(sortingVector[i].first, 0);
+            quantumNumbersSorted(i,1) = m_quantumNumbers(sortingVector[i].first, 1);
+            quantumNumbersSorted(i,2) = m_quantumNumbers(sortingVector[i].first, 2);
+        }
+        m_quantumNumbers = quantumNumbersSorted;
+
+        cout << m_quantumNumbers << endl;
 
 //        int i = 0;
 
@@ -857,22 +953,23 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         }
     }
 
-    if (m_system->getDoubleWellFlag() /*&& m_numberOfParticles > 2*/ && !overlappingWells) {
-        mat quantumNumbersDoubleWell = zeros<mat>(m_numberOfEigstates, m_numberOfDimensions);
-        m_quantumNumbersDouble = m_quantumNumbers;
-        for (int p = 0; p < m_numberOfEigstates; p+=2) {
-            for (int d = 0; d < m_numberOfDimensions; d++) {
-                quantumNumbersDoubleWell(p, d) = m_quantumNumbers(p/2, d);
-                if (p+1 < m_numberOfEigstates) {
-                    quantumNumbersDoubleWell(p+1, d) = m_quantumNumbers(p/2, d);
-                }
-            }
-        }
+//    if (m_system->getDoubleWellFlag() /*&& m_numberOfParticles > 2*/ && !overlappingWells) {
+//        mat quantumNumbersDoubleWell = zeros<mat>(m_numberOfEigstates, m_numberOfDimensions);
+//        m_quantumNumbersDouble = m_quantumNumbers;
+//        for (int p = 0; p < m_numberOfEigstates; p+=2) {
+//            for (int d = 0; d < m_numberOfDimensions; d++) {
+//                quantumNumbersDoubleWell(p, d) = m_quantumNumbers(p/2, d);
+//                if (p+1 < m_numberOfEigstates) {
+//                    quantumNumbersDoubleWell(p+1, d) = m_quantumNumbers(p/2, d);
+//                }
+//            }
+//        }
 
-        m_quantumNumbers = quantumNumbersDoubleWell;
-    }
-    else { m_quantumNumbersDouble = m_quantumNumbers; }
-    m_quantumNumbers = m_quantumNumbersDouble;
+//        m_quantumNumbers = quantumNumbersDoubleWell;
+//    }
+//    else { m_quantumNumbersDouble = m_quantumNumbers; }
+//    m_quantumNumbers = m_quantumNumbersDouble;
+
     //m_quantumNumbersDouble = m_quantumNumbers;
     //cout << m_quantumNumbers << endl;
     //cout << m_quantumNumbersDouble << endl;
@@ -889,13 +986,15 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
     if (m_cCoefficients.slice(0).is_square()) {
         mat cCoeffProd = m_cCoefficients.slice(0);
+        //If test for not Hartree {
         for (int d = 1; d < m_numberOfDimensions; d++) {
             cCoeffProd %= m_cCoefficients.slice(d);
         }
+        //}
         m_cDeterminant = det(cCoeffProd);
     }
     else { m_cDeterminant = 1.; }
-    //cout << m_cDeterminant << endl;
+    cout << m_cDeterminant << endl;
 
     m_a = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
     int half = m_halfNumberOfParticles;
@@ -944,14 +1043,15 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
             double r2SpinUp = 0;
             double r2SpinDown = 0;
             for (int d = 0; d < m_numberOfDimensions; d++) {
-                if (m_system->getDoubleWellFlag()) {
-                    n[d] = m_quantumNumbersDouble(j, d);
-                    //cout << n[d] << endl;
-                }
-                else {
-                    n[d] = m_quantumNumbers(j, d);
-                }
+//                if (m_system->getDoubleWellFlag()) {
+//                    n[d] = m_quantumNumbersDouble(j, d);
+//                    //cout << n[d] << endl;
+//                }
+//                else {
+//                    n[d] = m_quantumNumbers(j, d);
+//                }
 
+                n[d] = m_quantumNumbers(j, d);
 
                 r2SpinUp += rSpinUp[d]*rSpinUp[d];
                 r2SpinDown += rSpinDown[d]*rSpinDown[d];
@@ -990,19 +1090,20 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
             //m_SPWFDDMat(i,j) = m_cDeterminant*computeSPWFDoubleDerivative(n, rSpinUp);
 
-            for (int eig = 0; eig < m_numberOfEigstates; eig++) {
+            for (int eig = 0; eig < m_numberOfCoeffEigstates; eig++) {
                 double term = 1;
                 vec termD(m_numberOfDimensions);
                 double termDD = 0;
                 double coefficients = 1;
                 vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
                 for (int d = 0; d < m_numberOfDimensions; d++) {
-                    term *= m_cCoefficients(qNums[d], n[d], d)*harmonicOscillatorBasis(rSpinUp[d], qNums[d], d);
+                    term *= harmonicOscillatorBasis(rSpinUp[d], qNums[d], d);
                     termD[d] = harmonicOscillatorBasisDerivative(rSpinUp, qNums, d);
                     termDD += harmonicOscillatorBasisDoubleDerivative(rSpinUp, qNums, d);
                     coefficients *= m_cCoefficients(qNums[d], n[d], d);
+//                    coefficients *= m_cCoefficients(qNums[d], n[d], 0);
                 }
-                m_spinUpSlater(i,j) += term;
+                m_spinUpSlater(i,j) += coefficients*term;
                 m_SPWFDMat(i,j) += coefficients*termD;
                 m_SPWFDDMat(i,j) += coefficients*termDD;
             }
@@ -1036,7 +1137,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 
 //            m_SPWFMat(i+m_halfNumberOfParticles, j) = m_spinDownSlater(i,j);
 
-            for (int eig = 0; eig < m_numberOfEigstates; eig++) {
+            for (int eig = 0; eig < m_numberOfCoeffEigstates; eig++) {
                 double term = 1;
                 vec termD(m_numberOfDimensions);
                 double termDD = 0;
@@ -1047,6 +1148,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                     termD[d] = harmonicOscillatorBasisDerivative(rSpinDown, qNums, d);
                     termDD += harmonicOscillatorBasisDoubleDerivative(rSpinDown, qNums, d);
                     coefficients *= m_cCoefficients(qNums[d], n[d], d);
+//                    coefficients *= m_cCoefficients(qNums[d], n[d], 0);
                 }
                 m_spinDownSlater(i,j) += coefficients*term;
                 m_SPWFDMat(i+m_halfNumberOfParticles, j) += coefficients*termD;
@@ -1090,7 +1192,8 @@ void ManyElectronsCoefficients::setUpDistances() {
 
 void ManyElectronsCoefficients::setUpJastrowMat() {
 
-    m_JastrowMat = zeros<cube>(m_numberOfParticles, m_numberOfParticles, m_numberOfDimensions);
+    m_JastrowMat = zeros(m_numberOfParticles, m_numberOfParticles);
+    m_dJastrowMat = zeros<cube>(m_numberOfParticles, m_numberOfParticles, m_numberOfDimensions);
     m_JastrowGrad = zeros(m_numberOfParticles, m_numberOfDimensions);
     double beta = m_parameters[1];
 
@@ -1100,6 +1203,9 @@ void ManyElectronsCoefficients::setUpJastrowMat() {
             std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
+
+            m_JastrowMat(i,j) = m_a(i,j)*r_ij / denom;
+            //m_JastrowMat(j,i) = m_JastrowMat(i,j);
 
             for (int d = 0; d < m_numberOfDimensions; d++) {
                 m_JastrowGrad(i,d) += (r_i[d]-r_j[d])/r_ij * m_a(i, j)/(denom*denom);
@@ -1112,13 +1218,16 @@ void ManyElectronsCoefficients::setUpJastrowMat() {
             double r_ij = m_distances(i,j);
             double denom = 1 + beta*r_ij;
 
+            m_JastrowMat(i,j) = m_a(i,j)*r_ij / denom;
+            //m_JastrowMat(j,i) = m_JastrowMat(i,j);
+
             for (int d = 0; d < m_numberOfDimensions; d++) {
-                m_JastrowMat(i,j,d) = (r_i[d]-r_j[d])/r_ij * m_a(i, j)/(denom*denom);
+                m_dJastrowMat(i,j,d) = (r_i[d]-r_j[d])/r_ij * m_a(i, j)/(denom*denom);
                 //m_JastrowMat(i,j,1) = (r_i[1]-r_j[1])/r_ij * m_a(i, j)/(denom*denom);
-                m_JastrowMat(j,i,d) = -m_JastrowMat(i,j,d);
+                m_dJastrowMat(j,i,d) = -m_dJastrowMat(i,j,d);
                 //m_JastrowMat(j,i,1) = -m_JastrowMat(i,j,1);
 
-                m_JastrowGrad(i,d) += m_JastrowMat(i,j,d);
+                m_JastrowGrad(i,d) += m_dJastrowMat(i,j,d);
                 //m_JastrowGrad(i,1) += m_JastrowMat(i,j,1);
             }
         }
@@ -1304,12 +1413,13 @@ void ManyElectronsCoefficients::updateSPWFMat(int currentParticle) {
 //          int ny = m_quantumNumbers(j, 1);
             vec n(m_numberOfDimensions);
             for (int d = 0; d < m_numberOfDimensions; d++) {
-                if (m_system->getDoubleWellFlag()) {
-                    n[d] = m_quantumNumbersDouble(j, d);
-                }
-                else {
-                    n[d] = m_quantumNumbers(j, d);
-                }
+//                if (m_system->getDoubleWellFlag()) {
+//                    n[d] = m_quantumNumbersDouble(j, d);
+//                }
+//                else {
+//                    n[d] = m_quantumNumbers(j, d);
+//                }
+                n[d] = m_quantumNumbers(j, d);
             }
 
             m_SPWFMat(i,j) = 0;
@@ -1335,7 +1445,7 @@ void ManyElectronsCoefficients::updateSPWFMat(int currentParticle) {
 //            }
 
 
-            for (int eig = 0; eig < m_numberOfEigstates; eig++) {
+            for (int eig = 0; eig < m_numberOfCoeffEigstates; eig++) {
                 double term = 1;
                 vec termD(m_numberOfDimensions);
                 double termDD = 0;
@@ -1346,6 +1456,7 @@ void ManyElectronsCoefficients::updateSPWFMat(int currentParticle) {
                     termD[d] = harmonicOscillatorBasisDerivative(r_i, qNums, d);
                     termDD += harmonicOscillatorBasisDoubleDerivative(r_i, qNums, d);
                     coefficients *= m_cCoefficients(qNums[d], n[d], d);
+//                    coefficients *= m_cCoefficients(qNums[d], n[d], 0);
                     //cout << m_cCoefficients(qNum, m, d) << endl;
                 }
                 m_SPWFMat(i,j) += coefficients*term;
@@ -1370,16 +1481,20 @@ void ManyElectronsCoefficients::updateJastrow(int currentParticle) {
     int p = currentParticle;
     std::vector<double> r_p = m_system->getParticles()[p]->getPosition();
     double beta = m_parameters[1];
-    m_JastrowMatOld = m_JastrowMat;
+    m_dJastrowMatOld = m_dJastrowMat;
 
     for (int j=0; j<p; j++) {
         std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
         double r_pj = m_distances(p,j);
         double denom = 1 + beta*r_pj;
+
+        m_JastrowMat(p,j) = m_a(p,j)*r_pj / denom;
+        m_JastrowMat(j,p) = m_JastrowMat(p,j);
+
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            m_JastrowMat(p,j,d) = (r_p[d]-r_j[d])/r_pj * m_a(p, j)/(denom*denom);
+            m_dJastrowMat(p,j,d) = (r_p[d]-r_j[d])/r_pj * m_a(p, j)/(denom*denom);
             //m_JastrowMat(p,j,1) = (r_p[1]-r_j[1])/r_pj * m_a(p, j)/(denom*denom);
-            m_JastrowMat(j,p,d) = -m_JastrowMat(p,j,d);
+            m_dJastrowMat(j,p,d) = -m_dJastrowMat(p,j,d);
             //m_JastrowMat(j,p,1) = -m_JastrowMat(p,j,1);
         }
     }
@@ -1387,10 +1502,14 @@ void ManyElectronsCoefficients::updateJastrow(int currentParticle) {
         std::vector<double> r_j = m_system->getParticles()[j]->getPosition();
         double r_pj = m_distances(p,j);
         double denom = 1 + beta*r_pj;
+
+        m_JastrowMat(p,j) = m_a(p,j)*r_pj / denom;
+        m_JastrowMat(j,p) = m_JastrowMat(p,j);
+
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            m_JastrowMat(p,j,d) = (r_p[d]-r_j[d])/r_pj * m_a(p, j)/(denom*denom);
+            m_dJastrowMat(p,j,d) = (r_p[d]-r_j[d])/r_pj * m_a(p, j)/(denom*denom);
             //m_JastrowMat(p,j,1) = (r_p[1]-r_j[1])/r_pj * m_a(p, j)/(denom*denom);
-            m_JastrowMat(j,p,d) = -m_JastrowMat(p,j,d);
+            m_dJastrowMat(j,p,d) = -m_dJastrowMat(p,j,d);
             //m_JastrowMat(j,p,1) = -m_JastrowMat(p,j,1);
         }
     }
@@ -1402,19 +1521,19 @@ void ManyElectronsCoefficients::updateJastrow(int currentParticle) {
         //m_JastrowGrad(p, 1) = 0;
 
         for (int j=0; j<p; j++) {
-            m_JastrowGrad(p, d) += m_JastrowMat(p,j,d);
+            m_JastrowGrad(p, d) += m_dJastrowMat(p,j,d);
             //m_JastrowGrad(p, 1) += m_JastrowMat(p,j,1);
         }
         for (int j=p+1; j<m_numberOfParticles; j++) {
-            m_JastrowGrad(p, d) += m_JastrowMat(p,j,d);
+            m_JastrowGrad(p, d) += m_dJastrowMat(p,j,d);
             //m_JastrowGrad(p, 1) += m_JastrowMat(p,j,1);
         }
         for (int i=0; i<p; i++) {
-            m_JastrowGrad(i, d) = m_JastrowGradOld(i,d) - m_JastrowMatOld(i,p,d) + m_JastrowMat(i,p,d);
+            m_JastrowGrad(i, d) = m_JastrowGradOld(i,d) - m_dJastrowMatOld(i,p,d) + m_dJastrowMat(i,p,d);
             //m_JastrowGrad(i, 1) = m_JastrowGradOld(i,1) - m_JastrowMatOld(i,p,1) + m_JastrowMat(i,p,1);
         }
         for (int i=p+1; i<m_numberOfParticles; i++) {
-            m_JastrowGrad(i, d) = m_JastrowGradOld(i,d) - m_JastrowMatOld(i,p,d) + m_JastrowMat(i,p,d);
+            m_JastrowGrad(i, d) = m_JastrowGradOld(i,d) - m_dJastrowMatOld(i,p,d) + m_dJastrowMat(i,p,d);
             //m_JastrowGrad(i, 1) = m_JastrowGradOld(i,1) - m_JastrowMatOld(i,p,1) + m_JastrowMat(i,p,1);
         }
     }

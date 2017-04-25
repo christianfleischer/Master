@@ -31,13 +31,14 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
 
     do{
 
-        // Run Monte Carlo simulation to find expectation values
+        // Set up an initial state with the updated parameters
         m_system->getInitialState()->setupInitialState();
         for (int i=0; i < numberOfParameters; i++) {
             m_system->getWaveFunction()->adjustParameter(parameters[i], i);
         }
         m_system->getHamiltonian()->setAlpha(parameters[0]);
 
+        // Run Monte Carlo simulation to find expectation values
         m_system->runMetropolisSteps(numberOfMetropolisSteps, importanceSampling, false, false);
 
         std::vector<double> derivative(numberOfParameters);  //derivative of local energy.
@@ -60,7 +61,7 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
             MPI_Bcast(&derivative[i], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
 
-        // Find new parameter
+        // Find new parameters
         diff = 0;
         for (int i=0; i < numberOfParameters; i++) {
             parametersNew[i] = parameters[i] - derivative[i]*m_stepLengthSD;
@@ -102,9 +103,9 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
         }
     }
     // Performing large MC simulation with optimal parameter:
-    //m_system->getInitialState()->setupInitialState();
-    for (int i=0; i < numberOfParameters; i++) {
-        m_system->getWaveFunction()->adjustParameter(parameters[i], i);
-    }
-    //m_system->runMetropolisSteps((int) 1e6, importanceSampling, true, true);
+//    m_system->getInitialState()->setupInitialState();
+//    for (int i=0; i < numberOfParameters; i++) {
+//        m_system->getWaveFunction()->adjustParameter(parameters[i], i);
+//    }
+//    m_system->runMetropolisSteps((int) 1e6, importanceSampling, true, true);
 }

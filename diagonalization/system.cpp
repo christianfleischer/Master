@@ -2,11 +2,12 @@
 #include "WaveFunctions/wavefunction.h"
 
 
-System::System(double omega, int numberOfDimensions, double h, int N) {
+System::System(double omega, int numberOfDimensions, double h, int N, bool createSupPos) {
     m_omega = omega;
     setNumberOfDimensions(numberOfDimensions);
     setN(N);
     setStepLength(h);
+    m_createSupPos = createSupPos;
 }
 
 void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential) {
@@ -37,7 +38,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
         eigvals.col(d) = eigvalsTemp;
     }
 
-    cube eigVecsTemp = zeros(m_N-1, numberOfEigstates, m_numberOfDimensions);
+    cube eigVecsTemp = zeros(m_N-1, m_N-1/*numberOfEigstates*/, m_numberOfDimensions);
     m_qNumbers = zeros(numberOfEigstates, m_numberOfDimensions);
     m_numberOfEigstates = numberOfEigstates;
 
@@ -46,7 +47,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
             m_qNumbers(i, 0) = i;
         }
         int d = 0;
-        eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+        eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
         saveEigenvector = eigVecsTemp.slice(d);
         saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
     }
@@ -59,7 +60,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
         int i 	= 0;
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
             saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
         }
 
@@ -118,7 +119,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
 //        }
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
             saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
         }
 
@@ -256,6 +257,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
 //        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
 //    }
 
+    if (m_createSupPos) {
     if (m_numberOfDimensions == 1) {
         for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
             for (int i = 0; i < m_numberOfEigstates; i++) {
@@ -355,8 +357,9 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
     else {
         cout << "Number of dimensions must be 1, 2 or 3." << endl;
     }
-
+    }
     return supPos;
+
 }
 
 

@@ -13,19 +13,27 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 1000;         //Need 1600 for nMax=20 in 3D.
+    int N                       = 11326;         //Need 1600 for nMax=20 in 3D.
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    double V0                   = 1.;
-    int nMax 					= 40;
-    int nPrimeMax               = 2;
+    int nMax 					= 150;
+    int nPrimeMax               = 8;
     int numberOfDimensions      = 2;
-    double distanceToWall       = 3.;
 
+    bool createSupPos           = true;
+    bool harmonicWell           = true;
+    bool finiteWell             = false;
+    bool squareWell             = false;
+
+    // Finite square and harmonic well settings.
+    double distanceToWall       = 2.;
+    double V0                   = 1.;   // Square well only.
+
+    // Harrmonic well settings (L = zeros for single well, L(0) = a for double well with minima at x = +-a).
     vec L(3);
     L.fill(0.);
-    L(0) = 5.;
+    L(0) = 8.;
     //L(1) = 5.;
 
     int numberOfEigstates;
@@ -41,6 +49,11 @@ int main() {
     }
     else { numberOfEigstates = nMax; }
 
+    // The number of eigenstates needs to be equal to or grather than half the
+    // number of particles in the VMC simulation to avoid a singular Slater matrix.
+    // nPrimeMax is required to be grather than or equal to half the number of
+    // particles in the VMC code, so this asserts that
+    // halfNumberOfParticles <= nPrimeMax <= numberOfEigstates
     assert(nPrimeMax <= numberOfEigstates);
 
     //Set up the vector x and the matrix A:
@@ -60,8 +73,8 @@ int main() {
     cube eigvecs(N-1, N-1, numberOfDimensions);
     mat  eigvals(N-1, numberOfDimensions);
 
-    mat saveEigenvector         = ones(N-1, numberOfEigstates);
-    cube saveSepEigenvector		= zeros(N-1, numberOfEigstates, numberOfDimensions);
+    mat saveEigenvector         = ones(N-1, N-1/*numberOfEigstates*/);
+    cube saveSepEigenvector		= zeros(N-1, N-1/*numberOfEigstates*/, numberOfDimensions);
     mat SavePositionvector      = zeros(N-1, numberOfDimensions+1);
     cube supPosSep				= zeros(N-1, nPrimeMax, numberOfDimensions);
     cube saveC = ones(nMax, nPrimeMax, numberOfDimensions);
@@ -76,11 +89,17 @@ int main() {
     vec SaveConstants           = {omega_r, double(numberOfDimensions), L(0), L(1), L(2), double(N), double(numberOfEigstates), h};
 
     //Init system
-    System* system = new System(omega_r, numberOfDimensions, h, N);
+    System* system = new System(omega_r, numberOfDimensions, h, N, createSupPos);
 
-    system->setWaveFunction(new DoubleWell(system, omega_r));
-    //system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
-    //system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
+    if (harmonicWell) {
+        system->setWaveFunction(new DoubleWell(system, omega_r));
+    }
+    else if (finiteWell) {
+        system->setWaveFunction(new FiniteWell(system, omega_r, distanceToWall));
+    }
+    else if (squareWell) {
+        system->setWaveFunction(new SquareWell(system, omega_r, V0, distanceToWall));
+    }
 
     system->diagonalizeMatrix(r, L, N, diagMat, savePotential);
     system->findEigenstate(eigvals, eigvecs, diagMat,
