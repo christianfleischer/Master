@@ -1,6 +1,7 @@
 #ifndef PROJECT2_MANYELECTRONSCOEFFICIENTS_H
 #define PROJECT2_MANYELECTRONSCOEFFICIENTS_H
 #include "wavefunction.h"
+#include "../HermitePolynomials/hermitepolynomials.h"
 #include <armadillo>
 using namespace arma;
 
@@ -27,6 +28,7 @@ public:
     void setUpSlaterDetOneParticle();
     void setUpDistances();
     void setUpJastrowMat();
+    void setUpHermitePolynomials();
     void updateSlaterDet(int currentParticle);
     void updateDistances(int currentParticle);
     void updateSPWFMat(int currentParticle);
@@ -48,31 +50,39 @@ private:
     int m_numberOfEigstates = 0;
     int m_numberOfCoeffEigstates = 0;
     int m_nPrimeMax = 0;
+
     double m_omega = 0;
     double m_alpha = 0;
     double m_alphaOmega = 0;
     double m_C = 0;
     double m_metropolisRatio = 0;
     double m_ratioSlaterDet = 0;
+
     mat m_quantumNumbers;
     mat m_quantumNumbersDouble;
+
     mat m_spinUpSlater;
     mat m_spinDownSlater;
     mat m_spinUpSlaterInverse;
     mat m_spinDownSlaterInverse;
+
     mat m_distances;
     mat m_distancesOld;
+
     mat m_SPWFMat;
     field<vec> m_SPWFDMat;
     mat m_SPWFDDMat;
+
     cube m_cCoefficients;
     double m_cDeterminant;
+
     mat m_JastrowMat;
     mat m_JastrowMatOld;
     cube m_dJastrowMat;
     cube m_dJastrowMatOld;
     mat m_JastrowGrad;
     mat m_JastrowGradOld;
+
     mat m_a;
     bool m_Jastrow = false;
     vec m_expFactorsDim;

@@ -1,0 +1,918 @@
+\documentclass[../main.tex]{subfiles}
+ 
+\begin{document}
+
+\section{Program Structure}
+
+
+\subsection{Variational Monte Carlo Simulations}
+
+The variational Monte Carlo code consists primarily of several classes. The Particle class stores information about a single particles position, and is responsible for changing this position when necessary and providing it to other parts of the program. The System class contains information about the system, such what kind of Hamiltonian and wave function we have. It also has a vector containing instances of the Particle class, one instance for each particle in the system. In addition this class is responsible for running the Metropolis algorithm, including checking if the Metropolis step is accepted, and calculating the drift (quantum) force and Greens function when using importance sampling. The Sampler class is responsible for sampling the energy etc. after each step and computing averages at the end of the simulation.
+
+The Hamiltonian class is responsible for calculating the Hamiltonian, i.e. the kinetic part, the non-interacting potential part, and also the interacting potential part if interactions are included. In addition, the Hamiltonian class contains the functions for calculating the single-particle wave functions and its gradient and Laplacian. The last part was initially done in the WaveFunction class, but when including different types of potentials it turned out to be more convenient to evaluate the single-particle wave functions etc. in the Hamiltonian class. The WaveFunction class deals with the more general things concerning the many-body wave function, such as updating the Slater determinant and evaluating the full many-body wave function and its gradient and Laplacian. It receives the single-particle wave function evaluations from the Hamiltonian class when they are needed. The WaveFunction class also contains the function for calculating the Metropolis ratio, which the System class uses to determine if a given step is accepted or not. 
+
+The InitialStates class sets up an initial state for the particles, i.e. it creates instances of the Particle class and gives them their initial positions. The VariationMethods class contains methods for variation of the variational parameters. Currently the only method implemented is the steepest descent method, however the program is set up in a way which makes adding other methods, such as the more advanced conjugate gradient method, fairly simple.
+
+\subsubsection{Initializing}
+
+The program starts in the "main.cpp" file where system settings such as number of dimensions, number of particles and number of Monte Carlo cycles, and also constants such as the harmonic oscillator frequency $\omega$. Certain flags are also set to true or false, such as whether to include interactions or not, and what type of potential is used. 
+
+An instance of the InitialStates class is then created which sets up initial positions for each particle where, for each dimension, the particle is given a random value uniformly distributed between $0$ and $1$ as its position in that dimension. For each particle, an instance of the Particle class is created, which is given the position for that particle. In addition, every other particle has its positions in each dimension multiplied by $-1$. This is done so that when we have a double well with a barrier between the wells at e.g. $x=0$, the total amount of particles will be evenly split between the wells. The seed used to generate random positions is dependent on the "m\_my\_rank" variable, which is decided by which node we're on when running the program in parallel. This is because we need to give the nodes different initial states from each other, to avoid running the exact same simulation on every node. 
+
+\lstset{language=c++}
+\begin{lstlisting}[title={Setting up the Initial State}]
+void RandomUniform::setupInitialState() {
+
+    long idum = -1-m_my_rank;
+    Random::setSeed(idum);
+
+    // Create random positions for all particles:
+    for (int i=0; i < m_numberOfParticles; i++) {
+        std::vector<double> position = std::vector<double>();
+
+        for (int j=0; j < m_numberOfDimensions; j++) {
+            double pos = pow(-1, i%2)*Random::nextDouble();
+            position.push_back(pos);
+        }
+        // Create particles:
+        m_particles.push_back(new Particle());
+        m_particles.at(i)->setNumberOfDimensions(m_numberOfDimensions);
+        m_particles.at(i)->setPosition(position);
+    }
+}
+\end{lstlisting}
+
+Next, in "main.cpp", an instance of the Hamiltonian class is created as well as an instance of the WaveFunction class. All three instances are then stored in an instance of the System class, which proceeds to run the Metropolis algorithm.
+
+
+
+\subsubsection{Monte Carlo}
+
+The System class is responsible for running the Metropolis algorithm. It loops over the number of Metropolis steps and the number of particles and changes the position of the particle. The change in position depends on whether or not we use importance sampling (the Metropolis-Hastings algorithm). If we don't use importance sampling the change in position is chosen by a random uniform distribution independent of the state of the system. Based on the change in position the WaveFunction class calculates the Metropolis ratio, which is used to determine if the position change is accepted or not. If importance sampling is used the change in position depends on the so-called quantum force, and the Metropolis ratio is also dependent on the Greens function which in turn depends on the quantum force. Both the quantum force and the Greens function are calculated in the System class. 
+
+The ratio used to determine whether or not to accept the step is compared to a random uniformly distributed number between $0$ and $1$. A ratio greater or equal to the random number results the step being accepted. If the position change is accepted it is kept, otherwise it's reverted, and then the entire system with its current particle positions is sampled by the Sampler class. 
+
+The Sampler class adds the energy of the system at each step to the cumulative energy, and computes the average after the loop over Metropolis steps has finished. However, not every Metropolis step is sampled. Before we start sampling we let the system run through some steps (e.g. $10\%$ of the total amount) in order to let the system equilibrate first. Below is the code for handling a Metropolis step when we're not using importance sampling. The change in position is first applied to the particle in the "computeMetropolisRatio" function of the WaveFunction class, and then reverted in this listed function if the step is not accepted.
+
+\lstset{language=c++}
+\begin{lstlisting}[caption={Metropolis Step Without Importance Sampling}]
+bool System::metropolisStep(int currentParticle) {
+    /* Perform the actual Metropolis step: Take the current particle and
+     * change it's position by a random amount, and check if the step is
+     * accepted by the Metropolis test (compare the wave function evaluated
+     * at this new position with the one at the old position).
+     */
+
+    // Change position of current particle by a random amount creating a trial state
+    setCurrentParticle(currentParticle);
+    std::vector<double> positionChange(m_numberOfDimensions);
+
+    for (int i=0; i<m_numberOfDimensions; i++){
+        positionChange[i] = (Random::nextDouble()*2-1)*m_stepLength;
+    }
+
+    // Metropolis ratio
+    double qratio = m_waveFunction->computeMetropolisRatio(m_particles, currentParticle, positionChange);
+
+    // Check if trial state is accepted
+    if (Random::nextDouble() <= qratio){
+        m_waveFunction->updateSlaterDet(currentParticle);
+        return true;
+    }
+
+    for (int i=0; i<m_numberOfDimensions; i++){
+        // If trial state is not accepted, revert to old position for chosen particle (revert to old state)
+        m_particles[currentParticle]->adjustPosition(-positionChange[i], i);
+        m_waveFunction->updateDistances(currentParticle);
+        m_waveFunction->updateSPWFMat(currentParticle);
+        m_waveFunction->updateJastrow(currentParticle);
+    }
+
+    return false;
+}
+\end{lstlisting}
+
+
+\subsubsection{Virtual Functions}
+
+Virtual functions are an essential part of how the Hamiltonian and WaveFunction classes are built up. Normally if a super class has defined a function and a sub class defines an identical function, the super class function overwrites the sub class function. However, if we make the super class function virtual, the sub class function will not be overwritten by the compiler. This is useful because it allows us to have a super class with multiple sub classes where each sub class has its own implementation of a given function which is virtual in the super class. For example, our Hamiltonian class has sub classes for different types of Hamiltonians (i.e. HO well, double HO well, square well, etc.). Depending on the system we are looking at, we create an instance of the sub class corresponding to the Hamiltonian of the system. By doing this we can do a general call to a function which all sub classes of the Hamiltonian class have, but have implemented in different ways. The implementation that is used will then be the one belonging to the sub class we created the instance of. 
+
+Let us look at a more concrete example to make it more clear. Each sub class of the Hamiltonian class has an implementation of the "computeLocalEnergy" function. The difference between the function implementation for the double HO well and the regular HO well is how the potential energy is calculated.
+
+\lstset{language=c++}
+\begin{lstlisting}[label={lst:Regular Well Potential}, caption={Potential energy calculation for the regular harmonic oscillator well sub class of the Hamiltonian class.}]
+double potentialEnergy = 0;
+    double repulsiveTerm = 0;
+
+    for (int i=0; i < numberOfParticles; i++){
+        double rSquared = 0;
+        std::vector<double> r_i = particles[i]->getPosition();
+        for (int k=0; k < numberOfDimensions; k++){
+            rSquared += r_i[k]*r_i[k];
+        }
+        potentialEnergy += rSquared;
+
+        for (int j=i+1; j < numberOfParticles; j++){
+            double r_ijSquared = 0;
+            std::vector<double> r_j = particles[j]->getPosition();
+            for (int k=0; k < numberOfDimensions; k++){
+                    r_ijSquared += (r_i[k] - r_j[k]) * (r_i[k] - r_j[k]);
+            }
+
+            double r_ij = sqrt(r_ijSquared);
+            repulsiveTerm += 1./r_ij;
+        }
+    }
+    potentialEnergy *= 0.5*m_omega*m_omega;
+    if (m_repulsion) { potentialEnergy += repulsiveTerm; }
+\end{lstlisting}
+
+\lstset{language=c++}
+\begin{lstlisting}[label={lst:Double Well Potential}, caption={Potential energy calculation for the double harmonic oscillator well sub class of the Hamiltonian class.}]
+double potentialEnergy = 0;
+    double repulsiveTerm = 0;
+
+    for (int i=0; i < numberOfParticles; i++){
+        double rSquared = 0;
+        double term2 = 0;
+        double term3 = 0;
+
+        std::vector<double> r_i = particles[i]->getPosition();
+        for (int k=0; k < numberOfDimensions; k++){
+            rSquared += r_i[k]*r_i[k];
+            term2 += 2.*abs(r_i[k])*m_L(k);
+            term3 += m_L(k)*m_L(k);
+        }
+
+        potentialEnergy += rSquared - term2 + term3;
+
+        for (int j=i+1; j < numberOfParticles; j++){
+            double r_ijSquared = 0;
+            std::vector<double> r_j = particles[j]->getPosition();
+            for (int k=0; k < numberOfDimensions; k++){
+                    r_ijSquared += (r_i[k] - r_j[k]) * (r_i[k] - r_j[k]);
+            }
+
+            double r_ij = sqrt(r_ijSquared);
+            repulsiveTerm += 1./r_ij;
+        }
+    }
+
+    potentialEnergy *= 0.5*m_omega*m_omega;
+
+    if (m_repulsion) { potentialEnergy += repulsiveTerm; }
+\end{lstlisting}
+
+At the start of the program we can use one of the following lines of code to choose which of the two Hamiltonians we are using for the simulation. (We can of course choose any other implemented Hamiltonian sub class as well.)
+\lstset{language=c++}
+\begin{lstlisting}[caption={Setting the Hamiltonian of the system.}, label={lst:Choose Hamiltonian}]
+system->setHamiltonian      (new HarmonicOscillatorElectrons(system, omega, analyticalKinetic, repulsion));
+system->setHamiltonian      (new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion));
+\end{lstlisting}
+This will store the instance we chose in the "m\_hamiltonian" object of the System class. Now we can call the "computeLocalEnergy" function from the Sampler class with the following line.
+\lstset{language=c++}
+\begin{lstlisting}[caption={Calling the "computeLocalEnergy" function from the Sampler class. The function implementation used will be the one belonging to the Hamiltonian sub class we have chosen as the Hamiltonian of the system.}]
+std::vector<double> energies = m_system->getHamiltonian()->computeLocalEnergy(m_system->getParticles());
+\end{lstlisting}
+Here the "m\_system->getHamiltonian()" call returns the "m\_hamiltonian" object, and the "m\_system->getParticles()" call returns the "m\_particles" vector which is used as argument for the "computeLocalEnergy" function, so the call is essentially 
+\begin{lstlisting}
+m_hamiltonian->computeLocalEnergy(m_particles);
+\end{lstlisting}
+The program will then call the implementation of the "computeLocalEnergy" function which corresponds to the sub class instance we have stored in "m\_hamiltonian". If we chose line $1$ in Listing \ref{lst:Choose Hamiltonian}, then the code in Listing \ref{lst:Regular Well Potential} will be used, while if we chose line $2$, then the code in Listing \ref{lst:Double Well Potential} will be used. This saves us from having to use an if-test every time we want to call the "computeLocalEnergy" function. Instead we just need one if-test at the beginning to choose between line $1$ and $2$ in Listing \ref{lst:Choose Hamiltonian}. This is significant for optimizing the program when we might have millions of Monte Carlo cycles, since we avoid millions of if-test, and it also makes the code a lot cleaner.
+
+There are two types of virtual functions we can use in C++; the regular virtual functions and pure virtual functions. When a virtual function is defined in a super class, the compiler requires that function to always have a valid implementation. This means that if the super class only defines the function, but doesn't provide a proper implementation of the function, then every sub class of the super class has to provide an implementation. This is what is called a pure virtual function. The alternative is a regular virtual function, which is a function which is defined as virtual in the super class, but also has an implementation in the super class. 
+
+The implementation in the super class then acts as a default implementation, which will be used if the instanced sub class doesn't have its own implementation of said function. If the sub class does have its own implementation this will be used instead of the default. This can be useful if some of the sub classes have the same implementation of a given function while other sub classes have unique implementations. The sub classes who share an implementation can use the default implemented by the super class, while the other sub classes can use their own unique implementations. This way we don't have to implement the exact same function several times, and the amount of code is reduced. Another use for the default implementation is if some sub classes have unique implementations of a given function, but other sub classes doesn't need to have the function at all. If a pure virtual function was used, then every sub class that didn't need the function would still need a dummy version of the function. This dummy version wouldn't do anything and would never be called, but would still be necessary for compiling the program. Instead we can use a regular virtual function, where the default version implemented in the super class is a dummy version, which then allows the sub classes that don't need the function to skip implementing it.
+
+\lstset{language=c++}
+\begin{lstlisting}[caption={Example of definitions of a pure virtual function (line $1$) and a regular virtual function with a dummy implementation (line $2$).}]
+virtual std::vector<double> computeLocalEnergy(std::vector<class Particle*> particles) = 0;
+virtual std::vector<double> computeLocalEnergy(std::vector<class Particle*> particles) { particles = particles; }
+\end{lstlisting}
+
+The pure virtual functions can also be useful. For example, if you know that every sub class should have its own unique implementation of a function, then the lack of a default implementation can act as a test or safeguard for the code when implementing new sub classes. If you forget to implement the function, the compiler will abort and give an error. You will then be made aware that something is wrong, instead of potential using a (wrong) default implementation, which makes it seem like the program is running fine, while it is actually providing erroneous results. The "computeLocalEnergy" function in the VMC program is an example of a pure virtual function, so if someone wanted to add a new Hamiltonian to the program they would have to implement this function for the new Hamiltonian.
+
+\subsubsection{Hamiltonians}
+
+The main job for the Hamiltonian class is to compute the local energy. This means that it has to calculate the energy from the external potential (e.g. harmonic oscillator well), the kinetic energy of the particles, and, if included, the potential energy from particle-particle interactions (e.g. Coulomb repulsion). In this thesis we look at electrons in different types of external potentials, and therefore we have Coulomb repulsion as the particle-particle interaction. The kinetic energy can be computed with numerical differentiation or using analytical expressions for the Laplacian of the wave function. The numerical differentiation can be implemented generally for any Hamiltonian, so we can implement a function for it once, in the Hamiltonian super class, and then call it from the sub class we're using. This is done by the following function.
+\lstset{language=c++}
+\begin{lstlisting}[caption={Function for calculating the kinetic energy by numerical differentiation. The function is general for all the sub classes of the Hamiltonian class, and is therefore implemented once, in the super class "hamiltonian.cpp".}]
+double Hamiltonian::computeKineticEnergy(std::vector<Particle*> particles){
+    // Compute the kinetic energy using numerical differentiation.
+
+    double numberOfParticles = m_system->getNumberOfParticles();
+    double numberOfDimensions = m_system->getNumberOfDimensions();
+    double h = 1e-4;
+
+    // Evaluate wave function at current step
+    double waveFunctionCurrent = m_system->getWaveFunction()->evaluate(particles);
+    double kineticEnergy = 0;
+
+    for (int i=0; i < numberOfParticles; i++){
+        for (int j=0; j < numberOfDimensions; j++){
+
+            // Evaluate wave function at forward step
+            particles[i]->adjustPosition(h, j);
+            m_system->getWaveFunction()->updateDistances(i);
+            m_system->getWaveFunction()->updateSPWFMat(i);
+            m_system->getWaveFunction()->updateJastrow(i);
+            double waveFunctionPlus = m_system->getWaveFunction()->evaluate(particles);
+
+            // Evaluate wave function at backward step
+            particles[i]->adjustPosition(-2*h, j);
+            m_system->getWaveFunction()->updateDistances(i);
+            m_system->getWaveFunction()->updateSPWFMat(i);
+            m_system->getWaveFunction()->updateJastrow(i);
+            double waveFunctionMinus = m_system->getWaveFunction()->evaluate(particles);
+
+            // Part of numerical diff
+            kineticEnergy -= (waveFunctionPlus - 2*waveFunctionCurrent + waveFunctionMinus);
+
+            // Move particles back to original position
+            particles[i]->adjustPosition(h, j);
+            m_system->getWaveFunction()->updateDistances(i);
+            m_system->getWaveFunction()->updateSPWFMat(i);
+            m_system->getWaveFunction()->updateJastrow(i);
+        }
+    }
+    // Other part of numerical diff. Also divide by evaluation of current wave function
+    // and multiply by 0.5 to get the actual kinetic energy.
+    kineticEnergy = 0.5*kineticEnergy / (waveFunctionCurrent*h*h);
+    return kineticEnergy;
+}
+\end{lstlisting}
+
+If we use analytical expressions for the Laplacian when calculating the kinetic energy, then we call the "computeDoubleDerivative" function from the WaveFunction class. When calculating the local energy, the difference from sub class to sub class will be the calculation of the external potential energy as shown in Listing \ref{lst:Regular Well Potential} and Listing \ref{lst:Double Well Potential}. In addition to calculating the local energy, the Hamiltonian sub classes also contain functions for evaluating the single particle wave function and its gradient and Laplacian. Since the single particle wave function contains a Hermite polynomial we also calculate these in the Hamiltonian sub classes. The Hermite polynomials are analytical expressions, but they also have a recursive relation. Therefore we can either implement them by writing out the analytical expression for every Hermite polynomial we might need and then choose the one we need at a given moment, or we can calculate them iteratively. There are advantages to each of these implementations. The iterative method requires less code and is therefore quicker to implement and is general, so that it will work regardless of how many particles we put in the system. However, since it needs to iterate from the lowest polynomial every time, it can become very computationally expensive when we have a lot of particles. 
+
+Using the analytical expressions we would have to add enough polynomials to support the amount of particles we want in the system, and if we wanted to increase the number of particles further, we would have to implement more analytical expressions. There are two ways we could use for choosing among the analytical expressions. The simplest is to just have an if-test for every expression and then start at the beginning and check if we wanted to use $H_0$ (the lowest Hermite polynomial). If not we would move on to the if-test for $H_1$ and then continue like that until we found the one we wanted to use and return that. This would be computationally faster than the iterative method, but it would still potentially need to go through a lot of if-tests, especially when the number of particles in the system is high. There is a more optimized alternative, but it is more difficult to implement. Instead of of using if-tests to check every expression from the start until we find the one we want, we can instead store all the expressions in a list, and then use the index for the expression we want to get it from the list without having to touch any of the other expressions at all. In this thesis the iterative method is used, however it would be best to switch to the last method described in order to substantially reduce computation time.
+
+\lstset{language=c++}
+\begin{lstlisting}[caption={Iterative method for computing Hermite polynomials. This method requires the least amount of code and will work for any amount of particles in the system. However, it is also the least optimized method in terms of computation time, and it can be very time consuming when the amount of particles is high.}]
+double HarmonicOscillatorElectrons::computeHermitePolynomial(int nValue, double position) {
+    // Computes Hermite polynomials.
+    double alphaSqrt = sqrt(m_alpha);
+    double omegaSqrt = sqrt(m_omega);
+    double factor = 2*alphaSqrt*omegaSqrt*position;
+
+    double HermitePolynomialPP = 0;                 // H_{n-2}
+    double HermitePolynomialP = 1;                  // H_{n-1}
+    double HermitePolynomial = HermitePolynomialP;  // H_n
+
+    for (int n=1; n <= nValue; n++) {
+        HermitePolynomial = factor*HermitePolynomialP - 2*(n-1)*HermitePolynomialPP;
+        HermitePolynomialPP = HermitePolynomialP;
+        HermitePolynomialP = HermitePolynomial;
+    }
+
+    return HermitePolynomial;
+}
+\end{lstlisting}
+
+\subsubsection{Wave Functions}
+
+The WaveFunction class is responsible for maintaining and evaluating the full wave function of the system. The systems we're looking at in this thesis are systems where a chosen number of electrons are confined in various external potentials. The wave function then approximated by a Slater determinant of the single particle wave functions, and a Jastrow factor (if interactions are included). Since the single particle functions are implemented in the Hamiltonian sub classes as discussed above, we don't need different sub classes of the WaveFunction class for different external potentials. Two sub classes of the WaveFunction class are used here; The ManyElectrons sub class and the ManyElectronsCoefficients sub class. The first one is used for regular variational Monte Carlo simulations of the systems we're looking at, while the second uses diagonalization of a general potential well to expand its solutions in terms of harmonic oscillator functions. For the most part these two sub classes have the implementation, with the difference between them being how the single particle wave functions in the Slater matrix are approximated.
+
+Before the Monte Carlo simulation starts, the WaveFunction sub classes set up several matrices. The "setUpSlaterDet" function sets up the Slater matrix of single particle wave functions, and matrices for its gradient and Laplacian. We split the Slater matrix in one spin up part and one spin down part, both of which are square matrices. However, even though we treat them as two different matrices we store them together in the matrix called "m\_SPWFMat". The first half of the particles are considered spin up, while the other half are considered spin down. We also store the inverse of the spin up part and the spin down part separately in their own matrices. The "setUpDistances" function sets up a matrix containing the distances between particle pairs, i.e. element $ij$ is the distance between particle $i$ and particle $j$. The "setUpJastrowMat" function sets up matrices for the Jastrow factor and its gradient. The latter two functions are used to optimize performance and will be discussed more later. The sub classes of the WaveFunction class also contains functions for updating the matrices at every Metropolis step. 
+
+The "evaluate" function evaluates the total wave function which is used when computing the kinetic energy using numerical differentiation in the Hamiltonian class. Since we split the Slater determinant into a spin up part and a spin down part, we need to implement a special case for when we only have one particle in the system. Since the one particle can't have both spin up and spin down, one of the Slater matrices will be empty, and since we use the product of the spin up determinant and the spin down determinant normally, we have to choose one of them and exclude the other. Here we have chosen to give the single particle spin up in the one particle case.
+
+\lstset{language=c++}
+\begin{lstlisting}
+double ManyElectrons::evaluate(std::vector<class Particle*> particles) {
+    // Evaluates the wave function using brute force.
+
+    mat spinUpSlater;
+    mat spinDownSlater;
+    if (m_numberOfParticles == 1) {
+        spinUpSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+        spinDownSlater = zeros<mat>(m_numberOfParticles, m_numberOfParticles);
+        spinUpSlater(0,0) = m_SPWFMat(0,0);
+    }
+    else {
+        spinUpSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
+        spinDownSlater = zeros<mat>(m_halfNumberOfParticles, m_halfNumberOfParticles);
+
+        for (int i=0; i < m_halfNumberOfParticles; i++) {
+            for (int j=0; j < m_halfNumberOfParticles; j++) {
+                spinUpSlater(i,j) = m_SPWFMat(i,j);
+                spinDownSlater(i,j) = m_SPWFMat(i+m_halfNumberOfParticles,j);
+            }
+        }
+    }
+
+    double beta = m_parameters[1];
+    double exponent = 0;
+    if (m_Jastrow) {
+        for (int i=0; i < m_numberOfParticles; i++) {
+            for (int j=i+1; j < m_numberOfParticles; j++) {
+                exponent += m_JastrowMat(i,j);
+            }
+        }
+    }
+
+    double waveFunction;
+    if (m_numberOfParticles == 1) {
+        waveFunction = det(spinUpSlater)*exp(exponent);
+    }
+    else {
+        waveFunction = det(spinDownSlater)*det(spinUpSlater)*exp(exponent);
+    }
+
+    return waveFunction;
+}
+\end{lstlisting}
+Similarly, there are functions for evaluating the gradient and Laplacian of the full wave function. The gradient  for the Slater part and Jastrow (correlation) part of the wave function are computed separately and then combined afterwards, which is also the case for the Laplacian. The full gradient is simply the two parts added together, but for the Laplacian we get an additional cross term equal to two times the gradient parts multiplied together. This is shown in Eq. (\ref{eq: TotalLaplacian}). There is also a function for calculating the derivative of the wave function with respect to the variational parameters, which is needed when doing the variation of parameters.
+
+The Metropolis ratio is also calculated in the sub classes of the WaveFunction class, and in our case, since the full wave function is made up of a Slater determinant and a Jastrow factor, we can write the Metropolis ratio as a product of a Slater part and a Jastrow part. From Eq. (\ref{eq:MetropolisRatioSD}) we know that the expression for the Slater part of the ratio is
+\begin{align}
+    R_{SD} = \sum_{j=1}^N \phi_j({\bf r}_i^{\textrm{new}}) d_{ji}^{-1}({\bf r}^{\textrm{old}}),
+\end{align}
+where $\phi$ are the single particle wave functions, and $d_{ji}^{-1}$ is element $ji$ of the inverse Slater matrix. From Eq. (\ref{eq:MetropolisRatioC}) we know the expression for the Jastrow part
+\begin{align}
+    R_{C} = \exp\left(\sum_{i=1, i\neq k}^{N} f_{ik}^{\textrm{new}} - f_{ik}^{\textrm{old}}\right),
+\end{align}
+where $N$ is the number of particles and
+\begin{align}
+    f_{ij} = \frac{a r_{ij}}{(1+\beta r_{ij})}.
+\end{align}
+In the code we tabulate the necessary values in matrices that are maintained in other functions, which makes the code for the Metropolis ratio very clean with just a few simple loops.
+\lstset{language=c++}
+\begin{lstlisting}[caption={The computation of the Metropolis ratio when the full wave function consists of a Slater determinant and a Jastrow factor. The ratio can be split into a Slater part and a Jastrow part which are multiplied together to form the full ratio. The "m\_spinUpSlaterInverse" matrix is the inverse of the spin up Slater matrix, and similarly for the spin down matrix, while "m\_SPWFMat" is a matrix containing the single particle wave functions, i.e. it is the spin up and spin down Slater matrices stored together in one matrix. The "m\_JastrowMat" matrix contains the exponent of the Jastrow factor for all particle pairs for the trial state, while the "m\_JastrowMat" is the same matrix, but for the last accepted state (i.e. the state before the trial state).}]
+int i = currentParticle;
+double ratioSlaterDet = 0;
+if (i < m_halfNumberOfParticles) {
+    for (int j=0; j < m_halfNumberOfParticles; j++) {
+        ratioSlaterDet += m_spinUpSlaterInverse(j,i)*m_SPWFMat(i,j);
+    }
+}
+else {
+    for (int j=0; j < m_halfNumberOfParticles; j++) {
+            ratioSlaterDet += m_spinDownSlaterInverse(j, i-m_halfNumberOfParticles)*m_SPWFMat(i,j);
+    }
+}
+    
+double exponent = 0;
+if (m_Jastrow) {
+    for (int j=0; j < i; j++) {
+        exponent += m_JastrowMat(i,j);
+        exponent -= m_JastrowMatOld(i,j);
+    }
+    for (int j=i+1; j < m_numberOfParticles; j++) {
+        exponent += m_JastrowMat(i,j);
+        exponent -= m_JastrowMatOld(i,j);
+    }
+}
+double ratioJastrowFactor = exp(exponent);
+m_ratioSlaterDet = ratioSlaterDet;
+m_metropolisRatio = ratioSlaterDet*ratioJastrowFactor;
+\end{lstlisting}
+Since our Slater matrix is split into a spin up and a spin down part, the sum for the Slater part of the ratio only needs to run over the particles with the same spin as the moved particle. The first if-test checks the spin of the moved particle, since the spin up particles make up the first half of the particles (i.e. the particles with index $0\leq i< N/2$, $N$ being the total amount of particles), while the spin down particles make up the other half.
+
+The main difference between the two WaveFunction sub classes we're using is how the Slater matrix is set up and maintained. The Slater determinant is made up of the single particle wave functions, so for the "ManyElectrons" sub class we just make calls to the "evaluateSingleParticleWF" function in the sub classes of the Hamiltonian class, which uses a closed form expression for the wave function, and use the returned values as elements in the Slater matrices. For the "ManyElectronsCoefficents" sub class however, it is not quite as simple. The method used in this sub class aims to use the harmonic oscillator single particle wave functions as basis functions to approximate the single particle wave functions of more complicated external potentials. We need to implement Eq. (\ref{eq: Approximate SPWF}), and use the resulting single particle wave functions to fill the Slater matrices. We restate the equation here for convenience
+\begin{equation}
+    \psi_{n^\prime}(x) = \sum_{n_x=0}^{\Lambda} C_{n^\prime,n_x} \phi_{n_x}(x).
+\end{equation}
+The overlap coefficients $C_{n^\prime,n_x}$ are provided by the diagonalization program, while $\psi_{n_x}(x)$ are the harmonic oscillator single particle wave functions we use as basis functions. We see from the equation that every element in the Slater matrices now has to be a sum over overlap coefficients and basis functions. 
+
+\lstset{language=c++}
+\begin{lstlisting}[caption={Loop updating the Slater matrices when closed form expressions for the single particle wave functions are used. $i$ is the index of the particle that was moved in the current Metropolis step, while $r\_i$ is the position of that particle. For each changed element we only need to call functions which evaluate closed form expressions for the single particle wave function and its gradient and Laplacian.}]
+for (int j=0; j<m_halfNumberOfParticles; j++) {
+    vec n(m_numberOfDimensions);
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        n[d] = m_quantumNumbers(j, d);
+    }
+
+    m_SPWFMat(i,j) = m_system->getHamiltonian()->evaluateSingleParticleWF(n, r_i, j);
+
+    m_SPWFDMat(i,j) = m_system->getHamiltonian()->computeSPWFDerivative(n, r_i, j);
+
+    m_SPWFDDMat(i,j) = m_system->getHamiltonian()->computeSPWFDoubleDerivative(n, r_i, j);
+}
+\end{lstlisting}
+
+\lstset{language=c++}
+\begin{lstlisting}[caption={Loop updating the Slater matrices when the single particle wave functions are expanded in a basis of harmonic oscillator functions. $i$ is the index of the particle that was moved in the current Metropolis step, while $r\_i$ is the position of that particle. We need an additional loop over eigenstates compared to if we use closed form expressions for the single particle wave functions. We need two quantum number variables, one for the basis functions, and one which corresponds to the single particle wave function we're trying to approximate.}]
+for (int j=0; j<m_halfNumberOfParticles; j++) {
+    vec n(m_numberOfDimensions);
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        n[d] = m_quantumNumbers(j, d);
+    }
+
+    m_SPWFMat(i,j) = 0;
+
+    m_SPWFDMat(i,j) = zeros(m_SPWFDMat(i,j).size());
+
+    m_SPWFDDMat(i,j) = 0;
+
+    for (int eig = 0; eig < m_numberOfEigstates; eig++) {
+        double term = 1;
+        vec termD(m_numberOfDimensions);
+        double termDD = 0;
+        double coefficients = 1;
+        vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
+        for (int d = 0; d < m_numberOfDimensions; d++) {
+            term *= harmonicOscillatorBasis(r_i[d], qNums[d], d);
+            termD[d] = harmonicOscillatorBasisDerivative(r_i, qNums, d);
+            termDD += harmonicOscillatorBasisDoubleDerivative(r_i, qNums, d);
+            coefficients *= m_cCoefficients(qNums[d], n[d], d);
+        }
+        m_SPWFMat(i,j) += coefficients*term;
+        m_SPWFDMat(i,j) += coefficients*termD;
+        m_SPWFDDMat(i,j) += coefficients*termDD;
+    }
+}
+\end{lstlisting}
+
+For the inverse Slater matrices (spin up and spin down) we use the updating algorithm explained in section \ref{sec:ClosedFormMany}. Since the single particle wave functions are stored in the Slater matrices discussed above, the updating algorithm for the inverse Slater matrices only needs the elements of those Slater matrices, a copy of the inverse matrices from before the update, and the Slater part of the Metropolis ratio. The code for the updating algorithm for the spin up inverse Slater determinant is listed below. The if-test checks if the particle $i$ moved for the current Metropolis step is a spin up particle or a spin down particle. There are then two loops over $j$ which are essentially two parts of a sum over all particles $j \neq i$, calculating the elements which do not correspond to the moved particle $i$. Finally there is a loop for calculating the elements which do correspond to the moved particle.
+\lstset{language=c++}
+\begin{lstlisting}[caption={Updating algorithm for the spin up inverse Slater matrix. $i$ is the particle moved at the current Metropolis step, and the if-test checks if that particle has spin up. There are three loops for updating all of the elements, two of which update the $j \neq i$ elements, while the final loop updates the elements where $j = i$. We need at least two loops here since the elements are updated differently depending on whether $j = i$ or not. We split the $j \neq i$ loop into two loops, as seen here, in order to avoid needing an "if $j \neq i$"-test inside the loop (which would slow down the program). Instead we have one loop for all $j < i$ and one for all $j > i$.}]
+int i = currentParticle;
+if (i < m_halfNumberOfParticles) {
+    mat spinUpSlaterInverseOld = m_spinUpSlaterInverse;
+    for (int j=0; j < i; j++) {
+        double sum = 0;
+
+        for (int l=0; l <m_halfNumberOfParticles; l++) {
+            sum += m_SPWFMat(i,l)
+                  *spinUpSlaterInverseOld(l,j);
+        }
+        for (int k=0; k < m_halfNumberOfParticles; k++) {
+            m_spinUpSlaterInverse(k,j) = spinUpSlaterInverseOld(k,j)
+                                        -(sum/m_ratioSlaterDet)*spinUpSlaterInverseOld(k,i);
+        }
+    }
+    for (int j=i+1; j < m_halfNumberOfParticles; j++) {
+        double sum = 0;
+
+        for (int l=0; l <m_halfNumberOfParticles; l++) {
+            sum += m_SPWFMat(i,l)
+                  *spinUpSlaterInverseOld(l,j);
+        }
+        for (int k=0; k < m_halfNumberOfParticles; k++) {
+            m_spinUpSlaterInverse(k,j) = spinUpSlaterInverseOld(k,j)
+                                        -(sum/m_ratioSlaterDet)*spinUpSlaterInverseOld(k,i);
+        }
+    }
+    for (int k=0; k < m_halfNumberOfParticles; k++) {
+        m_spinUpSlaterInverse(k,i) = spinUpSlaterInverseOld(k,i)/m_ratioSlaterDet;
+    }
+}
+\end{lstlisting}
+
+\subsubsection{Variation of Parameters}
+
+The variation of parameters is done by the loop listed below using the steepest descent method. At the start of each iteration we set up an initial state which uses the updated variational parameters from the previous iteration. We run a Monte Carlo simulation with few cycles and find the expectation values discussed in section \ref{sec:SteepestDescent}. We use these expectation values to find the derivative of the local energy with respect to each of the variational parameters and then update the parameters according to Eq. (\ref{eq: SteepestDesc}). When we run the program in parallel the Monte Carlo simulation varies somewhat from node to node, so each node finds its own value for the derivative of the local energy. However, we want the changes to the variational parameters to be the same for all of the nodes, so we take the average of the derivatives found and use that to calculate the new parameters. Then the new parameters are broadcast to all of the nodes. The loop continues until the sum of the change to the parameters is below a chosen tolerance.
+
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+do{
+    // Set up an initial state with the updated parameters
+    m_system->getInitialState()->setupInitialState();
+    for (int i=0; i < numberOfParameters; i++) {
+        m_system->getWaveFunction()->adjustParameter(parameters[i], i);
+    }
+    m_system->getHamiltonian()->setAlpha(parameters[0]);
+
+    // Run Monte Carlo simulation to find expectation values
+    m_system->runMetropolisSteps(numberOfMetropolisSteps, importanceSampling, false, false);
+
+    std::vector<double> derivative(numberOfParameters);  //derivative of local energy.
+    // Expectation values needed to calculate derivative of local energy:
+    double energy = m_system->getSampler()->getEnergy();
+    std::vector<double> waveFuncEnergy(numberOfParameters);
+    std::vector<double> waveFuncDerivative(numberOfParameters);
+
+    for (int i=0; i < numberOfParameters; i++) {
+        waveFuncEnergy[i] = m_system->getSampler()->getWaveFuncEnergyParameters()[i];
+        waveFuncDerivative[i] = m_system->getSampler()->getWaveFuncDerivativeParameters()[i];
+        derivative[i] = 2*(waveFuncEnergy[i] - energy*waveFuncDerivative[i]);
+    }
+
+    for (int i=0; i < numberOfParameters; i++) {
+        MPI_Reduce(&derivative[i], &m_derivativeAvg[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
+        if (my_rank==0) {
+            derivative[i] = m_derivativeAvg[i]/m_system->getNumProcs();
+        }
+        MPI_Bcast(&derivative[i], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
+    }
+
+    // Find new parameters
+    diff = 0;
+    for (int i=0; i < numberOfParameters; i++) {
+        parametersNew[i] = parameters[i] - derivative[i]*m_stepLengthSD;
+        diff += abs(parametersNew[i] - parameters[i]);
+    }
+    //m_stepLengthSD *= 0.8;
+
+    //parametersNew = parameters - derivative*m_stepLengthSD;
+    parameters = parametersNew;   // Update parameters
+    iteration++;
+    std::string upLine = "\e[A";
+
+    if (my_rank == 0) {
+        cout << "Iterations: " << iteration << endl;
+        for (int i=0; i < numberOfParameters; i++) {
+            cout << "Parameter " << i+1 << ": " << parameters[i] << endl;
+            upLine += "\e[A";
+        }
+        cout << upLine;             //"\033[F";
+    }
+
+
+}while(diff > tol && iteration < maxIterations);
+// Loop ends when requested tolerance for optimal parameters has been reached or after max iterations.
+\end{lstlisting}
+
+\subsubsection{Testing the Code}
+
+\textbf{Non-interacting Case}
+\\To test the code we can compare the results for systems without interaction to known benchmarks (either analytical results, or results from other types of simulation). We also want to see how many basis functions we need in order to get good results when creating the trial wave function from the basis functions. The number of Monte Carlo cycles used is $1e4$ unless otherwise is stated. Since we're using harmonic oscillator wave functions as basis function we should only need a few basis functions when the external potential of the system is also a harmonic oscillator. It turns out that we need one basis function for every eigenstate in the ground state of the system. The number of eigenstates in the ground state depends on how many particles we have and two particles can share an eigenstate if one of them is spin up and the other is spin down. Therefore the number of eigenstates in the ground state is equal to half of the total number of particles. If we try to use fewer basis functions when creating the trial wave function, the Slater matrix will be singular. From Table \ref{tab:RegHOTest2D} and \ref{tab:RegHOTest3D} we see that in order to get results which are consistent with the benchmarks we only need the minimum amount of basis functions.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $1$ & $1$ & $1\omega$ & $1$ & $1$ \\*
+    \hline
+    $2$ & $2$ & $2\omega$ & $1$ & $1$ \\*
+    \hline
+    $6$ & $10$ & $10\omega$ & $2$ & $3$ \\*
+    \hline
+    $12$ & $28$ & $28\omega$ & $3$ & $6$ \\*
+    \hline
+  \end{tabular}
+  \caption{Results for a system with a harmonic oscillator external potential in two dimensions, with oscillator frequency $\omega = 1$ and $N$ particles. The results are consistent with the benchmarks when using the minimum amount of basis functions to create the trial wave function. The eigenstates column shows the number of eigenstates we loop over when creating the trial wave function and is equal to the amount of basis functions we use. The energy levels column is the amount of energy levels those eigenstates fill up. For each spin up and spin down particle pair we need one eigenstate, otherwise the Slater determinant becomes singular. So for $1$ or $2$ particles we only need $1$ eigenstate, while for $6$ particles we need $3$ eigenstates. In general the number of eigenstates has to be greater or equal to half of the total amount of particles.}
+  \label{tab:RegHOTest2D}
+\end{table}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $1$ & $1.5$ & $1.5\omega$ & $1$ & $1$ \\*
+    \hline
+    $2$ & $3$ & $3\omega$ & $1$ & $1$ \\*
+    \hline
+    $8$ & $18$ & $18\omega$ & $2$ & $4$ \\*
+    \hline
+    $20$ & $60$ & $60\omega$ & $3$ & $10$ \\*
+    \hline
+  \end{tabular}
+  \caption{Results for a system with a harmonic oscillator external potential in three dimensions, with oscillator frequency $\omega = 1$ and $N$ particles. Similarly to the two dimensional case (\ref{tab:RegHOTest2D}), we only need the minimum amount of basis functions to get benchmark consistent results. The eigenstates column shows the number of eigenstates we loop over when creating the trial wave function and is equal to the amount of basis functions we use. The energy levels column is the amount of energy levels those eigenstates fill up. For each spin up and spin down particle pair we need one eigenstate, otherwise the Slater determinant becomes singular. So for $1$ or $2$ particles we only need $1$ eigenstate, while for $8$ particles we need $4$ eigenstates. In general the number of eigenstates has to be greater or equal to half of the total amount of particles.}
+  \label{tab:RegHOTest3D}
+\end{table}
+
+For a system with a double harmonic oscillator as the external potential, the amount of harmonic oscillator basis functions needed to create a good trial wave function is much higher than for the regular harmonic oscillator potential. Nevertheless, the code should be able to reproduce benchmark results if enough basis functions are used. So long as the number of particles is small enough to not "spill" over between the wells, the wells can be considered as two separate single harmonic oscillator wells in the non-interacting case. The potential barrier between the wells increases with the distance between the well centers. This is because an increased distance between the wells also means an increased distance between the well centers and the potential barrier. Since the well potentials increase when moving away from the center, the potentials will be greater when they meet to form the barrier. An increase in the potential barrier also means an increase in the amount of particles we can put in the wells before they start "spilling" over the potential barrier. The benchmarks in Table \ref{tab:DoubleHOTest2D} and \ref{tab:DoubleHOTest3D} assume that the wells can be treated as separate with no "spilling" between them and with the same amount of particles in each well. 
+
+From Table \ref{tab:DoubleHOTest2D} we see that we need more basis functions to get a good result for $1$ particle than we do for $2$. The program is set up to handle two or more particles (for splitting the Slater determinant etc.), so the one particle case had to be implemented separately. Therefore there is a possibility that there may be some fault in the code for the one particle case. Another possibility is that the one particle case could simply be more complicated to simulate with a double well external potential than the two particle case. In the two particle case the distribution of the particles would simply be one in each well, but for the one particle case, the particle could be in either well and still give the same ground state energy, essentially giving us two ground states. Either way the result is consistent with the benchmark given enough basis functions. From the table we see that increasing the number of basis functions improves the results as it should. 
+
+We also see that for $12$ particles the result is not consistent with the benchmark, but greatly increasing the number of basis functions doesn't provide a significantly better result. In this case the energy converges towards a value different from the benchmark value. There seems to be some issue with the code which causes some particles to end up on a higher energy level than they are supposed to in this double well case. If we look at the results for more numbers of particles around $12$ we see that, we get proper results for $8$, $10$, $14$, $16$, and $18$ particles, but the problem reoccurs for $20$ particles. These results are listed in Table \ref{tab:DoubleHOTest2DExtended}.
+%PROBABLY NOT TRUE! This is likely due to the "spilling" effect discussed previously. Some of the particles end up above the potential barrier between the wells and are therefore not actually confined by a double well potential, but by some combination of a double well and a single well. Therefore the resulting energy, $E=22$, ends up being somewhere between what it would be for one single well with $12$ particles (which would be $E=28$) and two independent single wells with $6$ particles each ($E=2\times 10 = 20$). Increasing the distance between the wells should let us simulate $12$ particles properly confined by a double well potential, however as the distance between the wells increases, so does the amount of basis functions needed for a good trial wave function which means a higher computational cost.%
+
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $1$ & $0.993374$ & $1\omega$ & $40$ & $820$ \\*
+    \hline
+    $2$ & $1.9996$ & $2\omega$ & $23$ & $276$ \\*
+    \hline
+    $2$ & $2.00002$ & $2\omega$ & $40$ & $820$ \\*
+    \hline
+    $4$ & $4.00034$ & $4\omega$ & $25$ & $325$ \\*
+    \hline
+    $12$ & $22.0009$ & $20\omega$ & $27$ & $378$ \\*
+    \hline
+    $12$ & $22.0001$ & $20\omega$ & $35$ & $630$ \\*
+    \hline
+  \end{tabular}
+  \caption{Results for a system with a double harmonic oscillator external potential in two dimensions, with oscillator frequency $\omega = 1$, $N$ particles, and $L_x = 4$ being the distance between the center of each well and the potential barrier between them. The results are consistent with the benchmarks for $1$, $2$ and $4$ particles, but we need a large amount of basis functions to get good results. For the $12$ particle case the result is not consistent with the benchmarks, indicating that there is some fault in the code which affects this specific case, but not the lower particle cases. The eigenstates column shows the number of eigenstates we loop over when creating the trial wave function and is equal to the amount of basis functions we use. The energy levels column is the amount of energy levels those eigenstates fill up.}
+  \label{tab:DoubleHOTest2D}
+\end{table}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $8$ & $12$ & $12\omega$ & $40$ & $820$ \\*
+    \hline
+    $10$ & $16$ & $16\omega$ & $40$ & $820$ \\*
+    \hline
+    $14$ & $26$ & $26\omega$ & $40$ & $820$ \\*
+    \hline
+    $16$ & $32$ & $32\omega$ & $40$ & $820$ \\*
+    \hline
+    $18$ & $38$ & $38\omega$ & $40$ & $820$ \\*
+    \hline
+    $20$ & $46$ & $44\omega$ & $40$ & $820$ \\*
+    \hline
+  \end{tabular}
+  \caption{More results for the same system as in Table \ref{tab:DoubleHOTest2D}. Here we check if the issue for $12$ particles in Table \ref{tab:DoubleHOTest2D} reoccurs for other numbers of particles close to $12$. We see that for $8$, $10$, $14$, $16$ and $18$ particles the results are good, but for $20$ particles the problem reoccurs.}
+  \label{tab:DoubleHOTest2DExtended}
+\end{table}
+
+In the three dimensional case we see from Table \ref{tab:DoubleHOTest3D} that the same problem occurs, but here it occurs already for $4$ particles. For the one particle and two particles cases we're able to reproduce the benchmarks, but not for $4$ and $16$ particles.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $1$ & $1.4925$ & $1.5\omega$ & $40$ & $11480$ \\*
+    \hline
+    $2$ & $3.00192$ & $3\omega$ & $23$ & $2300$ \\*
+    \hline
+    $4$ & $8.00019$ & $6\omega$ & $25$ & $2925$ \\*
+    \hline
+    $16$ & $42$ & $36\omega$ & $30$ & $4960$ \\*
+    \hline
+  \end{tabular}
+  \caption{Results for a system with a double harmonic oscillator external potential in three dimensions, with oscillator frequency $\omega = 1$, $N$ particles, and $L_x = 4$ being the distance between the center of each well and the potential barrier between them. The results are consistent with the benchmarks for $1$ and $2$ particles, but we need a large amount of basis functions to get good results. For $4$ and $16$ particles the result is not consistent with the benchmarks, so the issue for $12$ particles in two dimensions reoccurs already for $4$ particles in the three dimensional case. The eigenstates column shows the number of eigenstates we loop over when creating the trial wave function and is equal to the amount of basis functions we use. The energy levels column is the amount of energy levels those eigenstates fill up.}
+  \label{tab:DoubleHOTest3D}
+\end{table}
+
+--Square Well--
+When it comes to the finite square well potential, we don't have any exact benchmarks to compare our results to. However, when diagonalizing the one particle problem, in addition to the eigenvectors we need to find the overlap coefficients, we also get eigenvalues which correspond to the single particle energies at various energy levels. Since we diagonalize separately for each dimension we get two (or three) identical sets of eigenvalues as shown in Table \ref{tab:SquareWellEigenvalues}. To find the total energy value of a given eigenstate we need to add together one eigenvalue from each dimension. The lowest eigenstate is of course the state whose energy is the sum of the lowest eigenvalues for each dimension, and since we're looking at fermions, two particles can occupy this state. The next eigenstates are those which have the second lowest eigenvalue for one of the dimensions and the lowest eigenvalue for the rest of the dimensions. This is equivalent to the $n_x$, $n_y$ and $n_z$ quantum numbers we use with the harmonic oscillator, so the lowest state is the one where $n = n_x + n_y + n_z = 0$ and $n_x=n_y=n_z=0$, while the next states are the ones where $n = 1$, which are the states $(n_x,n_y,n_z) = (1,0,0)$, $(0,1,0)$ and $(0,0,1)$.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | }
+    \hline
+    $\#$ & $E_x$ & $E_y$ & $E_z$\\*
+    \hline
+    $0$ & $0.165983$ & $0.165983$ & $0.165983$\\*
+    \hline
+    $1$ & $0.623589$ & $0.623589$ & $0.623589$\\*
+    \hline
+    $2$ & $1.046890$ & $1.046890$ & $1.046890$\\*
+    \hline
+    $3$ & $1.079870$ & $1.079870$ & $1.079870$\\*
+    \hline
+    $4$ & $1.185600$ & $1.185600$ & $1.185600$\\*
+    \hline
+  \end{tabular}
+  \caption{This table lists some of the eigenvalues we get when diagonalizing the single particle problem for a finite square well external potential. Each dimension is diagonalized separately. The oscillator frequency is $\omega = 1$, the distance from the center of the well to each wall is $2$ and consequently the width of the well is $4$. Everywhere inside the well the potential is zero, and outside the well it is $V_0 = 1$. The number of grid points (or steps) used is $N=5000$. The eigenstate with lowest energy would be the one with the lowest eigenvalue for every dimension. The three eigenstates with second lowest energy would be those which have the second lowest eigenvalue for one of the dimensions and the lowest eigenvalue for the other dimensions, and so on for the eigenstates with higher energies.}
+  \label{tab:SquareWellEigenvalues}
+\end{table}
+
+We can use these eigenvalues we find as benchmarks when excluding interaction since the non-interacting energy is simply the sum of single particle energies. We have to be aware though, that since the benchmarks come from a simulation, they are dependent on the precision we use in the simulation. In this case the precision is dependent on how many grid points (or steps) we use when diagonalizing. In Table \ref{tab:SquareWellEigVals} we've listed some resulting eigenvalues for various number of steps $N$. From the table we see that if we increase the number of steps past $5000$, the difference in the sum of the lowest eigenvalues is relatively small. We also see that for higher eigenvalues the difference between $5000$ and $10000$ steps is even smaller than it is for the lowest eigenvalues. As a result, in order to limit computational cost we will be using $5000$ steps unless otherwise is stated.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ (steps) & Eigenvalue number & $E_x$ & $E_y$ & Sum\\*
+    \hline
+    $100$ & $0$ & $0.177361$ & $0.177361$ & $0.354722$ \\*
+    \hline
+    $1000$ & $0$ & $0.166936$ & $0.166936$ & $0.333872$ \\*
+    \hline
+    $2000$ & $0$ & $0.166341$ & $0.166341$ & $0.332682$ \\*
+    \hline
+    $3000$ & $0$ & $0.166142$ & $0.166142$ & $0.332284$ \\*
+    \hline
+    $4000$ & $0$ & $0.166043$ & $0.166043$ & $0.332086$ \\*
+    \hline
+    $5000$ & $0$ & $0.165983$ & $0.165983$ & $0.331966$ \\*
+    \hline
+    $10000$ & $0$ & $0.165864$ & $0.165864$ & $0.331728$ \\*
+    \hline
+     & & & &\\*
+    \hline
+    $100$ & $14$ & $3.56071$ & $3.56071$ & $7.12142$ \\*
+    \hline
+    $1000$ & $14$ & $3.60699$ & $3.60699$ & $7.21398$ \\*
+    \hline
+    $5000$ & $14$ & $3.60700$ & $3.60700$ & $7.21400$ \\*
+    \hline
+    $10000$ & $14$ & $3.60695$ & $3.60695$ & $7.21390$ \\*
+    \hline
+  \end{tabular}
+  \caption{This table shows how the eigenvalues we get from diagonalizing the single particle problem for a finite square well external potential varies depending on the number of grid points (or steps) we use when diagonalizing. For all the listed cases the oscillator frequency is $\omega = 1$, the distance from the center of the well to each wall is $2$ and consequently the width of the well is $4$. The potential is zero inside the well and $V_0 = 1$ outside the well. We see that the eigenvalues we get become smaller and smaller as we increase the number of steps $N$. However, the difference becomes small as $N$ gets large, so the difference between the eigenvalues for $N=100$ and $N=5000$ is much greater than the difference for $N=5000$ and $N=10000$. We also see that the differences are somewhat large for small eigenvalues, and become less significant as the eigenvalues increase.}
+  \label{tab:SquareWellEigVals}
+\end{table}
+
+Due to the benchmarks not being exact, we won't know for sure how close we are to the exact solutions, but getting results which are reasonably consistent with the benchmarks should indicate that the program is working properly. Another thing to note is that not only the benchmarks, but also the results will be dependent on the number of steps as shown in Table \ref{tab:SquareWellPreTest2D}. In addition the results will also depend on the number of basis functions used and the number of Monte Carlo cycles used (shown in Table \ref{tab:SquareWellMCcyclesTest2D}). It appears that the number of basis function used to expand the single particle wave functions is more important than the number of Monte Carlo cycles used. For the following test we will keep the number of Monte Carlo cycles constant at $1e4$ cycles to avoid long computation times.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ (steps) & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $5000$ & $0.663081$ & $0.663932$ & $10$ & $55$ \\*
+    \hline
+    $5000$ & $0.661318$ & $0.663932$ & $20$ & $210$ \\*
+    \hline
+    $10000$ & $0.661050$ & $0.663456$ & $20$ & $210$ \\*
+    \hline
+    $5000$ & $0.662659$ & $0.663932$ & $30$ & $465$ \\*
+    \hline
+  \end{tabular}
+  \caption{Here we see how the results for two particles in a finite square well potential depends on the number of basis functions (eigenstates) used, and how both the results and the benchmark varies with the number of steps $N$ used when diagonalizing the single particle problem. Since not only the results, but also the benchmarks vary, it's hard to say how close to the exact solution the results are. However, the VMC simulation reproduces the benchmarks well, which indicates that the program is working as intended. All results listed in this table are for a two dimensional system with oscillator frequency $\omega = 1$. The distance from the center of the well to each wall is $2$ and consequently the width of the well is $4$. The potential is zero inside the well and $V_0 = 1$ elsewhere.}
+  \label{tab:SquareWellPreTest2D}
+\end{table}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | c | }
+    \hline
+    $N$ (steps) & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates & MC cycles\\*
+    \hline
+    $5000$ & $0.659647$ & $0.663932$ & $5$ & $15$ & $1e4$ \\*
+    \hline
+    $5000$ & $0.665143$ & $0.663932$ & $5$ & $15$ & $1e5$ \\*
+    \hline
+    $5000$ & $0.663820$ & $0.663932$ & $5$ & $15$ & $1e6$ \\*
+    \hline
+    $5000$ & $0.665083$ & $0.663932$ & $5$ & $15$ & $1e7$ \\*
+    \hline
+  \end{tabular}
+  \caption{Here we see how the results for two particles in a finite square well potential depends on the number of Monte Carlo cycles used in the VMC simulation. We see that there is little change in the result when significantly increasing the number of Monte Carlo cycles. However, for simulations with more particles and with interactions included, there is a possibility that more than $1e4$ Monte Carlo cycles are needed. All results listed in this table are for a two dimensional system with oscillator frequency $\omega = 1$. The distance from the center of the well to each wall is $2$ and consequently the width of the well is $4$. The potential is zero inside the well and $V_0 = 1$ elsewhere.}
+  \label{tab:SquareWellMCcyclesTest2D}
+\end{table}
+
+In Table \ref{tab:SquareWellTest2D} we've listed the results for the square well potential in two dimensions. Just as for the double well potential, the one particle case requires significantly more basis functions than the two particle case in order to give good results, but unlike the in the double well case, we here get good results regardless of the number of particles, provided we use enough basis functions. For some of the listed cases it seems like the results get worse (compared to the benchmarks) when we increase the number basis functions used. However, as discussed earlier the benchmarks here aren't the exact solutions, so it's entirely possible that the results in some cases are closer to the exact solution than the benchmarks themselves. The important thing to note is that the results are reasonably consistent with the benchmarks for all cases, which is a good indicator that the program is working correctly.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | }
+    \hline
+    $N$ (particles) & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $1$ & $0.333050$ & $0.331966$ & $40$ & $820$ \\*
+    \hline
+    $2$ & $0.663081$ & $0.663932$ & $10$ & $55$ \\*
+    \hline
+    $2$ & $0.661177$ & $0.663932$ & $23$ & $276$ \\*
+    \hline
+    $6$ & $3.828040$ & $3.822220$ & $10$ & $55$ \\*
+    \hline
+    $6$ & $3.808650$ & $3.822220$ & $25$ & $325$ \\*
+    \hline
+    $12$ & $11.285200$ & $11.168068$ & $40$ & $820$ \\*
+    \hline
+    $12$ & $11.020500$ & $11.168068$ & $50$ & $1275$ \\*
+    \hline
+  \end{tabular}
+  \caption{Results for a two dimensional system with a finite square well as the external potential. The oscillator frequency is $\omega = 1$, and the number of particles is $N$. The distance from the center of the well to each wall is $2$ and consequently the width of the well is $4$. The potential is zero inside the well and $V_0 = 1$ elsewhere. The eigenstates column shows the number of eigenstates we loop over when creating the trial wave function and is equal to the amount of basis functions we use. The energy levels column is the amount of energy levels those eigenstates fill up. The results are consistent with the benchmarks, however the benchmarks are not the exact energies, but an approximation provided by diagonalizing the single particle problem. Just as for the double harmonic oscillator potential we see that the one particle case requires a lot more basis functions (eigenstates) to get good results, than the two particle case does. For $2$ and $6$ particles we can get results which are reasonably consistent with the benchmarks by using as little as $55$ basis functions. We also see that increasing the number of basis functions might increase the difference between the result and the benchmark. This could be due to the benchmarks not being exact, and in this case the results might actually be closer to the exact energies than the benchmarks are.}
+  \label{tab:SquareWellTest2D}
+\end{table}
+
+From Table \ref{tab:SquareWellTest3D} we see that for the three dimensional case, the results are also fairly consistent with the benchmarks. For the $20$ particle case the result is not quite as good as for lower number of particles, but this is due to an insufficient number of basis functions used. Using even more basis functions than we did would be very computationally expensive, and the result is still decently close to the benchmark, which is why we've chosen to limit the number of basis functions used.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | c | }
+    \hline
+    $N$ (particles) & steps & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $1$ & $5000$ & $0.502191$ & $0.497949$ & $30$ & $4960$ \\*
+    \hline
+    $1$ & $11500$ & $0.499162$ & $0.497544$ & $40$ & $11480$ \\*
+    \hline
+    $2$ & $5000$ & $1.008970$ & $0.995898$ & $10$ & $220$ \\*
+    \hline
+    $2$ & $5000$ & $0.996780$ & $0.995898$ & $23$ & $2300$ \\*
+    \hline
+    $8$ & $5000$ & $6.748820$ & $6.729228$ & $10$ & $220$ \\*
+    \hline
+    $8$ & $5000$ & $6.677380$ & $6.729228$ & $30$ & $4960$ \\*
+    \hline
+    $20$ & $11500$ & $23.706100$ & $23.481330$ & $40$ & $11480$ \\*
+    \hline
+  \end{tabular}
+  \caption{Results for a three dimensional system with a finite square well as the external potential. The oscillator frequency is $\omega = 1$, and the number of particles is $N$. The distance from the center of the well to each wall is $2$ and consequently the width of the well is $4$. The potential is zero inside the well and $V_0 = 1$ elsewhere. The eigenstates column shows the number of eigenstates we loop over when creating the trial wave function and is equal to the amount of basis functions we use. The energy levels column is the amount of energy levels those eigenstates fill up. The results are consistent with the benchmarks, however the benchmarks are not the exact energies, but an approximation provided by diagonalizing the single particle problem. Just as for the double harmonic oscillator potential we see that the one particle case requires a lot more basis functions (eigenstates) to get good results, than the two particle case does. For $2$ and $8$ particles we can get results which are reasonably consistent with the benchmarks by using as little as $220$ basis functions. We also see that increasing the number of basis functions might increase the difference between the result and the benchmark. This could be due to the benchmarks not being exact, and in this case the results might actually be closer to the exact energies than the benchmarks are.}
+  \label{tab:SquareWellTest3D}
+\end{table}
+
+\subsection{Diagonalization (Overlap Coefficients)}
+
+The diagonalization program is tasked with diagonalizing the one particle problem in a given potential well, and to use the resulting eigenvectors to find the overlap coefficients required to expand the solutions of the given potential well in terms of harmonic oscillator basis functions. The potential is first discretized and set up as a tridiagonal matrix. The one particle problem is then solved as an eigenvalue problem by using the Armadillo function, "eig\_sym", on the tridiagonal matrix in order to find the eigenvalues and eigenvectors. The eigenvectors correspond to the single particle wave functions for a particle in a corresponding eigenstate confined in the potential well. The eigenvalues are the single particle energies for the eigenstates. The program then finds the coefficients for the overlap between the eigenvectors and the harmonic oscillator basis functions. The program also expands the solutions of the potential well in the harmonic oscillator basis in order to verify the code.
+
+\subsubsection{Diagonalizing}
+
+The first step is to set up the tridiagonal matrix. See section \ref{sec:Diag_SP_Problem} for an explaination of the elements in the tridiagonal matrix. In the code the tridiagonal matrix is filled by the following simple function.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential) {
+    double Constant = 1./(2*m_h*m_h);
+    mat V(N+1, m_numberOfDimensions);
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        V.col(d) = m_waveFunction->potential(r.col(d), L(d));
+        diagMat.slice(d).diag(0)  =  2.*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
+        diagMat.slice(d).diag(1)  = -1.*Constant*ones(N-2);               //Set e_i elements in A
+        diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
+    }
+
+    savePotential = V;
+    return;
+}
+\end{lstlisting}
+The only non-constant elements in the matrix are the diagonal ones which depend on the external potential. The WaveFunction class of the diagoanlization program (not the same as the class from the VMC program) has sub classes for the different external potentials each containing a simple function for the potential. These functions are used to fill in the diagonal elements of the matrix. The tridiagonal matrix eigenvalue problem is solved for each dimension separately, so one tridiagonal matrix is made for each dimension, then the "eig\_sym" function is used on each of the matrices. This is done in the following loop.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+// Finding eigenvalues and eigenvectors using armadillo:
+for (int d = 0; d < m_numberOfDimensions; d++) {
+    vec eigvalsTemp = eigvals.col(d);
+    eig_sym(eigvalsTemp, eigvecs.slice(d),  diagMat.slice(d));
+    eigvals.col(d) = eigvalsTemp;
+}
+\end{lstlisting}
+
+\subsubsection{Finding the Overlap Coefficients}
+
+We know from section \ref{sec:FindingCoefficients} that the overlap coefficients are given by Eq. (\ref{eq:OverlapCoefficients}), which we restate here for convenience.
+\begin{equation}\label{eq:OverlapCoefficients2}
+    C_{n^\prime,n} = \langle \psi_{n^\prime} \vert \phi_n\rangle = \sum_{i=0}^{N-1} \psi_{n^\prime}(x_i)\phi_n(x_i) \hspace{1 cm} n^\prime,n = 0,1,2,\dots,
+\end{equation}
+where the sum goes over the discretization steps used when diagonalizing the single particle problem. This equation is used to find a single general overlap coefficient. However, we need a matrix containing all of the overlap coefficients. We also want to find the coefficients separately for each dimension, so we want one such matrix for each dimension. Therefore, in addition to a loop for the sum in Eq. (\ref{eq:OverlapCoefficients2}), we need three more loops; one for $n^\prime$, one for $n$ and one for dimensions. The following function finds all the coefficients for a given dimension.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim){
+    cout << "Finding coefficients for dimension " << currentDim+1 << " of " <<  m_numberOfDimensions << endl;
+    cout.flush();
+    std::string upLine = "\033[F";
+    for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+        cout << "nPrime = " << nPrime << " of " << nPrimeMax-1 << endl;
+        for (int nx = 0; nx < nMax; nx++) {
+            cout << "[" << int(double(nx)/nMax * 100.0) << " %]\r";
+            cout.flush();
+            double innerprod = 0;
+            for (int i = 0; i < m_N-1; i++) {
+                innerprod += m_psi.slice(currentDim).col(nPrime)(i)*m_waveFunction->harmonicOscillatorBasis(x, nx)(i);
+            }
+            C(nx, nPrime) = innerprod;
+        }
+        cout << upLine;
+    }
+    cout << upLine;
+    C *= m_h;
+}
+\end{lstlisting}
+This function is called once for each dimension and the three resulting matrices are stored together in a three-dimensional matrix, which is then saved to a file. This file is the loaded in the VMC program. There the coefficients are used with harmonic oscillator basis functions to create approximate single particle wave functions which are used in the Slater determinant.
+
+\subsubsection{Expanding the Solutions}
+
+The main goal of this program is to find the coefficients and store them so that they can be used in the simulations in the VMC program. However, we can use the coefficients together with harmonic oscillator basis functions to recreate the eigenvectors we got from diagonalizing the single particle problem, in order to test that the coefficients are correct. We use Eq. (\ref{eq: Approximate SPWF}) from section \ref{sec:AppSPWF}, which is
+\begin{equation}\label{eq: Approximate SPWF2}
+    \psi_{n^\prime}(x) = \sum_{n_x=0}^{\Lambda} C_{n^\prime,n_x} \phi_{n_x}(x).
+\end{equation}
+We store the $\psi$'s and use the Python program "plot\_data.py" to compare them to the eigenvectors from the diagonalizing. For two dimensions we have the following loop.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+    for (int i = 0; i < m_numberOfEigstates; i++) {
+        int nx = m_qNumbers(i, 0);
+        int ny = m_qNumbers(i, 1);
+
+        vec plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+        vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+
+        supPos.col(nPrime) += plusTermX%plusTermY;
+        supPosSep.slice(0).col(nPrime) += plusTermX;
+        supPosSep.slice(1).col(nPrime) += plusTermY;
+    }
+}
+\end{lstlisting}
+The "supPosSep" three-dimensional matrix stores all the $\psi_n^\prime$ for each dimension separately, while the "supPos" matrix stores the product for all dimensions.
+
+\subsubsection{Testing the Code}
+
+There are several test we can use to validate the coefficients we've found. One thing we can check is that the $L_2$-norm is a small number:
+\begin{equation}
+    ||\psi_{n^\prime}^\textrm{diag}-\psi_{n^\prime}^\textrm{exp}||_2 = \sqrt{\sum_i^N |\psi_{n^\prime}^\textrm{diag}(x_i)-\psi_{n^\prime}^\textrm{exp}(x_i)|^2} < \epsilon.
+\end{equation}
+Here $\psi_{n^\prime}^\textrm{diag}$ are the solutions (eigenvectors) we got from diagonalizing the single particle problem, while $\psi_{n^\prime}^\textrm{exp}$ are the approximations from the linear expansion in Eq. (\ref{eq: Approximate SPWF2}). The $L_2$ being a small number $\epsilon$ would mean that the linear expansion approximations are reasonably similar to the solutions from diagonalizing. 
+
+We can also do a similar test by plotting $\psi_{n^\prime}^\textrm{diag}$ and $\psi_{n^\prime}^\textrm{exp}$ together for various $n^\prime$ and checking that the two curves are (to some precision) on top of each other. We expect the result of both of these test to be best for low $n^\prime$ values and then get worse and worse as $n^\prime$ increases. We also expect that increasing the number of basis functions used in the linear expansion should improve the results and consequently give good results for a larger number of $n^\prime$.
+
+Another test we can do is to check that the norm of $\psi^\textrm{diag}$ for each dimension separately is approximately equal to $1$ and that the accuracy increases with increasing number of basis function like in the previous tests. The norm is given by
+\begin{equation}
+    ||\psi|| = \sqrt{\langle \psi|\psi \rangle},
+\end{equation}
+and we want the following to be true
+\begin{equation}
+    ||\psi_x^\textrm{exp}|| \approx ||\psi_y^\textrm{exp}|| \approx ||\psi_z^\textrm{exp}|| \approx 1,
+\end{equation}
+in the three dimensional case.
+
+\subsection{Hartree-Fock}
+
+\subsubsection{Testing the Code}
+
+
+\section{Optimizing Performance}
+We use parallelization of code and specific compiler options to optimize the performance of our program. To parallelize our program we use MPI, and we also optimize with the $O3$ compiler flag of the GNU C++ compiler. The $O3$ flag tells the compiler to make optimizations to the code where it is possible, in order to reduce computation time. By parallelizing our program, we make it possible to run the program on multiple processors at once. We can run the program on several processors on a single computer (typically 4 or 8 processors) to get some speedup. However, we can also run it on a super computer cluster in order to utilize even more processors (we'll use up to 64 processors in this project) and decrease computation time substantially. If the program is parallelized well we should see a speed-up of about a factor 2 when doubling the amount of processors. In general, Variational Monte Carlo simulations are simple to parallelize, so we should expect to achieve that amount of speed-up when running the code in parallel. When doing VMC calculations in parallel we have to be careful not to use too many processors for a small amount of MC cycles. If we have too many processors the amount of MC cycles for each processor might be too low to give good results. In addition the amount of MC cycles could end up being a non-integer number, which wouldn't make sense.
+
+\end{document}

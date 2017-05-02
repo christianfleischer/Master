@@ -5,7 +5,7 @@
 
 class HarmonicOscillatorRepulsive : public Hamiltonian {
 public:
-    HarmonicOscillatorRepulsive(System* system, double omega, double a, double gamma, bool analyticalKinetic);
+    HarmonicOscillatorRepulsive(System* system, double alpha, double omega, double a, double gamma, bool analyticalKinetic);
     std::vector<double> computeLocalEnergy(std::vector<Particle*> particles);
 
 private:

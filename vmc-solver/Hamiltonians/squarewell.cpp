@@ -8,7 +8,8 @@
 
 using namespace std;
 
-SquareWell::SquareWell(System* system, double V0, double distToWall, double omega, bool analyticalKinetic, bool repulsion) : Hamiltonian(system, analyticalKinetic){
+SquareWell::SquareWell(System* system, double V0, double distToWall, double alpha, double omega, bool analyticalKinetic, bool repulsion)
+    : Hamiltonian(system, analyticalKinetic, alpha, omega){
     assert(omega > 0);
     m_omega = omega;
     m_repulsion = repulsion;

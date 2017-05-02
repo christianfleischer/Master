@@ -5,7 +5,7 @@
 
 class HarmonicOscillator : public Hamiltonian {
 public:
-    HarmonicOscillator(System* system, double omega, bool analyticalKinetic);
+    HarmonicOscillator(System* system, double alpha, double omega, bool analyticalKinetic);
     std::vector<double> computeLocalEnergy(std::vector<Particle*> particles);
 
 private:

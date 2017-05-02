@@ -7,6 +7,10 @@ import sys
 
 eigenvectors = np.loadtxt('PlotAndData/Eigenvectors.dat')
 
+eigX = np.loadtxt('PlotAndData/SeparateEigenvectorsX.dat')
+eigY = np.loadtxt('PlotAndData/SeparateEigenvectorsY.dat')
+#eigZ = np.loadtxt('PlotAndData/SeparateEigenvectorsZ.dat')
+
 constants = np.loadtxt('PlotAndData/Constants.dat')
 positionvectors = np.loadtxt('PlotAndData/Positionvectors.dat')
 
@@ -29,7 +33,7 @@ if numEigFunctions == 1:
     psi[0] = eigenvectors
 else:
     for i in range(numEigFunctions):
-        psi[i] = eigenvectors[:,i]
+        psi[i] = eigenvectors[:,i]#eigX[:,i]*eigY[:,i]#*eigZ[:,i]eigenvectors[:,i]
 
 
 def H(r, n_r):
@@ -103,15 +107,29 @@ def cOld(r,n):
 #    a.append(np.sqrt(np.dot(tmp1, tmp1)))
 
 # When we set psi = psix*psiy*psiz, we must normalize manually:
-for i in range(-1, 20):
-	print("<psi0|psi0>:   ", np.dot(psi[i],psi[i]))
-print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
+vec = zeros(20)
+for i in range(20):
+	vec[i] = np.dot(psi[i], psi[i])
+	#print("<psi%i|psi%i>:   " % (i, i), np.dot(psi[i],psi[i]))
+for i in range(len(supCpp[0,:])):
+	print("<supCpp%i|supCpp%i>:   " % (i, i), np.dot(supCpp[:,i],supCpp[:,i]))
+#print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
+
+#vec = np.sort(vec, axis=None)
+for i in range(20):
+	print vec[i]
 
 # plot(r[0], supCpp**2/np.dot(supCpp,supCpp), r[0], psi[0]**2/np.dot(psi[0],psi[0]), '+')
 
 
 # plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]), '+')
-plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]))
+
+#plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]))
+#plot(r[0], psi[1], r[0], supCpp[:,0])
+
+for i in xrange(1):
+	plot(r[0], supCpp[:,7])
+	plot(r[0], psi[7])
 
 nVec = range(nMax)
 

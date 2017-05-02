@@ -60,7 +60,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
         int i 	= 0;
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
+            eigVecsTemp.slice(d) = eigvecs.slice(d);//.submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
             saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
         }
 

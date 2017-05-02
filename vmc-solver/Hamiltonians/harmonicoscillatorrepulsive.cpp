@@ -6,10 +6,10 @@
 #include "../WaveFunctions/wavefunction.h"
 #include "harmonicoscillatorrepulsive.h"
 
-HarmonicOscillatorRepulsive::HarmonicOscillatorRepulsive(System* system, double omega,
+HarmonicOscillatorRepulsive::HarmonicOscillatorRepulsive(System* system, double alpha, double omega,
                                                          double a, double gamma,
                                                          bool analyticalKinetic) :
-        Hamiltonian(system, analyticalKinetic) {
+        Hamiltonian(system, analyticalKinetic, alpha, omega) {
     assert(omega > 0);
     m_omega = omega;
     m_a = a;

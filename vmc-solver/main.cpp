@@ -41,7 +41,7 @@ int main(int nargs, char* args[]) {
     timeStart = MPI_Wtime();
 
     int numberOfDimensions  = 2;
-    int numberOfParticles   = 12;
+    int numberOfParticles   = 20;
     int numberOfSteps       = (int) 1e4;              // Monte Carlo cycles
     double omega            = 1.;                     // Oscillator frequency.
     double alpha            = 1.;//0.98456;//0.7;          // Variational parameter.         //3D: 0.983904
@@ -58,7 +58,7 @@ int main(int nargs, char* args[]) {
 
     vec L(3);
     L.fill(0.);
-    L(0) = 8.;
+    L(0) = 4.;
     //L(1) = 5.;
 
     bool analyticalKinetic  = true;
@@ -96,28 +96,28 @@ int main(int nargs, char* args[]) {
     system->setInitialState             (new RandomUniform(system, numberOfDimensions, numberOfParticles, my_rank));
     // Select which Hamiltonian and trial wave function to use (interacting or non-interacting)
     if (repulsion && !quantumDots) {
-    system->setHamiltonian              (new HarmonicOscillatorRepulsive(system, omega, a, gamma, analyticalKinetic));
+    system->setHamiltonian              (new HarmonicOscillatorRepulsive(system, alpha, omega, a, gamma, analyticalKinetic));
     system->setWaveFunction             (new RepulsiveGaussian(system, alpha, beta, a));
     }
     if (!repulsion && !quantumDots) {
-    system->setHamiltonian              (new HarmonicOscillator(system, omega, analyticalKinetic));
+    system->setHamiltonian              (new HarmonicOscillator(system, alpha, omega, analyticalKinetic));
     system->setWaveFunction             (new SimpleGaussian(system, alpha));
     }
     if (quantumDots) {
         if (doubleWell) {
             system->setDoubleWellFlag   (doubleWell);
             system->setL                (L);
-            system->setHamiltonian      (new DoubleHarmonicOscillator(system, L, omega, analyticalKinetic, repulsion));
+            system->setHamiltonian      (new DoubleHarmonicOscillator(system, L, alpha, omega, analyticalKinetic, repulsion));
         }
         else if (finiteWell) {
-            system->setHamiltonian      (new FiniteHarmonicOscillator(system, distToWall, omega, analyticalKinetic, repulsion));
+            system->setHamiltonian      (new FiniteHarmonicOscillator(system, distToWall, alpha, omega, analyticalKinetic, repulsion));
         }
         else if (squareWell) {
             system->setSquareWellFlag   (squareWell);
-            system->setHamiltonian      (new SquareWell(system, V0, distToWall, omega, analyticalKinetic, repulsion));
+            system->setHamiltonian      (new SquareWell(system, V0, distToWall, alpha, omega, analyticalKinetic, repulsion));
         }
         else {
-            system->setHamiltonian      (new HarmonicOscillatorElectrons(system, omega, analyticalKinetic, repulsion));
+            system->setHamiltonian      (new HarmonicOscillatorElectrons(system, alpha, omega, analyticalKinetic, repulsion));
         }
         if (twobodyQD) {
             system->setWaveFunction     (new TwoElectrons(system, alpha, beta, omega, aElectrons, C, Jastrow));

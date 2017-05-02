@@ -13,13 +13,13 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 11326;         //Need 1600 for nMax=20 in 3D.
+    int N                       = 10000;         //Need 1600 for nMax=20 in 3D.
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 150;
-    int nPrimeMax               = 8;
-    int numberOfDimensions      = 2;
+    int nMax 					= 1;
+    int nPrimeMax               = 1;
+    int numberOfDimensions      = 3;
 
     bool createSupPos           = true;
     bool harmonicWell           = true;
@@ -33,7 +33,7 @@ int main() {
     // Harrmonic well settings (L = zeros for single well, L(0) = a for double well with minima at x = +-a).
     vec L(3);
     L.fill(0.);
-    L(0) = 8.;
+    L(0) = 4.;
     //L(1) = 5.;
 
     int numberOfEigstates;
@@ -112,9 +112,11 @@ int main() {
     saveEigenvector.save("../diagonalization/PlotAndData/Eigenvectors.dat", raw_ascii);
     saveSepEigenvector.slice(0).save("../diagonalization/PlotAndData/SeparateEigenvectorsX.dat", raw_ascii);
     if (numberOfDimensions>1) saveSepEigenvector.slice(1).save("../diagonalization/PlotAndData/SeparateEigenvectorsY.dat", raw_ascii);
+    if (numberOfDimensions>2) saveSepEigenvector.slice(2).save("../diagonalization/PlotAndData/SeparateEigenvectorsZ.dat", raw_ascii);
     supPos.save("../diagonalization/PlotAndData/Superpositions.dat", raw_ascii);
     supPosSep.slice(0).save("../diagonalization/PlotAndData/SeparateSuperpositionsX.dat", raw_ascii);
     if (numberOfDimensions>1) supPosSep.slice(1).save("../diagonalization/PlotAndData/SeparateSuperpositionsY.dat", raw_ascii);
+    if (numberOfDimensions>2) supPosSep.slice(2).save("../diagonalization/PlotAndData/SeparateSuperpositionsZ.dat", raw_ascii);
     saveC.save("../diagonalization/PlotAndData/Coefficients.dat", arma_ascii);
     //saveEigenvector.print();
     eigvals.save("../diagonalization/PlotAndData/Eigenvalues.dat", arma_ascii);
@@ -124,7 +126,7 @@ int main() {
     int displayVals = 15;
     std::vector<string> dim = {"x", "y", "z"};
     for (int i = 0; i < displayVals; ++i) {
-        cout << i+1 << ":";
+        cout << i << ":";
         for (int d = 0; d < numberOfDimensions; d++) {
             cout << " E"<< dim[d] <<": " << eigvals.col(d)(i);
         }

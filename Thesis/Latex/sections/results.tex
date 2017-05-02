@@ -1,0 +1,76 @@
+\documentclass[../main.tex]{subfiles}
+ 
+\begin{document}
+
+\section{}
+\subsection{Wave Function Expanded in Harmonic Oscillator Basis}
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | }
+    \hline
+    $N$ & $E$ (\textrm{Shared start}) & $E$ (\textrm{Split start}) \\*
+    \hline
+    $2$ & $2.00002$ & $2.00002$ \\*
+    \hline
+    $4$ & $4.00005$ & $4.00005$ \\*
+    \hline
+    $6$ & $8.00009$ & $8.0001$ \\*
+    \hline
+  \end{tabular}
+  \caption{Unperturbed energies for the double well when approximating the single particle wave functions with harmonic oscillator basis functions. Results in the second column are for when all the particles starts in the same well and are then distributed between the wells by the program, while the results in the third column are for when we force half of the particles in each well at the start. Two dimensional system, $L_x=4$, $\omega=1$.}
+  \label{tab: unperturbedEnergiesCoeff}
+\end{table}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | }
+    \hline
+    $N$ & $E$ (\textrm{Shared start}) & $E$ (\textrm{Split start}) \\*
+    \hline
+    $2$ & $3.00854$ & $2.34952$ \\*
+    \hline
+    $4$ & $6.53324$ & $6.53747$ \\*
+    \hline
+    $6$ & $14.1804$ & $14.2108$ \\*
+    \hline
+  \end{tabular}
+  \caption{Perturbed energies for the double well when approximating the single particle wave functions with harmonic oscillator basis functions. Results in the second column are for when all the particles starts in the same well and are then distributed between the wells by the program, while the results in the third column are for when we force half of the particles in each well at the start. Two dimensional system, $L_x=4$, $\omega=1$.}
+  \label{tab: perturbedEnergiesCoeff}
+\end{table}
+
+\subsection{Wave Function as Super Postion of two Harmonic Oscillator Functions}
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | }
+    \hline
+    $N$ & $E$ (\textrm{Shared start}) & $E$ (\textrm{Split start}) \\*
+    \hline
+    $2$ & $2$ & $2$ \\*
+    \hline
+    $4$ & $4$ & $4$ \\*
+    \hline
+    $6$ & $8$ & $8$ \\*
+    \hline
+  \end{tabular}
+  \caption{Unperturbed energies for the double well when approximating the single particle wave functions with a super position of two harmonic oscillator functions. Results in the second column are for when all the particles starts in the same well and are then distributed between the wells by the program, while the results in the third column are for when we force half of the particles in each well at the start. Two dimensional system, $L_x=4$, $\omega=1$.}
+  \label{tab: unperturbedEnergiesSupPos}
+\end{table}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | }
+    \hline
+    $N$ & $E$ (\textrm{Shared start}) & $E$ (\textrm{Split start}) \\*
+    \hline
+    $2$ & $3.00852$ & $2.3495$ \\*
+    \hline
+    $4$ & $6.53322$ & $6.53742$ \\*
+    \hline
+    $6$ & $14.4748$ & $13.872$ \\*
+    \hline
+  \end{tabular}
+  \caption{Perturbed energies for the double well when approximating the single particle wave functions with a super position of two harmonic oscillator functions. Results in the second column are for when all the particles starts in the same well and are then distributed between the wells by the program, while the results in the third column are for when we force half of the particles in each well at the start. Two dimensional system, $L_x=4$, $\omega=1$.}
+  \label{tab: perturbedEnergiesSupPos}
+\end{table}
+
+\end{document}
