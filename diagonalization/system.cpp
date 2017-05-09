@@ -286,6 +286,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
     else if (m_numberOfDimensions == 2) {
 
         for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+
             for (int i = 0; i < m_numberOfEigstates; i++) {
                 int nx = m_qNumbers(i, 0);
                 int ny = m_qNumbers(i, 1);
@@ -294,8 +295,18 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
                 vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
 
                 supPos.col(nPrime) += plusTermX%plusTermY;
-                supPosSep.slice(0).col(nPrime) += plusTermX;
-                supPosSep.slice(1).col(nPrime) += plusTermY;
+                //supPosSep.slice(0).col(nPrime) += plusTermX;
+                //supPosSep.slice(1).col(nPrime) += plusTermY;
+            }
+
+            for (int n = 0; n < nMax; n++) {
+
+                vec plusTermXSep = C(n, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), n);
+                vec plusTermYSep = C(n, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), n);
+
+                supPosSep.slice(0).col(nPrime) += plusTermXSep;
+                supPosSep.slice(1).col(nPrime) += plusTermYSep;
+
             }
         }
 
@@ -347,9 +358,21 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
                 vec plusTermZ = C(nz, nPrime, 2)*m_waveFunction->harmonicOscillatorBasis(rCut.col(2), nz);
 
                 supPos.col(nPrime) += plusTermX%plusTermY%plusTermZ;
-                supPosSep.slice(0).col(nPrime) += plusTermX;
-                supPosSep.slice(1).col(nPrime) += plusTermY;
-                supPosSep.slice(2).col(nPrime) += plusTermZ;
+                //supPosSep.slice(0).col(nPrime) += plusTermX;
+                //supPosSep.slice(1).col(nPrime) += plusTermY;
+                //supPosSep.slice(2).col(nPrime) += plusTermZ;
+            }
+
+            for (int n = 0; n < nMax; n++) {
+
+                vec plusTermXSep = C(n, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), n);
+                vec plusTermYSep = C(n, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), n);
+                vec plusTermZSep = C(n, nPrime, 2)*m_waveFunction->harmonicOscillatorBasis(rCut.col(2), n);
+
+                supPosSep.slice(0).col(nPrime) += plusTermXSep;
+                supPosSep.slice(1).col(nPrime) += plusTermYSep;
+                supPosSep.slice(2).col(nPrime) += plusTermZSep;
+
             }
         }
     }

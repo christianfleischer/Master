@@ -870,6 +870,40 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
                 ny++;
             }
         }
+        m_quantumNumbersPrime = m_quantumNumbers;
+        if (m_system->getDoubleWellFlag()) {
+            pair<int, double> mapping;
+            vector<pair<int, double>> sortingVector;
+            vec L = m_system->getL();
+            double nxDiv = 1.;
+            double nyDiv = 1.;
+
+            if (L(0) != 0) {
+                nxDiv = 2.;
+            }
+
+            if (L(1) != 0) {
+                nyDiv = 2.;
+            }
+
+            for (int i = 0; i < m_numberOfEigstates; i++) {
+                int nx = m_quantumNumbersPrime(i,0);
+                int ny = m_quantumNumbersPrime(i,1);
+
+                mapping = make_pair(i, nx/nxDiv + ny/nyDiv);
+                sortingVector.push_back(mapping);
+            }
+
+            sort(sortingVector.begin(), sortingVector.end(), energyLevelComparisonCoeff);
+            mat quantumNumbersSorted = zeros<mat>(m_numberOfEigstates, m_numberOfDimensions);
+
+            for (int i = 0; i < m_numberOfEigstates; i++) {
+                quantumNumbersSorted(i,0) = m_quantumNumbersPrime(sortingVector[i].first, 0);
+                quantumNumbersSorted(i,1) = m_quantumNumbersPrime(sortingVector[i].first, 1);
+            }
+            m_quantumNumbersPrime = quantumNumbersSorted;
+            //cout << m_quantumNumbersPrime << endl;
+        }
     }
     else {
         int n = 0;
@@ -918,7 +952,48 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
         }
         m_quantumNumbers = quantumNumbersSorted;
 
-        cout << m_quantumNumbers << endl;
+        m_quantumNumbersPrime = m_quantumNumbers;
+        if (m_system->getDoubleWellFlag()) {
+            pair<int, double> mappingPrime;
+            vector<pair<int, double>> sortingVectorPrime;
+            vec L = m_system->getL();
+            double nxDiv = 1.;
+            double nyDiv = 1.;
+            double nzDiv = 1.;
+
+            if (L(0) != 0) {
+                nxDiv = 2.;
+            }
+
+            if (L(1) != 0) {
+                nyDiv = 2.;
+            }
+
+            if (L(2) != 0) {
+                nzDiv = 2.;
+            }
+
+            for (int i = 0; i < m_numberOfEigstates; i++) {
+                int nx = m_quantumNumbersPrime(i,0);
+                int ny = m_quantumNumbersPrime(i,1);
+                int nz = m_quantumNumbersPrime(i,2);
+
+                mappingPrime = make_pair(i, nx/nxDiv + ny/nyDiv + nz/nzDiv);
+                sortingVectorPrime.push_back(mappingPrime);
+            }
+
+            sort(sortingVectorPrime.begin(), sortingVectorPrime.end(), energyLevelComparisonCoeff);
+            mat quantumNumbersSorted = zeros<mat>(m_numberOfEigstates, m_numberOfDimensions);
+
+            for (int i = 0; i < m_numberOfEigstates; i++) {
+                quantumNumbersSorted(i,0) = m_quantumNumbersPrime(sortingVectorPrime[i].first, 0);
+                quantumNumbersSorted(i,1) = m_quantumNumbersPrime(sortingVectorPrime[i].first, 1);
+                quantumNumbersSorted(i,2) = m_quantumNumbersPrime(sortingVectorPrime[i].first, 2);
+            }
+            m_quantumNumbersPrime = quantumNumbersSorted;
+        }
+
+        //cout << m_quantumNumbers << endl;
 
 //        int i = 0;
 
@@ -947,7 +1022,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 //                }
 //            }
 //        }
-    }
+    } //END IF
 
     bool overlappingWells = true;
     if (m_system->getDoubleWellFlag()) {
@@ -1054,7 +1129,7 @@ void ManyElectronsCoefficients::setUpSlaterDet() {
 //                    n[d] = m_quantumNumbers(j, d);
 //                }
 
-                n[d] = m_quantumNumbers(j, d);
+                n[d] = m_quantumNumbersPrime(j, d);
 
                 r2SpinUp += rSpinUp[d]*rSpinUp[d];
                 r2SpinDown += rSpinDown[d]*rSpinDown[d];
@@ -1422,7 +1497,7 @@ void ManyElectronsCoefficients::updateSPWFMat(int currentParticle) {
 //                else {
 //                    n[d] = m_quantumNumbers(j, d);
 //                }
-                n[d] = m_quantumNumbers(j, d);
+                n[d] = m_quantumNumbersPrime(j, d);
             }
 
             m_SPWFMat(i,j) = 0;

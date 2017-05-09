@@ -60,6 +60,7 @@ private:
 
     mat m_quantumNumbers;
     mat m_quantumNumbersDouble;
+    mat m_quantumNumbersPrime;
 
     mat m_spinUpSlater;
     mat m_spinDownSlater;

@@ -13,13 +13,13 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 10000;         //Need 1600 for nMax=20 in 3D.
+    int N                       = 1000;         //Need 1600 for nMax=20 in 3D.
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 1;
-    int nPrimeMax               = 1;
-    int numberOfDimensions      = 3;
+    int nMax 					= 27;
+    int nPrimeMax               = 10;
+    int numberOfDimensions      = 2;
 
     bool createSupPos           = true;
     bool harmonicWell           = true;

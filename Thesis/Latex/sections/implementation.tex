@@ -178,7 +178,7 @@ Here the "m\_system->getHamiltonian()" call returns the "m\_hamiltonian" object,
 \begin{lstlisting}
 m_hamiltonian->computeLocalEnergy(m_particles);
 \end{lstlisting}
-The program will then call the implementation of the "computeLocalEnergy" function which corresponds to the sub class instance we have stored in "m\_hamiltonian". If we chose line $1$ in Listing \ref{lst:Choose Hamiltonian}, then the code in Listing \ref{lst:Regular Well Potential} will be used, while if we chose line $2$, then the code in Listing \ref{lst:Double Well Potential} will be used. This saves us from having to use an if-test every time we want to call the "computeLocalEnergy" function. Instead we just need one if-test at the beginning to choose between line $1$ and $2$ in Listing \ref{lst:Choose Hamiltonian}. This is significant for optimizing the program when we might have millions of Monte Carlo cycles, since we avoid millions of if-test, and it also makes the code a lot cleaner.
+The program will then call the implementation of the "computeLocalEnergy" function which corresponds to the sub class instance we have stored in "m\_hamiltonian". If we chose line $1$ in Listing \ref{lst:Choose Hamiltonian}, then the code in Listing \ref{lst:Regular Well Potential} will be used, while if we chose line $2$, then the code in Listing \ref{lst:Double Well Potential} will be used. This saves us from having to use an if-test every time we want to call the "computeLocalEnergy" function. Instead we just need one if-test at the beginning to choose between line $1$ and $2$ in Listing \ref{lst:Choose Hamiltonian}. This is significant for optimizing the program when we might have millions of Monte Carlo cycles, since we avoid millions of if-test, and it also makes the code a lot cleaner. Using virtual functions in this way is a form of polymorphism, which is the concept of "providing a single interface to entities of different types."\textsuperscript{\cite{Stroustrup}}
 
 There are two types of virtual functions we can use in C++; the regular virtual functions and pure virtual functions. When a virtual function is defined in a super class, the compiler requires that function to always have a valid implementation. This means that if the super class only defines the function, but doesn't provide a proper implementation of the function, then every sub class of the super class has to provide an implementation. This is what is called a pure virtual function. The alternative is a regular virtual function, which is a function which is defined as virtual in the super class, but also has an implementation in the super class. 
 
@@ -244,7 +244,7 @@ double Hamiltonian::computeKineticEnergy(std::vector<Particle*> particles){
 
 If we use analytical expressions for the Laplacian when calculating the kinetic energy, then we call the "computeDoubleDerivative" function from the WaveFunction class. When calculating the local energy, the difference from sub class to sub class will be the calculation of the external potential energy as shown in Listing \ref{lst:Regular Well Potential} and Listing \ref{lst:Double Well Potential}. In addition to calculating the local energy, the Hamiltonian sub classes also contain functions for evaluating the single particle wave function and its gradient and Laplacian. Since the single particle wave function contains a Hermite polynomial we also calculate these in the Hamiltonian sub classes. The Hermite polynomials are analytical expressions, but they also have a recursive relation. Therefore we can either implement them by writing out the analytical expression for every Hermite polynomial we might need and then choose the one we need at a given moment, or we can calculate them iteratively. There are advantages to each of these implementations. The iterative method requires less code and is therefore quicker to implement and is general, so that it will work regardless of how many particles we put in the system. However, since it needs to iterate from the lowest polynomial every time, it can become very computationally expensive when we have a lot of particles. 
 
-Using the analytical expressions we would have to add enough polynomials to support the amount of particles we want in the system, and if we wanted to increase the number of particles further, we would have to implement more analytical expressions. There are two ways we could use for choosing among the analytical expressions. The simplest is to just have an if-test for every expression and then start at the beginning and check if we wanted to use $H_0$ (the lowest Hermite polynomial). If not we would move on to the if-test for $H_1$ and then continue like that until we found the one we wanted to use and return that. This would be computationally faster than the iterative method, but it would still potentially need to go through a lot of if-tests, especially when the number of particles in the system is high. There is a more optimized alternative, but it is more difficult to implement. Instead of of using if-tests to check every expression from the start until we find the one we want, we can instead store all the expressions in a list, and then use the index for the expression we want to get it from the list without having to touch any of the other expressions at all. In this thesis the iterative method is used, however it would be best to switch to the last method described in order to substantially reduce computation time.
+Using the analytical expressions we would have to add enough polynomials to support the amount of particles we want in the system, and if we wanted to increase the number of particles further, we would have to implement more analytical expressions. There are two ways we could use for choosing among the analytical expressions. The simplest is to just have an if-test for every expression and then start at the beginning and check if we wanted to use $H_0$ (the lowest Hermite polynomial). If not we would move on to the if-test for $H_1$ and then continue like that until we found the one we wanted to use and return that. This would be computationally faster than the iterative method, but it would still potentially need to go through a lot of if-tests, especially when the number of particles in the system is high. There is a more optimized alternative, but it is more difficult to implement. Instead of of using if-tests to check every expression from the start until we find the one we want, we can instead store all the expressions in a list, and then use the index for the expression we want to get it from the list without having to touch any of the other expressions at all. In this thesis the iterative method was used originally, however a switch to the last method described was made eventually, which is further discussed in section \ref{sec:Optimizing}.
 
 \lstset{language=c++}
 \begin{lstlisting}[caption={Iterative method for computing Hermite polynomials. This method requires the least amount of code and will work for any amount of particles in the system. However, it is also the least optimized method in terms of computation time, and it can be very time consuming when the amount of particles is high.}]
@@ -464,7 +464,7 @@ if (i < m_halfNumberOfParticles) {
 The variation of parameters is done by the loop listed below using the steepest descent method. At the start of each iteration we set up an initial state which uses the updated variational parameters from the previous iteration. We run a Monte Carlo simulation with few cycles and find the expectation values discussed in section \ref{sec:SteepestDescent}. We use these expectation values to find the derivative of the local energy with respect to each of the variational parameters and then update the parameters according to Eq. (\ref{eq: SteepestDesc}). When we run the program in parallel the Monte Carlo simulation varies somewhat from node to node, so each node finds its own value for the derivative of the local energy. However, we want the changes to the variational parameters to be the same for all of the nodes, so we take the average of the derivatives found and use that to calculate the new parameters. Then the new parameters are broadcast to all of the nodes. The loop continues until the sum of the change to the parameters is below a chosen tolerance.
 
 \lstset{language=c++}
-\begin{lstlisting}[caption={}]
+\begin{lstlisting}[caption={Loop for variation of the variational parameters using the steepest descent method.}]
 do{
     // Set up an initial state with the updated parameters
     m_system->getInitialState()->setupInitialState();
@@ -526,7 +526,16 @@ do{
 \subsubsection{Testing the Code}
 
 \textbf{Non-interacting Case}
-\\To test the code we can compare the results for systems without interaction to known benchmarks (either analytical results, or results from other types of simulation). We also want to see how many basis functions we need in order to get good results when creating the trial wave function from the basis functions. The number of Monte Carlo cycles used is $1e4$ unless otherwise is stated. Since we're using harmonic oscillator wave functions as basis function we should only need a few basis functions when the external potential of the system is also a harmonic oscillator. It turns out that we need one basis function for every eigenstate in the ground state of the system. The number of eigenstates in the ground state depends on how many particles we have and two particles can share an eigenstate if one of them is spin up and the other is spin down. Therefore the number of eigenstates in the ground state is equal to half of the total number of particles. If we try to use fewer basis functions when creating the trial wave function, the Slater matrix will be singular. From Table \ref{tab:RegHOTest2D} and \ref{tab:RegHOTest3D} we see that in order to get results which are consistent with the benchmarks we only need the minimum amount of basis functions.
+\\To test the code we can compare the results for systems without interaction to known benchmarks (either analytical results, or results from other types of simulation). We also want to see how many basis functions we need in order to get good results when creating the trial wave function from the basis functions. The number of Monte Carlo cycles used is $1e4$ unless otherwise is stated. Since we're using harmonic oscillator wave functions as basis function we should only need a few basis functions when the external potential of the system is also a harmonic oscillator. It turns out that we need one basis function for every eigenstate in the ground state of the system. The number of eigenstates in the ground state depends on how many particles we have and two particles can share an eigenstate if one of them is spin up and the other is spin down. Therefore the number of eigenstates in the ground state is equal to half of the total number of particles. If we try to use fewer basis functions when creating the trial wave function, the Slater matrix will be singular. Instead of setting the number of basis functions directly, we set the number of energy levels the basis functions fill up. If we set the number of energy levels to $n$, the total amount of basis functions is 
+\begin{equation}
+    N_B = \frac{n(n+1)}{2}, 
+\end{equation}
+in the two dimensional case, or 
+\begin{equation}
+    N_B = \frac{n(n+1)(n+2)}{6},
+\end{equation}
+in the three dimensional case.
+From Table \ref{tab:RegHOTest2D} and \ref{tab:RegHOTest3D} we see that in order to get results which are consistent with the benchmarks we only need the minimum amount of basis functions.
 
 \begin{table}[!ht]
   \centering
@@ -568,10 +577,65 @@ do{
 
 For a system with a double harmonic oscillator as the external potential, the amount of harmonic oscillator basis functions needed to create a good trial wave function is much higher than for the regular harmonic oscillator potential. Nevertheless, the code should be able to reproduce benchmark results if enough basis functions are used. So long as the number of particles is small enough to not "spill" over between the wells, the wells can be considered as two separate single harmonic oscillator wells in the non-interacting case. The potential barrier between the wells increases with the distance between the well centers. This is because an increased distance between the wells also means an increased distance between the well centers and the potential barrier. Since the well potentials increase when moving away from the center, the potentials will be greater when they meet to form the barrier. An increase in the potential barrier also means an increase in the amount of particles we can put in the wells before they start "spilling" over the potential barrier. The benchmarks in Table \ref{tab:DoubleHOTest2D} and \ref{tab:DoubleHOTest3D} assume that the wells can be treated as separate with no "spilling" between them and with the same amount of particles in each well. 
 
+The benchmarks are found in to separate ways. The first one is to run VMC simulations of a double well, but by using a super position of two harmonic oscillator functions to create the single particle wave functions, instead of expanding the diagonalization result in a basis of harmonic oscillator functions. This way of simulating the double well is the same as Jørgen Høgberget used in his master thesis (Ref.~\cite{}). The other way to find the benchmarks is to look at the single particle energies we get from diagonalizing the single particle problem. For a two-dimensional well which is double in the $x$ direction ($L_x = 4$) and single in the $y$ direction ($L_y = 0$) the $5$ lowest eigenvalues we get, using $N=10000$ grid points (steps), are listed in Table \ref{tab:DoubleWellEigenvalues}. From the table we see that for the $y$ dimension the values are just about what we would expect from a regular harmonic oscillator well, i.e. $0.5, 1.5, 2.5, \dots$, but with some minor errors due to the limited number of steps used in the diagonalization. For the $x$ dimension we get the same values, however each value is listed twice due to the double well, so we get pairs of identical eigenvalues. If we included higher eigenvalues we would eventually see eigenvalues which stray from the single well pattern, because the eigenvalues would lie above the potential barrier between the wells. If we had an infinite amount of steps $N$, and a high enough potential barrier, the eigenvalues would be as listed in Table \ref{tab:DoubleWellEigenvaluesIdeal}. Using these eigenvalues we can find the single particle energies for various eigenstates. We see that the eigenstates with lowest energy would be ones with $E_x=E_y=0.5$, and to achieve this we have to options. We can use the eigenvalue number $0$ for both $x$ and $y$, or we can use number $1$ for $x$ and number $0$ for $y$. As a result we have two eigenstate on the lowest energy level. For fermions we can have two particles in each eigenstate (one spin-up and one spin-down), so the lowest energy level can fit up to $4$ particles. A system with $4$ particles filling up the lowest energy level would then be a closed shell system with one shell, and therefore $4$ is the first so-called magic number for this double well. This system would have a non-interacting energy 
+\begin{equation}
+    E = (0.5+0.5)\times 2 + (0.5+0.5)\times 2 = 4.
+\end{equation} 
+To find out how many particles fit in the second shell we need to find all the combinations of $E_x$ and $E_y$ which give the second lowest energy. Since the second lowest eigenvalues have a value of $1.5$ the second lowest energy is achieved when either $E_x = 0.5$ and $E_y = 1.5$ or when $E_x = 1.5$ and $E_y = 0.5$. From Table \ref{tab:DoubleWellEigenvaluesIdeal} we see that there are two combinations which give $E_x = 0.5$ and $E_y = 1.5$, and two which give $E_x = 1.5$ and $E_y = 0.5$, so in total there are $4$ eigenstates on the second lowest energy level. Again we can have two particles in each eigenstate, so the second shell can fit a total of $8$ fermions, and the second magic number is then $4 + 8 = 12$. The non-interacting energy of a full second shell would be
+\begin{equation}
+    E = (0.5+1.5)\times 2 + (0.5+1.5)\times 2 + (1.5+0.5)\times 2 + (1.5+0.5)\times 2 = 16, 
+\end{equation}
+and the energy for a system with $12$ particles filling up the two lowest shells would be
+\begin{equation}
+    E = 4 + 16 = 20.
+\end{equation}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | }
+    \hline
+    $\#$ & $E_x$ & $E_y$\\*
+    \hline
+    $0$ & $0.50000$ & $0.50000$\\*
+    \hline
+    $1$ & $0.50000$ & $1.50000$\\*
+    \hline
+    $2$ & $1.49999$ & $2.50000$\\*
+    \hline
+    $3$ & $1.50001$ & $3.50000$\\*
+    \hline
+    $4$ & $2.49989$ & $4.49999$\\*
+    \hline
+  \end{tabular}
+  \caption{First few eigenvalues from diagonalizing the single particle problem with a double harmonic oscillator well potential in the $x$ dimension. The distance between a well center and the potential barrier is $L_x = 4$, and the number of steps used when diagonalizing is $N=10000$.}
+  \label{tab:DoubleWellEigenvalues}
+\end{table}
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | }
+    \hline
+    $\#$ & $E_x$ & $E_y$\\*
+    \hline
+    $0$ & $0.5$ & $0.5$\\*
+    \hline
+    $1$ & $0.5$ & $1.5$\\*
+    \hline
+    $2$ & $1.5$ & $2.5$\\*
+    \hline
+    $3$ & $1.5$ & $3.5$\\*
+    \hline
+    $4$ & $2.5$ & $4.5$\\*
+    \hline
+  \end{tabular}
+  \caption{The first few ideal eigenvalues we would get from diagonalizing the single particle problem with a double harmonic oscillator well potential in the $x$ dimension if we had an infinite amount of steps $N$.}
+  \label{tab:DoubleWellEigenvaluesIdeal}
+\end{table}
+
 From Table \ref{tab:DoubleHOTest2D} we see that we need more basis functions to get a good result for $1$ particle than we do for $2$. The program is set up to handle two or more particles (for splitting the Slater determinant etc.), so the one particle case had to be implemented separately. Therefore there is a possibility that there may be some fault in the code for the one particle case. Another possibility is that the one particle case could simply be more complicated to simulate with a double well external potential than the two particle case. In the two particle case the distribution of the particles would simply be one in each well, but for the one particle case, the particle could be in either well and still give the same ground state energy, essentially giving us two ground states. Either way the result is consistent with the benchmark given enough basis functions. From the table we see that increasing the number of basis functions improves the results as it should. 
 
 We also see that for $12$ particles the result is not consistent with the benchmark, but greatly increasing the number of basis functions doesn't provide a significantly better result. In this case the energy converges towards a value different from the benchmark value. There seems to be some issue with the code which causes some particles to end up on a higher energy level than they are supposed to in this double well case. If we look at the results for more numbers of particles around $12$ we see that, we get proper results for $8$, $10$, $14$, $16$, and $18$ particles, but the problem reoccurs for $20$ particles. These results are listed in Table \ref{tab:DoubleHOTest2DExtended}.
-%PROBABLY NOT TRUE! This is likely due to the "spilling" effect discussed previously. Some of the particles end up above the potential barrier between the wells and are therefore not actually confined by a double well potential, but by some combination of a double well and a single well. Therefore the resulting energy, $E=22$, ends up being somewhere between what it would be for one single well with $12$ particles (which would be $E=28$) and two independent single wells with $6$ particles each ($E=2\times 10 = 20$). Increasing the distance between the wells should let us simulate $12$ particles properly confined by a double well potential, however as the distance between the wells increases, so does the amount of basis functions needed for a good trial wave function which means a higher computational cost.%
+%DEFINITELY NOT TRUE! This is likely due to the "spilling" effect discussed previously. Some of the particles end up above the potential barrier between the wells and are therefore not actually confined by a double well potential, but by some combination of a double well and a single well. Therefore the resulting energy, $E=22$, ends up being somewhere between what it would be for one single well with $12$ particles (which would be $E=28$) and two independent single wells with $6$ particles each ($E=2\times 10 = 20$). Increasing the distance between the wells should let us simulate $12$ particles properly confined by a double well potential, however as the distance between the wells increases, so does the amount of basis functions needed for a good trial wave function which means a higher computational cost.%
 
 
 \begin{table}[!ht]
@@ -641,7 +705,62 @@ In the three dimensional case we see from Table \ref{tab:DoubleHOTest3D} that th
   \label{tab:DoubleHOTest3D}
 \end{table}
 
---Square Well--
+The issues with the double well occurred because when the VMC solver used the coefficients corresponding to the eigenvalues listed in Table \ref{tab:DoubleWellEigenvalues} it used the indices in Table \ref{tab:DoubleWellCoeffIndexWrong} to index the coefficients matrix. One pair of $x$ and $y$ indices would cover one eigenstate and two particles (due to spin). 
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | }
+    \hline
+    $\#$ & $I_x$ & $I_y$\\*
+    \hline
+    $1$ & $0$ & $0$\\*
+    \hline
+    $2$ & $1$ & $0$\\*
+    \hline
+    $3$ & $0$ & $1$\\*
+    \hline
+    $4$ & $2$ & $0$\\*
+    \hline
+    $5$ & $1$ & $1$\\*
+    \hline
+    $6$ & $0$ & $2$\\*
+    \hline
+    $7$ & $3$ & $0$\\*
+    \hline
+  \end{tabular}
+  \caption{The indices previously used to index the coefficient matrix for a double well potential. $I_x$ are the indices for the $x$ dimension and $I_y$ for the $y$ dimension.}
+  \label{tab:DoubleWellCoeffIndexWrong}
+\end{table}
+
+When we compare Table \ref{tab:DoubleWellEigenvaluesIdeal} and Table \ref{tab:DoubleWellCoeffIndexWrong} we see that the indices in the later table are ordered wrong. The $6$'th set of indices in Table \ref{tab:DoubleWellCoeffIndexWrong} would give the eigenvalues $E_x = 0.5$ and $E_y = 2.5$ with the energy sum 
+\begin{equation}
+    E = 0.5 + 2.5 = 3,
+\end{equation}
+however the $7$'th set would give $E_x = 1.5$, $E_y = 0.5$ and 
+\begin{equation}
+    E = 1.5 + 0.5 = 2.
+\end{equation}
+So the $7'$th set of indices corresponds to an eigenstate with lower energy than the $6$'th set does. This wasn't a problem up to and including $10$ particles since then only the first $5$ sets of indices was used. For $14$ particles we would include both the $6$'th and $7$'th set of indices, but in wrong order, though that doesn't change the outcome in the non-interacting case. In the $12$ particle case however, we would include the $6$'th set when we were supposed to have the $7$'th set instead. The result was that two particles ended up one energy level higher than they should, which resulted in the total energy being $2$ units higher than the benchmark (for $\omega=1$). If we expanded Table \ref{tab:DoubleWellEigenvalues} and Table \ref{tab:DoubleWellCoeffIndexWrong} further we would see that (as for the $14$ particle case) the wrong ordering of set $6$ and $7$ would no longer matter, but the same issue arises for the $10$'th set, which is why the $20$ particle case was wrong as well. This was only an issue for the double well, since we then have pairs of similar eigenvalues for the dimension the double well is in (the $x$ dimension in this case). For a single well the indices listed in Table \ref{tab:DoubleWellCoeffIndexWrong} are correct. For the double well we need to reorder the indices so we get the correct order, which for the limited span of Table \ref{tab:DoubleWellCoeffIndexWrong} would be to swap places of the $6$'th and $7$'th set. In general the reordering is done by finding the sum of $I_x$ and $I_y$, but with the indices halved if we have a double well in that dimension, so in this case every $I_x$ would be halved when added to the sum. Then we order by sum, from lowest to highest. Note that we keep the original values of the indices, the halving of $I_x$ is only in the scope of the sum in order to find the correct order. The $7$'th set in Table \ref{tab:DoubleWellCoeffIndexWrong} then has an ordering sum of $1.5$ and comes before the $6$'th set which has a sum of $2$. The new and correct results for the previously wrong cases, both in $2$ and $3$ dimensions, are listed in Table \ref{}.
+
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | c | c | }
+    \hline
+    Dimensions & $N$ & $E$ (VMC) & $E$ (Benchmark) &  Energy Levels & Eigenstates\\*
+    \hline
+    $2$ & $12$ & $19.9998$ & $20\omega$ & $27$ & $378$ \\*
+    \hline
+    $2$ & $20$ & $44.0003$ & $44\omega$ & $35$ & $630$ \\*
+    \hline
+    $3$ & $4$ & $5.99929$ & $6\omega$ & $25$ & $2925$ \\*
+    \hline
+    $3$ & $16$ & $36.0002$ & $36\omega$ & $30$ & $4960$ \\*
+    \hline
+  \end{tabular}
+  \caption{}
+  \label{tab:DoubleHOTestCorrected}
+\end{table}
+
 When it comes to the finite square well potential, we don't have any exact benchmarks to compare our results to. However, when diagonalizing the one particle problem, in addition to the eigenvectors we need to find the overlap coefficients, we also get eigenvalues which correspond to the single particle energies at various energy levels. Since we diagonalize separately for each dimension we get two (or three) identical sets of eigenvalues as shown in Table \ref{tab:SquareWellEigenvalues}. To find the total energy value of a given eigenstate we need to add together one eigenvalue from each dimension. The lowest eigenstate is of course the state whose energy is the sum of the lowest eigenvalues for each dimension, and since we're looking at fermions, two particles can occupy this state. The next eigenstates are those which have the second lowest eigenvalue for one of the dimensions and the lowest eigenvalue for the rest of the dimensions. This is equivalent to the $n_x$, $n_y$ and $n_z$ quantum numbers we use with the harmonic oscillator, so the lowest state is the one where $n = n_x + n_y + n_z = 0$ and $n_x=n_y=n_z=0$, while the next states are the ones where $n = 1$, which are the states $(n_x,n_y,n_z) = (1,0,0)$, $(0,1,0)$ and $(0,0,1)$.
 
 \begin{table}[!ht]
@@ -742,7 +861,7 @@ Due to the benchmarks not being exact, we won't know for sure how close we are t
   \label{tab:SquareWellMCcyclesTest2D}
 \end{table}
 
-In Table \ref{tab:SquareWellTest2D} we've listed the results for the square well potential in two dimensions. Just as for the double well potential, the one particle case requires significantly more basis functions than the two particle case in order to give good results, but unlike the in the double well case, we here get good results regardless of the number of particles, provided we use enough basis functions. For some of the listed cases it seems like the results get worse (compared to the benchmarks) when we increase the number basis functions used. However, as discussed earlier the benchmarks here aren't the exact solutions, so it's entirely possible that the results in some cases are closer to the exact solution than the benchmarks themselves. The important thing to note is that the results are reasonably consistent with the benchmarks for all cases, which is a good indicator that the program is working correctly.
+In Table \ref{tab:SquareWellTest2D} we've listed the results for the square well potential in two dimensions. Just as for the double well potential, the one particle case requires significantly more basis functions than the two particle case in order to give good results. For some of the listed cases it seems like the results get worse (compared to the benchmarks) when we increase the number basis functions used. However, as discussed earlier the benchmarks here aren't the exact solutions, so it's entirely possible that the results in some cases are closer to the exact solution than the benchmarks themselves. The important thing to note is that the results are reasonably consistent with the benchmarks for all cases, which is a good indicator that the program is working correctly.
 
 \begin{table}[!ht]
   \centering
@@ -887,32 +1006,172 @@ for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
 \end{lstlisting}
 The "supPosSep" three-dimensional matrix stores all the $\psi_n^\prime$ for each dimension separately, while the "supPos" matrix stores the product for all dimensions.
 
+
+
+
 \subsubsection{Testing the Code}
 
 There are several test we can use to validate the coefficients we've found. One thing we can check is that the $L_2$-norm is a small number:
 \begin{equation}
     ||\psi_{n^\prime}^\textrm{diag}-\psi_{n^\prime}^\textrm{exp}||_2 = \sqrt{\sum_i^N |\psi_{n^\prime}^\textrm{diag}(x_i)-\psi_{n^\prime}^\textrm{exp}(x_i)|^2} < \epsilon.
 \end{equation}
-Here $\psi_{n^\prime}^\textrm{diag}$ are the solutions (eigenvectors) we got from diagonalizing the single particle problem, while $\psi_{n^\prime}^\textrm{exp}$ are the approximations from the linear expansion in Eq. (\ref{eq: Approximate SPWF2}). The $L_2$ being a small number $\epsilon$ would mean that the linear expansion approximations are reasonably similar to the solutions from diagonalizing. 
+Here $\psi_{n^\prime}^\textrm{diag}$ are the solutions (eigenvectors) we got from diagonalizing the single particle problem, while $\psi_{n^\prime}^\textrm{exp}$ are the approximations from the linear expansion in Eq. (\ref{eq: Approximate SPWF2}). The $L_2$-norm being less than a small number $\epsilon$ would mean that the linear expansion approximations are reasonably similar to the solutions from diagonalizing. We can also do a similar test by plotting $\psi_{n^\prime}^\textrm{diag}$ and $\psi_{n^\prime}^\textrm{exp}$ together for various $n^\prime$ and checking that the two curves are (to some precision) on top of each other. We expect the result of both of these test to be best for low $n^\prime$ values and then get worse and worse as $n^\prime$ increases. We also expect that increasing the number of basis functions used in the linear expansion should improve the results and consequently give good results for a larger number of $n^\prime$.
 
-We can also do a similar test by plotting $\psi_{n^\prime}^\textrm{diag}$ and $\psi_{n^\prime}^\textrm{exp}$ together for various $n^\prime$ and checking that the two curves are (to some precision) on top of each other. We expect the result of both of these test to be best for low $n^\prime$ values and then get worse and worse as $n^\prime$ increases. We also expect that increasing the number of basis functions used in the linear expansion should improve the results and consequently give good results for a larger number of $n^\prime$.
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | c | c | }
+    \hline
+    $n^\prime$ & Energy Levels & Eigenstates & $L_2$-norm\\*
+    \hline
+    $0$ & $20$ & $210$ & $0.2466$ %$0.246582153723$
+    \\*
+    \hline
+    $0$ & $27$ & $378$ & $0.0029$ %$0.00288150262617$
+    \\*
+    \hline
+    $9$ & $20$ & $210$ & $0.4024$ %$0.402442469552$
+    \\*
+    \hline
+    $9$ & $27$ & $378$ & $0.1752$ %$0.175246533084$
+    \\*
+    \hline
+  \end{tabular}
+  \caption{$L2$-norm values for a double well potential in two dimensions with $\omega = 1$, $N = 1000$, $L_x = 4.0$ and $L_y = 0.0$. The eigenstates column lists the number of basis functions used in the linear expansion. We see that for a given number of basis functions the $L2$-norm is better (smaller) for $n^\prime = 0$ than for $n^\prime = 9$, indicating that for larger $n^\prime$ we need a higher number of basis functions to get good results. We also see that for a given $n^\prime$, using more basis functions gives a better $L2$-norm.}
+  \label{tab:L2-norm}
+\end{table}
 
-Another test we can do is to check that the norm of $\psi^\textrm{diag}$ for each dimension separately is approximately equal to $1$ and that the accuracy increases with increasing number of basis function like in the previous tests. The norm is given by
+In Table \ref{tab:L2-norm} we have listed the $L2$-norm for $n^\prime = 0$ and $n^\prime = 9$ with $210$ and $378$ basis functions used for the linear expansion. The values in the table are for a double well potential in two dimensions. We see that the $L2$-norm is generally smaller when we're using more basis function as expected, and as $n^\prime$ increases we need more basis functions to get a good $L2$-norm. When using $378$ basis functions for the $n^\prime = 0$ case we get a reasonably good $L2$-norm, while for the other cases we should use more basis functions. We need one value of $n^\prime$ for every two particles in the system we want to study, so for a system with only two particles we only need $n^\prime = 0$, so $378$ basis functions should be sufficient. For a system with $20$ particles we would need $n^\prime = 0,1,\dots,9$, so based on the $L2$-norm for $n^\prime = 9$, using $378$ basis functions probably won't be enough for this system (in Table \ref{tab:DoubleHOTestCorrected} we used $630$ basis functions to get a good result for this system). 
+
+In Figure \ref{fig:nPrime0} we see the plots of $\psi_{n^\prime}^\textrm{diag}$ and $\psi_{n^\prime}^\textrm{exp}$ together for $n^\prime = 0$. Again we have used a two dimensional double well potential. For Figure \ref{fig:nPrime0a} we used $210$ basis functions for $\psi_{n^\prime}^\textrm{exp}$. We see $\psi_{n^\prime}^\textrm{exp}$ has a somewhat similar shape as $\psi_{n^\prime}^\textrm{diag}$, but the error is significant close to $x = 0$. In Figure \ref{fig:nPrime0b} we have increased the number of basis functions to $378$, and as expected $\psi_{n^\prime}^\textrm{exp}$ matches $\psi_{n^\prime}^\textrm{diag}$ much better. Figure \ref{fig:nPrime9} is equivalent to Figure \ref{fig:nPrime0}, but for $n^\prime = 9$. Here as well we see that with $210$ basis functions we get significant errors, while with $378$ basis functions the match between $\psi_{n^\prime}^\textrm{exp}$ and $\psi_{n^\prime}^\textrm{diag}$ is much better. However, for $n^\prime = 9$, even with $378$ basis function we still don't get a great match. Just as for with the $L2$-norm, this shows that increasing the number of basis functions improves the results, and that greater $n^\prime$ values require a greater number of basis functions to yield good results.
+
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.4]{figures/psiComp_nPrime0_BF210}
+        \caption{$210$ Basis Functions ($20$ Energy Levels).}
+        \label{fig:nPrime0a}
+    \end{subfigure}%
+    ~ 
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.4]{figures/psiComp_nPrime0_BF378}
+        \caption{$378$ Basis Functions ($27$ Energy Levels).}
+        \label{fig:nPrime0b}
+    \end{subfigure}
+    \caption{$\psi_{n^\prime}^\textrm{diag}$ vs. $\psi_{n^\prime}^\textrm{exp}$ for a two-dimensional double well potential with $n^\prime = 0$, $N=1000$, $L_x = 4.0$, $L_y = 0$ and $\omega = 1$. We see that when we use only $210$ basis functions the linear expansion approximation is a fairly bad match to the solution we got from diagonalizing. However, the shape is still somewhat similar. When we increase the number of basis functions to $378$ we get a pretty good match.}
+    \label{fig:nPrime0}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.4]{figures/psiComp_nPrime9_BF210}
+        \caption{$210$ Basis Functions ($20$ Energy Levels).}
+        \label{fig:nPrime9a}
+    \end{subfigure}%
+    ~ 
+    \begin{subfigure}{0.5\textwidth}
+        \centering
+        \includegraphics[scale=0.4]{figures/psiComp_nPrime9_BF378}
+        \caption{$378$ Basis Functions ($27$ Energy Levels).}
+        \label{fig:nPrime9b}
+    \end{subfigure}
+    \caption{$\psi_{n^\prime}^\textrm{diag}$ vs. $\psi_{n^\prime}^\textrm{exp}$ for a two-dimensional double well potential with $n^\prime = 9$, $N=1000$, $L_x = 4.0$, $L_y = 0$ and $\omega = 1$. As for the $n^\prime = 0$ case we get a bad match when using only $210$ basis functions. Still, there are some similarities between the linear expansion approximation and the solution. When we increase the number of basis functions to $378$ we get a significantly better match, but it's not quite as good as in the $n^\prime = 0$ case.}
+    \label{fig:nPrime9}
+\end{figure}
+
+Another test we can do is to check that the norm of $\psi^\textrm{exp}$ for each dimension separately is approximately equal to $1$ and that the accuracy increases with increasing number of basis function like in the previous tests. The norm is given by
 \begin{equation}
     ||\psi|| = \sqrt{\langle \psi|\psi \rangle},
 \end{equation}
 and we want the following to be true
 \begin{equation}
-    ||\psi_x^\textrm{exp}|| \approx ||\psi_y^\textrm{exp}|| \approx ||\psi_z^\textrm{exp}|| \approx 1,
+    ||\psi_{n^\prime}^\textrm{exp}(x)|| \approx ||\psi_{n^\prime}^\textrm{exp}(y)|| \approx ||\psi_{n^\prime}^\textrm{exp}(z)|| \approx 1,
 \end{equation}
-in the three dimensional case.
+in the three dimensional case. For this test we will use the same system as for the two previous tests, i.e. a two dimensional system, where the potential is a double harmonic oscillator well in the $x$-dimension and a single harmonic oscillator well in the $y$-dimension. Table \ref{tab:NormE20a} and Table \ref{tab:NormE20b} lists $||\psi_{n^\prime}^\textrm{exp}(x)||$ and $||\psi_{n^\prime}^\textrm{exp}(y)||$ for $20$ energy levels and $27$ energy levels respectively. Note that since we here look at each dimension separately the number of energy levels and the number of eigenstates (basis functions) are the same. The tables list the results for $n^\prime = 0,1,\dots,9$. In both tables $||\psi_{n^\prime}^\textrm{exp}(y)||$ is exactly $1$ to machine precision for all $n^\prime$. This makes sense since the potential for the $y$-dimension is a single harmonic oscillator well and we use single harmonic oscillator functions as basis functions. For the $x$-dimension on the other hand we have a double well potential and should therefore expect some deviation from $1$. As with the previous tests we expect that the deviation should increase as we increase $n^\prime$. From Table \ref{tab:NormE20a} we see that the deviation doesn't strictly increase with increasing $n^\prime$, but that significantly increasing $n^\prime$, significantly increases the deviation (e.g. going from $n^\prime = 0$ to $n^\prime = 9$). If we compare Table \ref{tab:NormE20a} with Table \ref{tab:NormE20b} we again see that increasing the number of basis functions improves the results for all $n^\prime$.
+
+\begin{table}[!ht]
+  \centering
+  \begin{subtable}{.4\linewidth}
+      \centering
+      \begin{tabular}{ | c | c | c | }
+        \hline
+        $n^\prime$ & $||\psi_{n^\prime}^\textrm{exp}(x)||$ & $||\psi_{n^\prime}^\textrm{exp}(y)||$\\*
+        \hline
+        $0$ & $0.999816193222$ & $1.0$\\*
+        \hline
+        $1$ & $0.999930888372$ & $1.0$\\*
+        \hline
+        $2$ & $0.996501279797$ & $1.0$\\*
+        \hline
+        $3$ & $0.998471329039$ & $1.0$\\*
+        \hline
+        $4$ & $0.974110444039$ & $1.0$\\*
+        \hline
+        $5$ & $0.986589494196$ & $1.0$\\*
+        \hline
+        $6$ & $0.904585077720$ & $1.0$\\*
+        \hline
+        $7$ & $0.939665912097$ & $1.0$\\*
+        \hline
+        $8$ & $0.817567381049$ & $1.0$\\*
+        \hline
+        $9$ & $0.850878481823$ & $1.0$\\*
+        \hline
+      \end{tabular}
+      \caption{$20$ Basis Functions ($20$ Energy Levels)}
+      \label{tab:NormE20a}
+  \end{subtable}
+  ~
+  \begin{subtable}{.4\linewidth}
+    \centering
+    \begin{tabular}{ | c | c | c | }
+        \hline
+        $n^\prime$ & $||\psi_{n^\prime}^\textrm{exp}(x)||$ & $||\psi_{n^\prime}^\textrm{exp}(y)||$\\*
+        \hline
+        $0$ & $0.999999977026$ & $1.0$\\*
+        \hline
+        $1$ & $0.999999918994$ & $1.0$\\*
+        \hline
+        $2$ & $0.999998831156$ & $1.0$\\*
+        \hline
+        $3$ & $0.999996288163$ & $1.0$\\*
+        \hline
+        $4$ & $0.999974270670$ & $1.0$\\*
+        \hline
+        $5$ & $0.999926388426$ & $1.0$\\*
+        \hline
+        $6$ & $0.999675990997$ & $1.0$\\*
+        \hline
+        $7$ & $0.999175833447$ & $1.0$\\*
+        \hline
+        $8$ & $0.997471707200$ & $1.0$\\*
+        \hline
+        $9$ & $0.994189907404$ & $1.0$\\*
+        \hline
+    \end{tabular}
+    \caption{$27$ Basis Functions ($27$ Energy Levels)}
+    \label{tab:NormE20b}
+  \end{subtable}
+  \caption{$||\psi_{n^\prime}^\textrm{exp}(x)||$ and $||\psi_{n^\prime}^\textrm{exp}(y)||$ values for a two-dimensional double well potential with $\omega = 1$, $N = 1000$, $L_x = 4.0$ and $L_y = 0.0$. Since we're looking at each dimension separately the number of eigenstates (basis functions) is the same as the number of energy levels. In both tables $||\psi_{n^\prime}^\textrm{exp}(y)||$ is equal to $1$ to machine precision, while $||\psi_{n^\prime}^\textrm{exp}(x)||$ has some deviation from $1$. This is due to the double well being in the $x$-dimension, while the potential in the $y$-dimension is a single harmonic oscillator well. Since the basis functions we use are single harmonic oscillator functions, the results for the $y$-dimension should be exact. For $||\psi_{n^\prime}^\textrm{exp}(x)||$ we also see that the deviation from $1$ is smaller when we have more basis functions and that the deviation typically increases when $n^\prime$ increases (but not always).}
+  \label{tab:NormE20}
+\end{table}
 
 \subsection{Hartree-Fock}
 
 \subsubsection{Testing the Code}
 
 
-\section{Optimizing Performance}
+\section{Optimizing Performance}\label{sec:Optimizing}
+
+A VMC simulation can quickly become very time consuming as we increase the number of particles in our system. In order to maintain efficiency of computations as the number of particles increases, it is important to optimize the simulation. One fairly common trait of suboptimal code is recalculation of identical values. An expression giving a value which needs to be used multiple times, should only be calculated once and the resulting values stored for later use. Doing this for various expressions was a big part of optimizing the VMC simulation. Another important optimization of the VMC simulation is the use of polymorphism. Most of the polymorphism used was included in the code from the beginning, but some were added later when optimizing the finished code. The third major optimization used, was to make the simulation parallelized using MPI.
+
+
+
+
 We use parallelization of code and specific compiler options to optimize the performance of our program. To parallelize our program we use MPI, and we also optimize with the $O3$ compiler flag of the GNU C++ compiler. The $O3$ flag tells the compiler to make optimizations to the code where it is possible, in order to reduce computation time. By parallelizing our program, we make it possible to run the program on multiple processors at once. We can run the program on several processors on a single computer (typically 4 or 8 processors) to get some speedup. However, we can also run it on a super computer cluster in order to utilize even more processors (we'll use up to 64 processors in this project) and decrease computation time substantially. If the program is parallelized well we should see a speed-up of about a factor 2 when doubling the amount of processors. In general, Variational Monte Carlo simulations are simple to parallelize, so we should expect to achieve that amount of speed-up when running the code in parallel. When doing VMC calculations in parallel we have to be careful not to use too many processors for a small amount of MC cycles. If we have too many processors the amount of MC cycles for each processor might be too low to give good results. In addition the amount of MC cycles could end up being a non-integer number, which wouldn't make sense.
 
 \end{document}
