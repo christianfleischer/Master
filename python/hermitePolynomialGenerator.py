@@ -6,13 +6,13 @@ mp.dps = 15
 mp.pretty = True
 nMax = 50
 
-printExpressions = False
-printConstructors = True
+printExpressions = True
+printConstructors = False
 printDeclarations = False
 printVectorElements = False
 
 if (printExpressions):
-	x, a, w = symbols('x, alpha, omega')
+	x, a, w, aw = symbols('x, m_alpha, m_omega, m_alphaomega')
 
 	H = zeros(nMax)
 	Hd = zeros(nMax)
@@ -21,7 +21,7 @@ if (printExpressions):
 	H[0] = 1
 
 	for n in range(1, nMax):
-		H[n] = simplify(2*sqrt(a*w)*x*H[n-1] - diff(H[n-1], x))
+		H[n] = simplify(2*sqrt(aw)*x*H[n-1] - diff(H[n-1], x))
 
 	for n in range(0, nMax):
 		Hd[n] = simplify(diff(H[n], x))
@@ -41,18 +41,21 @@ if (printConstructors):
 : HermitePolynomials() { 
     m_alpha = alpha;
     m_omega = omega;
+    m_alphaomega = alpha*omega;
 }
 
 dell_HermitePolynomial_%i::dell_HermitePolynomial_%i(double alpha, double omega)
 : HermitePolynomials() { 
     m_alpha = alpha;
     m_omega = omega;
+    m_alphaomega = alpha*omega;
 }
 
 lapl_HermitePolynomial_%i::lapl_HermitePolynomial_%i(double alpha, double omega)
 : HermitePolynomials() { 
     m_alpha = alpha;
     m_omega = omega;
+    m_alphaomega = alpha*omega;
 }""" %(n, n, n, n, n, n))
 		print("""
 

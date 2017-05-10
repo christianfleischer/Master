@@ -1283,7 +1283,7 @@ void ManyElectronsCoefficients::setUpJastrowMat() {
             double denom = 1 + beta*r_ij;
 
             m_JastrowMat(i,j) = m_a(i,j)*r_ij / denom;
-            //m_JastrowMat(j,i) = m_JastrowMat(i,j);
+            m_JastrowMat(j,i) = m_JastrowMat(i,j);
 
             for (int d = 0; d < m_numberOfDimensions; d++) {
                 m_JastrowGrad(i,d) += (r_i[d]-r_j[d])/r_ij * m_a(i, j)/(denom*denom);
@@ -1297,7 +1297,7 @@ void ManyElectronsCoefficients::setUpJastrowMat() {
             double denom = 1 + beta*r_ij;
 
             m_JastrowMat(i,j) = m_a(i,j)*r_ij / denom;
-            //m_JastrowMat(j,i) = m_JastrowMat(i,j);
+            m_JastrowMat(j,i) = m_JastrowMat(i,j);
 
             for (int d = 0; d < m_numberOfDimensions; d++) {
                 m_dJastrowMat(i,j,d) = (r_i[d]-r_j[d])/r_ij * m_a(i, j)/(denom*denom);
@@ -1393,7 +1393,7 @@ void ManyElectronsCoefficients::updateSlaterDet(int currentParticle) {
 }
 
 void ManyElectronsCoefficients::updateDistances(int currentParticle) {
-    // Function for updating the distances between electrons.
+    // Function for updating the distances between particles.
     int i = currentParticle;
     std::vector<double> r_i = m_system->getParticles()[i]->getPosition();
 

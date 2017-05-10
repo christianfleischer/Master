@@ -2775,3 +2775,4 @@ double lapl_HermitePolynomial_49::eval(double x) {
    return lapl_H;
 
 }
+

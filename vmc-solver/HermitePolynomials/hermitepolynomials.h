@@ -12,6 +12,7 @@ public:
 protected:
     double m_alpha = 0;
     double m_omega = 0;
+    double m_alphaomega = 0;
 };
 
 
