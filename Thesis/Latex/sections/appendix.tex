@@ -2,13 +2,10 @@
  
 \begin{document}
 \begin{appendices}
-%\section{Appendix}
+%\chapter{Appendix}
 
-URL to github folder with source files etc.\\
-\url{https://github.com/christianfleischer/Quantum-Dot-Project}
-
-\section{Calculations of Closed Form Expressions}
-\subsection{Two-body quantum dots}\label{sec:ClosedFormTwo}
+\chapter{Calculations of Closed Form Expressions}
+\section{Two-body quantum dots}\label{sec:ClosedFormTwo}
 To find an expression for the local energy we need to find the Laplacian of the trial wave function
 \begin{equation}\label{eq:trial}
    \psi_{T}({\bf r_1},{\bf r_2}) = 
@@ -89,7 +86,7 @@ The complete expression for the local energy is then
 \end{split}
 \end{align}
 
-\subsection{Many-body quantum dots}\label{sec:ClosedFormMany}
+\section{Many-body quantum dots}\label{sec:ClosedFormMany}
 These calculations follow Ref.~\cite{FYS4411-Slides}.
 In the many-body case we have the trial wave function 
 \begin{align}
@@ -216,7 +213,7 @@ where $d$ is the number of dimensions, $d=2$ in our case. We end up with the fol
 \end{align}
 
 
-\section{Program Structure}
+\chapter{Program Structure}
 
 The methods were implemented with a C++ program using object-orientation. 
 The program consists of several classes responsible for different parts of the simulations. The classes are:

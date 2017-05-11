@@ -1,4 +1,4 @@
-\documentclass[11pt,a4wide]{article}
+\documentclass[11pt,a4wide]{book}
 \usepackage{verbatim}
 \usepackage{listings}
 \usepackage{graphicx}
@@ -17,6 +17,8 @@
 \usepackage{subcaption}
 \usepackage[margin=1in]{geometry}
 \usepackage{tabularx}
+\usepackage{pdfpages}
+\usepackage{setspace}
 \usepackage[toc,page]{appendix}
 \usepackage[nottoc,notlot,notlof]{tocbibind}
 \usepackage{titlesec}
@@ -59,15 +61,21 @@
  
 \usepackage{blindtext}
  
-\title{Thesis}
-\author{Christian Fleischer}
-\date{ }
+%\title{Thesis}
+%\author{Christian Fleischer}
+%\date{ }
  
 \begin{document}
  
-\maketitle
+\includepdf{sections/front-page.pdf}
+\cleardoublepage
+%\maketitle
+
+\doublespacing
+\tableofcontents
+\singlespacing
  
-\section{Introduction}
+\chapter{Introduction}
 \subfile{sections/introduction}
  
 
@@ -80,13 +88,12 @@
 \part{Results}
 \subfile{sections/results}
 
-\section{Conclusion}
+\chapter{Conclusion}
 \subfile{sections/conclusion}
 
-\section{Appendix}
 \subfile{sections/appendix}
 
-\section{Bibliography}
+%\chapter{Bibliography}
 \subfile{sections/bibliography}
  
 \end{document}

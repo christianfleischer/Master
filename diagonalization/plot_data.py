@@ -34,8 +34,8 @@ psi = np.zeros((numEigFunctions,N))
 if numEigFunctions == 1:
     psi[0] = eigenvectors
 else:
-    for i in range(numEigFunctions):
-        psi[i] = eigX[:,i]#*eigY[:,i]#*eigZ[:,i]#eigenvectors[:,i]
+    for i in range(min([N, numEigFunctions])):
+        psi[i] = eigX[:,i]*eigY[:,i]#*eigZ[:,i]#eigenvectors[:,i]
 
 
 def H(r, n_r):
@@ -130,7 +130,7 @@ for i in range(20):
 #plot(r[0], psi[1], r[0], supCpp[:,0])
 
 
-nPrime = 9
+nPrime = 0
 
 plot(r[0], psi[nPrime]/sqrt(np.dot(psi[nPrime],psi[nPrime])))
 plot(r[0], supCpp[:,nPrime]/sqrt(np.dot(supCpp[:,nPrime],supCpp[:,nPrime])))
@@ -174,6 +174,7 @@ tick_params(axis='x', labelsize=14)
 ylabel(r'$\psi_{n^\prime}$', fontsize=25)
 #ylim([-0.1, 0.04])
 #ylim([-0.1, 0.15])
+#ylim([-0.02, 0.1])
 ticklabel_format(style='sci', axis='y', scilimits=(0,0))
 tick_params(axis='y', labelsize=14)
 

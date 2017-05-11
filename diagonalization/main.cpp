@@ -13,18 +13,18 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 1500;         //Need 1600 for nMax=20 in 3D.
+    int N                       = 1000;         //Need 1600 for nMax=20 in 3D.
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 50;
+    int nMax 					= 20;
     int nPrimeMax               = 10;
     int numberOfDimensions      = 2;
 
     bool createSupPos           = true;
-    bool harmonicWell           = true;
+    bool harmonicWell           = false;
     bool finiteWell             = false;
-    bool squareWell             = false;
+    bool squareWell             = true;
 
     // Finite square and harmonic well settings.
     double distanceToWall       = 2.;
@@ -73,7 +73,7 @@ int main() {
     cube eigvecs(N-1, N-1, numberOfDimensions);
     mat  eigvals(N-1, numberOfDimensions);
 
-    mat saveEigenvector         = ones(N-1, N-1/*numberOfEigstates*/);
+    mat saveEigenvector         = ones(N-1, numberOfEigstates);
     cube saveSepEigenvector		= zeros(N-1, N-1/*numberOfEigstates*/, numberOfDimensions);
     mat SavePositionvector      = zeros(N-1, numberOfDimensions+1);
     cube supPosSep				= zeros(N-1, nPrimeMax, numberOfDimensions);
