@@ -4,7 +4,7 @@
 
 \chapter{Variational Monte Carlo}
 
-The Variational Monte Carlo method is one of the computational methods used in this thesis. It is based on the variational principle in quantum mechanics. The variational principle states that, given a Hamiltonian $H$ and a trial wave function $\psi_T$, the expectation value $\langle H \rangle$ defined as
+The Variational Monte Carlo method the main computational method used in this thesis. It is based on the variational principle in quantum mechanics. The variational principle states that, given a Hamiltonian $H$ and a trial wave function $\psi_T$, the expectation value $\langle H \rangle$ defined as\cite{Griffiths}
 \begin{equation}
  E[H] = \langle H \rangle =
  \frac{\int d {\bf R} \Psi_T^*({\bf R}, \boldsymbol{\alpha}) H({\bf R}) \Psi_T({\bf R}, \boldsymbol{\alpha})}
@@ -388,13 +388,13 @@ To optimize the parameters we first guess an initial value for each. Then, using
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\chapter{Diffusion Monte Carlo}
 
-\chapter{Basis Functions}
+\chapter{Basis Functions}\label{sec: Basis Functions}
 
 When we do Quantum Monte Carlo simulations we need a wave function for the system. A part of this wave function is made up by the single particle wave functions, i.e. the wave function we have if the system only has one particle and thus no particle-particle interactions. For the harmonic oscillator potential we have the fairly simple harmonic oscillator wave functions given in Eq. (\ref{eq: HO SPWF}). However, for other potentials the single particle wave functions may not be as simple to implement. Instead we can approximate the single particle wave functions by using a linear combination with the simple harmonic oscillator functions as basis functions. We do this by first diagonalizing the single particle system for the given potential. This provides us with eigenvalues and eigenvectors for the single particle problem. We then take the inner product of the eigenvectors and the harmonic oscillator basis functions to find the overlap coefficients. Finally, in the QMC simulation we use the overlap coefficients and the harmonic oscillator basis functions to approximate the single particle wave functions for each particle.
 
 \section{Diagonalizing the Single Particle Problem}\label{sec:Diag_SP_Problem}
 
-The potentials we focus on in this thesis are separable in the x, y and z directions. For one spatial dimension the time independent Schr\"odinger equation is on the form
+The potentials we focus on in this thesis are separable in the x, y and z directions. For one spatial dimension the time independent Schr\"odinger equation is on the form\cite{Schrodinger}
 \begin{equation}
     -\frac{\hbar^2}{2m}\frac{\partial^2\psi(x)}{\partial x^2} + V(x)\psi(x) = E\psi(x),
 \end{equation}
@@ -403,7 +403,7 @@ with eigenvectors $\psi_n(x)$ and eigenvalues $E_n$. The potential is $V(x)$. Th
     -\frac{1}{2}\frac{\partial^2\psi(x)}{\partial x^2} + V(x)\psi(x) = E\psi(x).
 \end{equation}
 
-To find the eigenvalues and eigenvectors we first discretize this equation. Using the central finite difference scheme for the second derivative we get
+To find the eigenvalues and eigenvectors we follow Ref.\cite{CP1_Project 2} and start by discretizing this equation. Using the central finite difference scheme\cite{Scientific Computing} for the second derivative we get
 \begin{equation}
     \frac{\partial^2\psi(x)}{\partial x^2} = \frac{\psi(x+h) - 2\psi(x) + \psi(x-h)}{h^2},
 \end{equation}
@@ -461,7 +461,7 @@ These types of equations can easily and efficiently be solved by using an Armadi
 
 \section{Finding the Overlap Coefficients}\label{sec:FindingCoefficients}
 
-Now that we have found the eigenvectors $\psi_n(x)$ through diagonalization, we can find the overlap coefficients we need. The overlap coefficients are the inner product of the eigenvectors and the basis functions we use, i.e.
+Now that we have found the eigenvectors $\psi_n(x)$ through diagonalization, we can find the overlap coefficients we need. The overlap coefficients are the inner product of the eigenvectors and the basis functions we use \cite{Yang}, i.e.
 \begin{equation}\label{eq:OverlapCoefficients}
     C_{n^\prime,n} = \langle \psi_{n^\prime} \vert \phi_n\rangle = \sum_{i=0}^{N-1} \psi_{n^\prime}(x_i)\phi_n(x_i) \hspace{1 cm} n^\prime,n = 0,1,2,\dots,
 \end{equation}
@@ -520,7 +520,7 @@ where the loop is over eigenstates. $\Lambda$ is the total number of eigenstates
 
 \chapter{Hartree-Fock}
 
-The Hartree-Fock method is well described in REF basicMB, which this section is based upon. This method uses an algorithm to find an approximative expression for the ground state of a given Hamiltonian. First we need to define a single particle basis $\left\{\psi_\alpha\right\}$ (e.g. a single particle harmonic oscillator basis), so that 
+The Hartree-Fock method is well described in \cite{basicMB}, which this chapter is based upon. This method uses an algorithm to find an approximative expression for the ground state of a given Hamiltonian. First we need to define a single particle basis $\left\{\psi_\alpha\right\}$ (e.g. a single particle harmonic oscillator basis), so that 
 \begin{equation}
     \hat{h}^{HF}\psi_\alpha = \epsilon_\alpha \psi_\alpha,
 \end{equation}
@@ -536,9 +536,9 @@ where we have a Slater determinant, $\Phi_0$, as the ansatz for the ground state
 \begin{equation}
     E^{HF} \geq E_0.
 \end{equation}
-We use Hartree-Fock to get coefficients for a self-consistent single particle basis, which we can then use in the VMC calculations instead of the coefficients we got from diagonalizing simple potentials (as described in REF SEC Basis Functions).
+We use Hartree-Fock to get coefficients for a self-consistent single particle basis, which we can then use in the VMC calculations instead of the coefficients we got from diagonalizing simple potentials (as described in \ref{sec: Basis Functions}).
 
-\section{}
+\section{Hamiltonian}
 
 If we assume that the interacting part of the Hamiltonian can be approximated by a two-body interaction, we can write the Hamiltonian as
 \begin{equation}
@@ -835,7 +835,7 @@ where $r_{ij}=\vert {\bf r}_i-{\bf r}_j\vert$ is the distance between two electr
 
 \subsection{Standard Harmonic Oscillator Well}
 
-For the standard harmonic oscillator well, the confinement potential is simply
+For the standard harmonic oscillator well, the confinement potential is simply\cite{Griffiths}
 \begin{equation}\label{eq: HO Potential}
 \begin{split}
     V_c(\mathbf{r}) &= \frac{1}{2}m_e\omega^2 \mathbf{r}^2\\
@@ -855,7 +855,7 @@ where $\mathbf{r}$ is the distance from the center of the well. The potential is
 
 \subsection{Double Harmonic Oscillator Well}
 
-When we have a harmonic oscillator potential with multiple minima, the confinement potential is on the general form
+When we have a harmonic oscillator potential with multiple minima, the confinement potential is on the general form\cite{master project}
 \begin{equation}
     V_c(\mathbf{r}) = \frac{1}{2} m_e \omega^2 \textrm{min}\left[\sum_j^M (\mathbf{r}-\mathbf{L}_j)^2\right],
 \end{equation}
@@ -866,7 +866,7 @@ where, in two dimensions, we have $\mathbf{r} = (x,y)$, and the multiple $\mathb
     &= \frac{1}{2} m_e \omega^2[\mathbf{r}^2 - 2L_x|x| + L_x^2].
 \end{split}
 \end{equation}
-Double-well potentials, and the barrier between the wells, are interesting for quantum computing and information processing. Double-well potentials are investigated as candidates for logic gates in quantum computing. As explained by Ref.~\cite{}(Wikipedia: Logic gate), in regular computing a logic gate is a device implementing a Boolean function. It takes one or more binary inputs and performs a logical operation one them, producing a single binary output. In quantum computing the difference is that the gates should be able to have more varied output, i.e. it should have more output possibilities than only $0$ or $1$. Double-well potentials are also a starting point for understanding periodic multiwell potentials. The double harmonic oscillator potential is parabolic with minima in e.g. $x = \pm L_x$, $y = 0$, and the parabolic wells meet at an absolute value barrier at $x=0$. Figure \ref{fig: DW Potential} shows an example of a double-well potential, where $L_x = 5$ and $\omega = 1$.
+Double-well potentials, and the barrier between the wells, are interesting for quantum computing and information processing. Double-well potentials are investigated as candidates for logic gates in quantum computing\cite{Multiwells}. As explained by Ref.~\cite{Logic Gate}, in regular computing a logic gate is a device implementing a Boolean function. It takes one or more binary inputs and performs a logical operation one them, producing a single binary output. In quantum computing the difference is that the gates should be able to have more varied output, i.e. it should have more output possibilities than only $0$ or $1$. Double-well potentials are also a starting point for understanding periodic multiwell potentials. The double harmonic oscillator potential is parabolic with minima in e.g. $x = \pm L_x$, $y = 0$, and the parabolic wells meet at an absolute value barrier at $x=0$. Figure \ref{fig: DW Potential} shows an example of a double-well potential, where $L_x = 5$ and $\omega = 1$.
 
 \begin{figure}[!ht]
     \centering
@@ -877,7 +877,7 @@ Double-well potentials, and the barrier between the wells, are interesting for q
 
 \subsection{Finite Square Well}
 
-Another interesting potential to look at is the square well potential, where the potential will have one constant value within the well, and another constant value outside of it. For a finite square well, the potential in one dimension can be written as
+Another interesting potential to look at is the square well potential, where the potential will have one constant value within the well, and another constant value outside of it. For a finite square well, the potential in one dimension can be written as\cite{Griffiths}
 \begin{equation}
     V_c(x) = \begin{cases}
   C_1, & \mbox{if $-L < x < L$} \\
@@ -929,7 +929,7 @@ are harmonic oscillator wave functions with the following form
 \begin{align}\label{eq: HO SPWF}
     \phi_{n_x,n_y}(x,y) = A H_{n_x}(\sqrt{\omega}x)H_{n_y}(\sqrt{\omega}y)\exp{(-\omega(x^2+y^2)/2}.
 \end{align}
-The functions $H_{n_x}(\sqrt{\omega}x)$ are Hermite polynomials, and $A$ is a normalization constant. In this case, two chosen electrons can have either anti-parallel or parallel spins, so the value of $a$ depends on which two electrons we are looking at.
+The functions $H_{n_x}(\sqrt{\omega}x)$ are Hermite polynomials \cite{Hermite}, and $A$ is a normalization constant. In this case, two chosen electrons can have either anti-parallel or parallel spins, so the value of $a$ depends on which two electrons we are looking at.
 
 \section{Closed Form Expressions}\label{sec:CF}
 We want to find the expectation value of the local energy, and having a closed form expression for this energy is convenient. The local energy is given by 

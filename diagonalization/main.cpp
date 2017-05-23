@@ -13,15 +13,15 @@ using namespace arma;
 
 int main() {
 
-    int N                       = 1000;         //Need 1600 for nMax=20 in 3D.
+    int N                       = 5000;         //Need 1600 for nMax=20 in 3D.
     double posMin               = -10;
     double posMax               = 10;
     double omega_r              = 1.;                                         // =m*w/hbar Just a constant to keep the results correct, while we figure out the omega conundrum.
-    int nMax 					= 20;
-    int nPrimeMax               = 10;
+    int nMax 					= 5;
+    int nPrimeMax               = 1;
     int numberOfDimensions      = 2;
 
-    bool createSupPos           = true;
+    bool createSupPos           = false;
     bool harmonicWell           = false;
     bool finiteWell             = false;
     bool squareWell             = true;
@@ -33,7 +33,7 @@ int main() {
     // Harrmonic well settings (L = zeros for single well, L(0) = a for double well with minima at x = +-a).
     vec L(3);
     L.fill(0.);
-    L(0) = 4.;
+    L(0) = 0.;
     //L(1) = 5.;
 
     int numberOfEigstates;

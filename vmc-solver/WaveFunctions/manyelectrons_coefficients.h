@@ -37,6 +37,7 @@ public:
     double harmonicOscillatorBasis(double x, int nx, int d);
     double harmonicOscillatorBasisDerivative(vec r, vec n, int d);
     double harmonicOscillatorBasisDoubleDerivative(vec r, vec n, int d);
+    double harmonicOscillatorBasisAlphaDerivative(vec r, vec n);
 
     double computeHermitePolynomial(int nValue, double position);
     double computeHermitePolynomialDerivative(int nValue, double position);

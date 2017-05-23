@@ -109,8 +109,8 @@ def cOld(r,n):
 #    a.append(np.sqrt(np.dot(tmp1, tmp1)))
 
 # When we set psi = psix*psiy*psiz, we must normalize manually:
-vec = zeros(20)
-for i in range(20):
+vec = zeros(15)
+for i in range(15):
 	vec[i] = np.dot(psi[i], psi[i])
 	#print("<psi%i|psi%i>:   " % (i, i), np.dot(psi[i],psi[i]))
 for i in range(len(supCpp[0,:])):
@@ -118,7 +118,7 @@ for i in range(len(supCpp[0,:])):
 #print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
 
 #vec = np.sort(vec, axis=None)
-for i in range(20):
+for i in range(15):
 	print vec[i]
 
 # plot(r[0], supCpp**2/np.dot(supCpp,supCpp), r[0], psi[0]**2/np.dot(psi[0],psi[0]), '+')
@@ -140,11 +140,11 @@ print(np.sqrt(sum(abs(psi[nPrime]/sqrt(np.dot(psi[nPrime],psi[nPrime])) \
              -supCpp[:,nPrime]/sqrt(np.dot(supCpp[:,nPrime],supCpp[:,nPrime])))**2)))
 
 print("")
-for i in range(10):
+for i in range(2):
     print("||supX%i||:  %s" %(i, np.sqrt(np.dot(supX[:,i], supX[:,i]))))
 
 print("")
-for i in range(10):
+for i in range(2):
     print("||supY%i||:  %s" %(i, np.sqrt(np.dot(supY[:,i], supY[:,i]))))
 
 nVec = range(nMax)

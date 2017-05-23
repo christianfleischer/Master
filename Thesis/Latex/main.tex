@@ -1,22 +1,24 @@
-\documentclass[11pt,a4wide]{book}
+\documentclass[11pt,a4paper]{book}
+\usepackage[inner=1.5in,outer=1in,bottom=1.5in]{geometry}
 \usepackage{verbatim}
 \usepackage{listings}
 \usepackage{graphicx}
 \usepackage{float}
-\usepackage{a4wide}
+%\usepackage{a4wide}
 \usepackage{color}
 \usepackage{amsmath}
 \usepackage{amssymb}
-\usepackage[dvips]{epsfig}
+%\usepackage[dvips]{epsfig}
 \usepackage[T1]{fontenc}
 \usepackage{cite} % [2,3,4] --> [2--4]
 \usepackage{shadow}
-\usepackage{hyperref}
+\usepackage[hyphens]{url}
+\usepackage[breaklinks]{hyperref}
 \usepackage{tcolorbox}
 \usepackage{caption}
 \usepackage{subcaption}
-\usepackage[margin=1in]{geometry}
 \usepackage{tabularx}
+%\usepackage[margin=1in]{geometry}
 \usepackage{pdfpages}
 \usepackage{setspace}
 \usepackage[toc,page]{appendix}
@@ -28,12 +30,13 @@
 
 \setcounter{tocdepth}{3}
 \setcounter{secnumdepth}{3}
+\setlength{\footskip}{1 in}%100pt}
 
 \definecolor{light-gray}{gray}{0.95}
 
 \lstset{language=c++}
 \lstset{alsolanguage=Python}
-\lstset{basicstyle=\small}
+\lstset{basicstyle=\scriptsize}
 \lstset{backgroundcolor=\color{light-gray}}
 \lstset{frame=single}
 \lstset{stringstyle=\ttfamily}
@@ -47,14 +50,17 @@
 \lstset{numbers=left}
 \lstset{captionpos=b}
 \usepackage[utf8]{inputenc}
-\usepackage[utf8]{inputenc}
+%\usepackage[utf8]{inputenc}
 \usepackage[english]{babel}
-\usepackage{graphicx}
+%\usepackage{graphicx}
 \graphicspath{{images/}{../images/}}
 
 \usepackage{sectsty}
 \partfont{\centering}
 \numberwithin{equation}{section}
+
+\def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
+\let\endchangemargin=\endlist 
 
  
 \usepackage{subfiles}
@@ -94,6 +100,8 @@
 \subfile{sections/appendix}
 
 %\chapter{Bibliography}
+\begin{changemargin}{0 cm}{4 cm}
 \subfile{sections/bibliography}
+\end{changemargin}
  
 \end{document}

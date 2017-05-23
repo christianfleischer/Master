@@ -37,6 +37,7 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
             m_system->getWaveFunction()->adjustParameter(parameters[i], i);
         }
         m_system->getHamiltonian()->setAlpha(parameters[0]);
+        //m_system->getHamiltonian()->setUpHermitePolynomials();
 
         // Run Monte Carlo simulation to find expectation values
         m_system->runMetropolisSteps(numberOfMetropolisSteps, importanceSampling, false, false);
@@ -52,6 +53,9 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
             waveFuncDerivative[i] = m_system->getSampler()->getWaveFuncDerivativeParameters()[i];
             derivative[i] = 2*(waveFuncEnergy[i] - energy*waveFuncDerivative[i]);
         }
+        //cout << "WFE: " << waveFuncEnergy[0] << endl;
+        //cout << "WFD: " << waveFuncDerivative[0] << endl;
+        //cout << "d: " << derivative[0] << endl;
 
         for (int i=0; i < numberOfParameters; i++) {
             MPI_Reduce(&derivative[i], &m_derivativeAvg[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -70,6 +74,9 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
         //m_stepLengthSD *= 0.8;
 
         //parametersNew = parameters - derivative*m_stepLengthSD;
+        //cout << parametersNew[0] << endl;
+        //int a = 0;
+        //while(a < 1)
         parameters = parametersNew;   // Update parameters
         iteration++;
         std::string upLine = "\e[A";

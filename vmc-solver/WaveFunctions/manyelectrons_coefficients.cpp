@@ -407,12 +407,28 @@ std::vector<double> ManyElectronsCoefficients::computeDerivativeWrtParameters(st
 
             vec n(m_numberOfDimensions);
             for (int d = 0; d < m_numberOfDimensions; d++) {
-                n[d] = m_quantumNumbers(j, d);
+                n[d] = m_quantumNumbersPrime(j, d);
             }
 
-            slaterUpAlphaDerivative += m_system->getHamiltonian()->computeSPWFAlphaDerivative(n, rSpinUp, j)
+            double SPWFAlphaDerivativeUp = 0;
+            double SPWFAlphaDerivativeDown = 0;
+
+            for (int eig = 0; eig < m_numberOfCoeffEigstates; eig++) {
+                double coefficients = 1;
+                vec qNums = conv_to<vec>::from(m_quantumNumbers.row(eig));
+                for (int d = 0; d < m_numberOfDimensions; d++) {
+                    coefficients *= m_cCoefficients(qNums[d], n[d], d);
+//                    coefficients *= m_cCoefficients(qNums[d], n[d], 0);
+                    //cout << m_cCoefficients(qNum, m, d) << endl;
+                }
+                SPWFAlphaDerivativeUp += coefficients*harmonicOscillatorBasisAlphaDerivative(rSpinUp, qNums);
+                SPWFAlphaDerivativeDown += coefficients*harmonicOscillatorBasisAlphaDerivative(rSpinDown, qNums);
+                //SPWFAlphaDerivativeDown += coefficients*m_system->getHamiltonian()->computeSPWFAlphaDerivative(qNums, rSpinDown, j);
+            }
+
+            slaterUpAlphaDerivative += SPWFAlphaDerivativeUp
                                        *m_spinUpSlaterInverse(j,i);
-            slaterDownAlphaDerivative += m_system->getHamiltonian()->computeSPWFAlphaDerivative(n, rSpinDown, j)
+            slaterDownAlphaDerivative += SPWFAlphaDerivativeDown
                                          *m_spinDownSlaterInverse(j,i);
         }
     }
@@ -440,7 +456,12 @@ std::vector<double> ManyElectronsCoefficients::computeDerivativeWrtParameters(st
         }
     }
 
-    derivative[0] = (slaterUpAlphaDerivative + slaterDownAlphaDerivative)*evaluate(particles);//*exp(exponent);
+    //It seems like there's supposed to be some alpha dependence in the coefficients, which means they are not constant
+    //when differentiating w.r.t. alpha. This may be causing issues for the parameter optimization algorithm (or there is something wrong in the code).
+    //Either way the optimization of aplha doesn't work and is causing problems, so derivative[0] is set to 0, and the program only optimizes beta
+    //when the optimization is done with coefficients.
+    derivative[0] = 0;//(slaterUpAlphaDerivative + slaterDownAlphaDerivative)*evaluate(particles);//*exp(exponent);
+
     derivative[1] = betaDerivative*evaluate(particles);
 
     return derivative;
@@ -1704,6 +1725,54 @@ double ManyElectronsCoefficients::harmonicOscillatorBasisDoubleDerivative(vec r,
     }
 
     return phiDD;
+}
+
+
+double ManyElectronsCoefficients::harmonicOscillatorBasisAlphaDerivative(vec r, vec n) {
+
+    vec constant(m_numberOfDimensions);
+    for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+        double nFac = factorial(n[dim]);
+        double n2 = pow(2., n[dim]);
+        double pi4 = pow(M_PI, -0.25);
+        double omega4 = pow(m_omega, 0.25);
+        constant[dim] = omega4*pi4/sqrt(nFac*n2);
+    }
+
+
+    double derivative = 0;
+    //double expFactor = m_system->getWaveFunction()->getExpFactor();
+    double alpha = m_system->getWaveFunction()->getParameters()[0];
+    //double r2 = x*x + y*y;
+    double r2 = 0;
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        r2 += r[d]*r[d];
+    }
+
+    double term1 = -0.5*m_omega*r2;
+
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        int nd = n[d];
+
+        term1 *= constant[d]*exp(-alpha*m_omega*(r[d]*r[d])*0.5)*m_system->getHamiltonian()->getHermitePolynomials()[nd]->eval(r[d]);
+        double otherTerms = constant[d]*exp(-alpha*m_omega*(r[d]*r[d])*0.5)*m_system->getHamiltonian()->computeHermitePolynomialAlphaDerivative(n[d], r[d]);
+
+        for (int dim = 0; dim < m_numberOfDimensions; dim++) {
+            int ndim = n[dim];
+            if (d != dim) otherTerms *= constant[dim]*exp(-alpha*m_omega*(r[dim]*r[dim])*0.5)*m_system->getHamiltonian()->getHermitePolynomials()[ndim]->eval(r[dim]);
+        }
+        derivative += otherTerms;
+    }
+
+    derivative += term1;
+    //derivative *= exp(-0.5*alpha*m_omega*r2);
+
+//    derivative += (-0.5*m_omega*r2*computeHermitePolynomial(nx, x)*computeHermitePolynomial(ny, y)
+//                   +computeHermitePolynomialAlphaDerivative(nx, x)*computeHermitePolynomial(ny, y)
+//                   +computeHermitePolynomialAlphaDerivative(ny, y)*computeHermitePolynomial(nx, x))
+//                 *exp(-0.5*alpha*m_omega*r2);
+
+    return derivative;
 }
 
 //void ManyElectronsCoefficients::setUpHermitePolynomials() {

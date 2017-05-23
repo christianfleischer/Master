@@ -49,6 +49,11 @@ void RandomUniform::setupInitialState() {
              */
 
             double pos = pow(-1, i%2)*Random::nextDouble();
+
+            // Ensure that starting position of particles are reasonably close to the center of the well when a double well is used:
+            vec L = m_system->getL();
+            bool doubleWellFlag = m_system->getDoubleWellFlag();
+            if (L[j] != 0 && doubleWellFlag) pos *= L[j];
             position.push_back(pos);
 
 

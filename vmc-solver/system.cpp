@@ -182,14 +182,14 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
 
 void System::optimizeParameters(System* system, double alpha, double beta) {
     // Steepest descent:
-    int maxIterations             = 100;
-    int numberOfStepsSD           = (int) 1e5;
+    int maxIterations             = 1000;
+    int numberOfStepsSD           = (int) 1e3;
     double stepLengthSD           = 0.01;
     std::vector<double> initialParameters(2);
     initialParameters[0] = alpha;
     initialParameters[1] = beta;
     //double initialAlpha           = alpha;//0.7;
-    double tol                    = 1e-6;//0.001;
+    double tol                    = 1e-5;//0.001;
     bool importanceSamplingSD     = false;
     //std::string parameterAlpha    = "alpha";
 
@@ -261,7 +261,7 @@ void System::MPI_CleanUp(double &totalE, double &totalKE, double &totalPE,
 
 void System::mergeOutputFiles(int numprocs) {
     if (m_saveEnergies){
-        std::ofstream outfile("energies.dat", std::ios_base::binary);
+        std::ofstream outfile("../vmc-solver/AnalyseData/Data/energies.dat", std::ios_base::binary);
         for (int i=0; i < numprocs; i++){
             char nodeFileName[100];
             sprintf(nodeFileName, "energiesNode%i.dat", i);
@@ -269,13 +269,13 @@ void System::mergeOutputFiles(int numprocs) {
 
             outfile << nodeFile.rdbuf();
             nodeFile.close();
-            remove(nodeFileName);
+            //remove(nodeFileName);
         }
         outfile.close();
     }
 
     if (m_savePositions){
-        std::ofstream outfile("positions.dat", std::ios_base::binary);
+        std::ofstream outfile("../vmc-solver/AnalyseData/Data/positions.dat", std::ios_base::binary);
         for (int i=0; i < numprocs; i++){
             char nodeFileName[100];
             sprintf(nodeFileName, "positionsNode%i.dat", i);
@@ -283,10 +283,20 @@ void System::mergeOutputFiles(int numprocs) {
 
             outfile << nodeFile.rdbuf();
             nodeFile.close();
-            remove(nodeFileName);
+            //remove(nodeFileName);
         }
         outfile.close();
     }
+
+//    sleep(1);
+//    for (int i=0; i < numprocs; i++){
+//        char nodeFileNameE[100];
+//        sprintf(nodeFileNameE, "energiesNode%i.dat", i);
+//        char nodeFileNameP[100];
+//        sprintf(nodeFileNameP, "positionsNode%i.dat", i);
+//        remove(nodeFileNameE);
+//        remove(nodeFileNameP);
+//    }
 }
 
 void System::setNumberOfParticles(int numberOfParticles) {
@@ -349,11 +359,12 @@ void System::setSaveEnergies(bool saveEnergies) {
     m_saveEnergies = saveEnergies;
     if (saveEnergies){
         if (m_my_rank == 0){
-            system("rm energies.dat");
+            system("rm ../vmc-solver/AnalyseData/Data/energies.dat");
         }
         char outfileName[100];
         //char removeCommand[100];
         sprintf(outfileName, "energiesNode%i.dat", m_my_rank);
+        remove(outfileName);
         //sprintf(removeCommand, "rm %s", outfileName);
         //system(removeCommand);
         m_outfileE = fopen(outfileName, "ab");
@@ -364,11 +375,12 @@ void System::setSavePositions(bool savePositions) {
     m_savePositions = savePositions;
     if (savePositions){
         if (m_my_rank == 0){
-            system("rm positions.dat");
+            system("rm ../vmc-solver/AnalyseData/Data/positions.dat");
         }
         char outfileName[100];
         //char removeCommand[100];
         sprintf(outfileName, "positionsNode%i.dat", m_my_rank);
+        remove(outfileName);
         //sprintf(removeCommand, "rm %s", outfileName);
         //system(removeCommand);
         m_outfileP = fopen(outfileName, "ab");
