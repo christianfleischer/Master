@@ -353,7 +353,9 @@ if __name__ == "__main__":
 
 
 \section{The Steepest Descent Method (Gradient Descent)}\label{sec:SteepestDescent}
-We want to optimize the variational parameters to minimize the estimation of the ground state energy. To do this we use the Steepest Descent method and we have two variational parameters we need to optimize; $\alpha$, and $\beta$. To optimize the parameters we treat our estimate to the ground state energy as a function of the parameters. The Steepest Descent method then finds a local minimum for this function by iteratively moving in the direction given by the negative of the gradient of the function at the current point (Ref.~\cite{CG-wiki}). At each step the move is proportional to a chosen step length $\gamma$, and for $\alpha$, one step is then
+We want to optimize the variational parameters to minimize the estimation of the ground state energy. To do this we use the Steepest Descent method, also called Gradient Descent\footnote{Steepest Descent and Gradient Descent are sometimes referred to as different methods in literature. We will use Steepest Descent to refer to the method used in this thesis.}. We have two variational parameters we need to optimize; $\alpha$, and $\beta$. To optimize the parameters we treat our estimate to the ground state energy as a function of the parameters. Steepest Descent is a way to minimize a function parameterized by some parameters, by updating the parameters in the opposite direction of the gradient of the function w.r.t. to the parameters.\cite{Ruder}
+%The Steepest Descent method then finds a local minimum for this function by iteratively moving in the direction given by the negative of the gradient of the function at the current point (Ref.~\cite{CG-wiki}).
+At each step the move is proportional to a chosen step length $\gamma$, and for $\alpha$, one step is then
 \begin{equation}\label{eq: SteepestDesc}
     \alpha_{i+1} = \alpha_i - \gamma\bar{E}_\alpha,
 \end{equation}
@@ -942,6 +944,7 @@ By finding the local energy using two different methods, one using the closed fo
 \end{align}
 The necessary closed form expressions for the two-body quantum dot and the many-body quantum dot are calculated in the first appendix, in section \ref{sec:ClosedFormTwo} and section \ref{sec:ClosedFormMany} respectively.
 
+\begin{comment}
 \section{Benchmarks for Verifying the Implementation}
 In order to verify that the implementation works correctly we should compare our results with known benchmarks. In the unperturbed case the exact ground state energies are analytically known. We have that the energy for a given electron is given by Eq.(\ref{eq: unperturbedEnergy}). Table \ref{tab: unperturbedEnergies} contains the total energy of unperturbed closed shell systems up to $N=20$ electrons.
 \begin{table}[!ht]
@@ -982,6 +985,6 @@ For the perturbed case we use the benchmarks given in table \ref{tab: perturbedE
   \caption{Benchmarks of the energy $E$ for perturbed closed shell systems in two dimensions with $N$ electrons and $\omega=1$.}
   \label{tab: perturbedEnergies}
 \end{table}
-
+\end{comment}
 
 \end{document}

@@ -215,25 +215,24 @@ where $d$ is the number of dimensions, $d=2$ in our case. We end up with the fol
 
 \chapter{Program Structure}
 
-The methods were implemented with a C++ program using object-orientation. 
-The program consists of several classes responsible for different parts of the simulations. The classes are:
+The simulations in this thesis were done by two programs implemented in C++ using object-orientation. 
+The VMC simulation program consists of several classes responsible for different parts of the simulations. The following classes are responsible for the VMC simulations in this thesis. Any other classes from the vmc-solver folder in the Github repository \cite{github} are outside the scope of this thesis.
 \begin{itemize}
-    \item {\bf Hamiltonian:} A super-class for different Hamiltonians. The subclasses calculate the local energy for their specific Hamiltonian. Since calculating the kinetic energy with numerical differentiation is done the same for all Hamiltonians, this super-class is responsible for that. The subclasses are:
+    \item {\bf Hamiltonian:} A super-class for different Hamiltonians. The subclasses calculate the local energy for their specific Hamiltonian. They also calculate the single particle wave functions if these are not approximated by expanding in a basis of single harmonic oscillator functions (not implemented for the square well). Since calculating the kinetic energy with numerical differentiation is done the same for all Hamiltonians, this super-class is responsible for that. The subclasses are:
     \begin{itemize}
-        \item {\bf HarmonicOscillator:} Calculates the local energy in the non-interacting case. [Project1]
-        \item {\bf HarmonicOscillatorRepulsive:} Calculates the local energy in the interacting case. [Project1]
-        \item \textbf{HarmonicOscillatorElectrons:} Calculates the local energy for quantum dots. [Project2]
+        \item \textbf{HarmonicOscillatorElectrons:} Calculates the local energy for quantum dots in a single harmonic oscillator potential well.
+        \item \textbf{DoubleHarmonicOscillator:} Calculates the local energy for quantum dots in a double harmonic oscillator potential well.
+        \item \textbf{SquareWell:} Calculates the local energy for quantum dots in a finite square well potential.
     \end{itemize}
-    \item {\bf WaveFunction:} A super-class for different wave functions. The subclasses evaluate their specific wave function and also calculate the gradient, the Laplacian and the derivative w.r.t. the variational parameter(s) $\alpha$ (and $\beta$) using the analytical expressions. The subclasses are:
+    \item \textbf{HermitePolynomials:} Stores the expressions for Hermite polynomials and their derivatives and double derivatives in individual subclasses. All subclasses are included in the superclass file. The first $50$ Hermite polynomials are implemented, which means a total of $150$ subclasses ($50$ each for polynomial, derivative and double derivate).
+    \item {\bf WaveFunction:} A super-class for different wave functions. The subclasses evaluate their specific wave function and also calculate the gradient, the Laplacian and the derivative w.r.t. the variational parameters $\alpha$ and $\beta$. The subclasses are:
     \begin{itemize}
-        \item {\bf SimpleGaussian:} WaveFunction subclass for the non-interacting case. [Project1]
-        \item {\bf RepulsiveGaussian:} WaveFunction subclass for the interacting case. [Project1]
-        \item \textbf{TwoElectrons:} WaveFunction subclass for the two-body quantum dot case. [Project2]
-        \item \textbf{ManyElectrons:} WaveFunction subclass for the many-body quantum dot case. This includes all Slater determinant functionality. [Project 2]
+        \item \textbf{ManyElectrons:} WaveFunction subclass for many-body quantum dots This includes all Slater determinant functionality. This class uses single/double harmonic oscillator single particle wave functions directly, which it gets from the corresponding Hamiltonian subclasses.
+        \item \textbf{ManyElectrons\_Coefficients:} Similar to ManyElectrons, but with the one key difference that it approximates the single particle wave functions by expansion in a single harmonic oscillator basis.
     \end{itemize}
     \item {\bf InitialState:} A super-class for different initial states. The subclasses set up the initial state. The subclasses are:
     \begin{itemize}
-        \item {\bf RandomUniform:} Sets up an initial state with uniformly distributed particle positions.
+        \item {\bf RandomUniform:} Sets up an initial state with uniformly distributed particle positions. The particles are distributed around the well center (or centers in the double well case).
     \end{itemize}
     \item {\bf Particle:} Responsible for creating particles and adjusting their positions.
     \item {\bf System:} Responsible for running the Monte Carlo simulation. It performs the Metropolis and Metropolis-Hastings algorithms.
@@ -242,6 +241,130 @@ The program consists of several classes responsible for different parts of the s
     \item {\bf Random:} Responsible for generating pseudo-random numbers according to different distributions.
 \end{itemize}
 
-There is also a main program which sets the necessary parameters and makes calls to the classes to start the simulation. The code is also fully parallelized with MPI. An advantage to using an implementation like this is that it makes it easy to add functionality, like more wave functions, Hamiltonians and initial states, or alternative methods for optimizing variational parameters (e.g. the Conjugate Gradient method). The data analysis is done in Python, with the programs {\bf blocking.py}, {\bf density.py} and \textbf{performance.py}.
+There is also a main program which sets the necessary parameters and makes calls to the classes to start the simulation. The code is also fully parallelized with MPI. An advantage to using an implementation like this is that it makes it easy to add functionality, like other potentials and alternative methods for optimizing variational parameters (e.g. the Conjugate Gradient method). 
+
+The other program used is the diagonalization program, which is responsible for diagonalizing the single particle problem for a given potential, and then find the overlap with the single harmonic oscillator basis. The overlap coefficients are then saved to a file so they can be used by the VMC solver. This program consists of:
+\begin{itemize}
+    \item \textbf{WaveFunction:} This superclass contains subclasses for different potentials. The subclasses also calculate the harmonic oscillator basis functions. The "WaveFunction" superclass also computes the Hermite polynomials used in the basis functions. If other types of basis functions are implemented, a new basis functions superclass should be made, and the harmonic oscillator basis functions should be calculated by a subclass of that basis functions superclass. 
+    \begin{itemize}
+        \item \textbf{DoubleWell:} Subclass for the double harmonic oscillator potential. This subclass is also used for the single harmonic oscillator potential by setting the $L$ parameter for each dimension to $0$.
+        \item \textbf{SquareWell:} Subclass for the square well potential. In this thesis only single square wells were simulated, no double (or multi) square wells.
+    \end{itemize}
+    \item \textbf{System:} This class is responsible for doing the diagonalization, and finding the overlap coefficients. It also has functionality for approximating the single particle wave functions by expansion in a single harmonic oscillator basis. This functionality was only added for testing purposes, as the VMC solver needs to do this itself mid-simulation (for varying particle positions).
+\end{itemize}
+
+Here as well, there is a main program which sets the necessary parameters, and gets the "System" class started. It also saves necessary data to files (e.g. the overlap coefficients). The data analysis is done in Python, with the programs {\bf blocking.py} and {\bf density.py}. Testing of the diagonalization program was done by the Python program \textbf{plot\_data.py}, and plots of the potentials were created using \textbf{potential.py}. Finally, the code for the Hermite polynomial subclasses in the VMC solver was generated automatically with SymPy in the program \textbf{hermitePolynomialGenerator.py}.
+
+\chapter{Code Generation with SymPy}
+
+In order to optimize the VMc solver we wanted to have explicit expressions for a lot of Hermite polynomials and corresponding derivatives and double derivatives. Not only would it be an extensive amount of work to calculate the expressions by hand, but writing the code to implement the expressions would also be a lot of work. In addition the risk of committing error during the implementation would be great. Instead we can use SymPy for this task. "SymPy is a Python library for symbolic mathematics."\cite{SymPy} This means that we can for example do symbolic differentiation with a Python program. This is extremely useful in our case since we need to symbolically differentiate a lot of expressions. We also use SymPy to symbolically calculating new Hermite polynomials using the recursive relation of Hermite polynomials. First we specify what variables SymPy should treat as symbols with the "symbols" function:
+\lstset{language=python}
+\begin{lstlisting}[caption={}]
+x, a, w, aw = symbols('x, m_alpha, m_omega, m_alphaomega')
+\end{lstlisting}
+Now we can simply set up the recursion relation of the Hermite polynomials, with these symbols in place of $x$, $\alpha$ and $\omega$ values:
+\lstset{language=python}
+\begin{lstlisting}[caption={}]
+H[0] = 1
+
+for n in range(1, nMax):
+	H[n] = simplify(2*sqrt(aw)*x*H[n-1] - diff(H[n-1], x))
+\end{lstlisting}
+The "simplify" function ensures the result is on a simple form (or at least as simple as possible). The "diff" function does a symbolic differentiation on the first argument with respect to the second argument. Now we have all the Hermite polynomials we need on symbolic form. We continue by finding the derivatives with the following simple loop:
+\lstset{language=python}
+\begin{lstlisting}[caption={}]
+for n in range(0, nMax):
+	Hd[n] = simplify(diff(H[n], x))
+\end{lstlisting}
+and the double derivatives with:
+\lstset{language=python}
+\begin{lstlisting}[caption={}]
+for n in range(0, nMax):
+	Hdd[n] = simplify(diff(H[n], x, 2))
+\end{lstlisting}
+where the third argument of "diff" indicates that we want to differentiate twice. Now we have all the symbolic expressions we need, but with one more simple function we can get more out of SymPy. The function "codegen" can automatically create C functions for calculating our Hermite expressions, and print these expression to the terminal so we can copy them into our C++ code. With the simple code:
+\lstset{language=python}
+\begin{lstlisting}[caption={}]
+for n in range(0, nMax):
+	print codegen(("HermitePolynomial_%i::eval" %n, H[n]), "c", "file", header=False)[0][1]
+	print codegen(("dell_HermitePolynomial_%i::eval" %n, Hd[n]), "c", "file", header=False)[0][1]
+	print codegen(("lapl_HermitePolynomial_%i::eval" %n, Hdd[n]), "c", "file", header=False)[0][1]
+\end{lstlisting}
+we get terminal output on the following form:
+\begin{lstlisting}[caption={}, style=Bash]
+#include "file.h"
+#include <math.h>
+
+double HermitePolynomial_0::eval() {
+
+   double HermitePolynomial_0::eval_result;
+   HermitePolynomial_0::eval_result = 1;
+   return HermitePolynomial_0::eval_result;
+
+}
+
+#include "file.h"
+#include <math.h>
+
+double dell_HermitePolynomial_0::eval() {
+
+   double dell_HermitePolynomial_0::eval_result;
+   dell_HermitePolynomial_0::eval_result = 0;
+   return dell_HermitePolynomial_0::eval_result;
+
+}
+
+#include "file.h"
+#include <math.h>
+
+double lapl_HermitePolynomial_0::eval() {
+
+   double lapl_HermitePolynomial_0::eval_result;
+   lapl_HermitePolynomial_0::eval_result = 0;
+   return lapl_HermitePolynomial_0::eval_result;
+
+}
+
+\end{lstlisting}
+This output still needs some modifications before it can be used in the VMC solver. SymPy has a lot more advanced functionality which could get us the exact output we want, but since the generated code we need is fairly general the modifications can be easily done with the find/replace option of a text editor. The first thing we do is replace all the "\#include" lines with nothing, since we copy all the functions into the same file which we have set up beforehand. Next we replace the name of the variable in each function with something simple. To do this we replace the phrase "ermitePolynomial\_0::eval\_result" with nothing and do this again with the $0$ changed to the numbers needed. In our case this involves $50$ find/replace commands, but since the only thing we need to change in between is one number it's quickly done. Our variables then end up as simply "H", "dell\_H" and "lapl\_H".
+
+The modifications done so far are not strictly necessary, but was done to clean up the code somewhat. The next two modifications are needed for the VMC simulation to work properly. First we need to add an argument to the functions, since we want to send in the position $x$. This is done by replacing "eval()" with "eval(double x)". The final modification is needed due to an issue we run into with the int type in C++ when we have larger Hermite polynomials. For Hermite polynomial number $50$, the expressions involve large integers, e.g. $12699589412983995191626304930774935142400000$. Since SymPy simply prints the numbers like this, they are considered as int type when copied into the C++ program. However, the number is too large to be an int type in C++, so we need to change the type. This is done by simply adding a period to the end of the these numbers. These large numbers are always a constant in front of a pow function in our auto-generated code, so the code looks like "i*pow(", where "i" is the integer. We can then simply replace "0*pow(" with "0.*pow", and do this for $0,\dots,9$ so that the change is done to all relevant integers regardless of what the last digit is.
+
+An alternative to using "codegen", is to use the SymPy function "printing.ccode" to print the Hermite expressions as C code instead of Python code (e.g. changing "1**2" to "pow(1, 2)"). We can then create our own custom string to print out with the variable names we want, no "include" lines,  etc. This makes the code in "hermitePolynomialGenerator.py" somewhat messy, but in return the only modification we need to make after generating the code is to add the periiods discussed above. Instead of the "codegen" code, we would then use the following:
+\lstset{language=python}
+\begin{lstlisting}[caption={}]
+for n in range(0, nMax):
+	print("""double HermitePolynomial_%i::eval(double x) {
+
+   double H;
+   H = %s;
+   return H;
+
+}
+
+
+
+
+double dell_HermitePolynomial_%i::eval(double x) {
+
+   double dell_H;
+   dell_H = %s;
+   return dell_H;
+
+}
+
+
+
+
+double lapl_HermitePolynomial_%i::eval(double x) {
+
+   double lapl_H;
+   lapl_H = %s;
+   return lapl_H;
+
+}""" %(n, printing.ccode(H[n]), n, printing.ccode(Hd[n]), n, printing.ccode(Hdd[n])))
+\end{lstlisting}
+We also use this approach to auto-generate the class constructors and declarations, as well as the code to store the "HermitePolynomials" objects in arrays.
+
 \end{appendices}
 \end{document}

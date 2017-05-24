@@ -33,6 +33,7 @@
 \setlength{\footskip}{1 in}%100pt}
 
 \definecolor{light-gray}{gray}{0.95}
+\definecolor{Ubuntu-purple}{RGB}{48, 10, 36}
 
 \lstset{language=c++}
 \lstset{alsolanguage=Python}
@@ -61,6 +62,13 @@
 
 \def\changemargin#1#2{\list{}{\rightmargin#2\leftmargin#1}\item[]}
 \let\endchangemargin=\endlist 
+
+\lstdefinestyle{Bash}
+{
+    language={},
+    backgroundcolor=\color{Ubuntu-purple},
+    basicstyle=\small\color{white}\ttfamily
+}
 
  
 \usepackage{subfiles}

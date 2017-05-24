@@ -21,7 +21,7 @@ if (printExpressions):
 	H[0] = 1
 
 	for n in range(1, nMax):
-		H[n] = simplify(2*sqrt(aw)*x*H[n-1] - diff(H[n-1], x))
+		H[n] = simplify(2*sqrt(a*w)*x*H[n-1] - diff(H[n-1], x))
 
 	for n in range(0, nMax):
 		Hd[n] = simplify(diff(H[n], x))
@@ -29,10 +29,46 @@ if (printExpressions):
 	for n in range(0, nMax):
 		Hdd[n] = simplify(diff(H[n], x, 2))
 
+	#for n in range(0, nMax):
+	#	print codegen(("HermitePolynomial_%i::eval" %n, H[n]), "c", "file", header=False)[0][1]
+	#	print codegen(("dell_HermitePolynomial_%i::eval" %n, Hd[n]), "c", "file", header=False)[0][1]
+	#	print codegen(("lapl_HermitePolynomial_%i::eval" %n, Hdd[n]), "c", "file", header=False)[0][1]
+
 	for n in range(0, nMax):
-		print codegen(("HermitePolynomial_%i::eval" %n, H[n]), "c", "file", header=False)[0][1]
-		print codegen(("dell_HermitePolynomial_%i::eval" %n, Hd[n]), "c", "file", header=False)[0][1]
-		print codegen(("lapl_HermitePolynomial_%i::eval" %n, Hdd[n]), "c", "file", header=False)[0][1]
+		print("""double HermitePolynomial_%i::eval(double x) {
+
+   double H;
+   H = %s;
+   return H;
+
+}
+
+
+
+
+double dell_HermitePolynomial_%i::eval(double x) {
+
+   double dell_H;
+   dell_H = %s;
+   return dell_H;
+
+}
+
+
+
+
+double lapl_HermitePolynomial_%i::eval(double x) {
+
+   double lapl_H;
+   lapl_H = %s;
+   return lapl_H;
+
+}""" %(n, printing.ccode(H[n]), n, printing.ccode(Hd[n]), n, printing.ccode(Hdd[n])))
+	print("""
+
+//---------------------- END %i ----------------------
+
+""" %n)
 
 
 if (printConstructors):

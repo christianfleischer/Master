@@ -537,6 +537,27 @@ in the two dimensional case, or
 \end{equation}
 in the three dimensional case.
 
+\subsubsection{Benchmarks for Verifying the Implementation}
+In order to verify that the implementation works correctly we should compare our results with known benchmarks. In the unperturbed case the exact ground state energies are analytically known. For a two-dimensional single harmonic oscillator we have that the energy for a given electron is given by Eq.(\ref{eq: unperturbedEnergy}). Table \ref{tab: unperturbedEnergies} contains the total energy of unperturbed closed shell systems up to $N=12$ electrons in two dimensions, as well as the energy for the one particle case. We similarly have analytically known benchmarks for the three dimensional case as well, which are listed with the corresponding results. For double harmonic oscillator well we treat the two wells as independent of each other in the non-interacting case, and assume that half of the particles are in each well. Benchmarks for the double well can then be derived from the single well benchmarks. For the finite square well we don't have analytically known benchmarks, but we use benchmarks from the diagonalization of the single particle problem. This is explained in detail in Section \ref{sec: FSW_vmc_test}.
+\begin{table}[!ht]
+  \centering
+  \begin{tabular}{ | c | c | }
+    \hline
+     $N$ & $E$ \\*
+    \hline
+     $1$ & $1\omega$ \\*
+    \hline
+     $2$ & $2\omega$ \\*
+    \hline
+     $6$ & $10\omega$ \\*
+    \hline
+    $12$ & $28\omega$ \\*
+    \hline
+  \end{tabular}
+  \caption{Benchmarks of the energy $E$ for unperturbed closed shell systems in two dimensions with $N$ electrons.}
+  \label{tab: unperturbedEnergies}
+\end{table}
+
 \subsubsection{Single Harmonic Oscillator Well}\label{sec:testSHO}
 
 For the single harmonic oscillator well we should be able to get good results with very few basis functions. From Table \ref{tab:RegHOTest2D} and \ref{tab:RegHOTest3D} we see that in order to get results which are consistent with the benchmarks we only need the minimum amount of basis functions.
