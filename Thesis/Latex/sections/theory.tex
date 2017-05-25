@@ -272,7 +272,42 @@ void ManyElectrons::setUpSlaterDet() {
 }
 \end{lstlisting}
 
-\section{Blocking}
+
+\section{The Steepest Descent Method (Gradient Descent)}\label{sec:SteepestDescent}
+We want to optimize the variational parameters to minimize the estimation of the ground state energy. To do this we use the Steepest Descent method, also called Gradient Descent\footnote{Steepest Descent and Gradient Descent are sometimes referred to as different methods in literature. We will use Steepest Descent to refer to the method used in this thesis.}. We have two variational parameters we need to optimize; $\alpha$, and $\beta$. To optimize the parameters we treat our estimate to the ground state energy as a function of the parameters. Steepest Descent is a way to minimize a function parameterized by some parameters, by updating the parameters in the opposite direction of the gradient of the function w.r.t. to the parameters.\cite{Ruder}
+%The Steepest Descent method then finds a local minimum for this function by iteratively moving in the direction given by the negative of the gradient of the function at the current point (Ref.~\cite{CG-wiki}).
+At each step the move is proportional to a chosen step length $\gamma$, and for $\alpha$, one step is then
+\begin{equation}\label{eq: SteepestDesc}
+    \alpha_{i+1} = \alpha_i - \gamma\bar{E}_\alpha,
+\end{equation}
+where
+\begin{equation}
+    \bar{E}_\alpha = \frac{d\langle E_L[\alpha]\rangle}{d\alpha}
+\end{equation}
+is the gradient. We then have that $E_L[\alpha_{i+1}]\leq E_L[\alpha_i]$. In order to find $\bar{E}_\alpha$ we also need the derivative of the trial wave function, which we define as
+\begin{equation}
+    \bar{\psi}_\alpha = \frac{d\psi[\alpha]}{d\alpha}.
+\end{equation}
+By using the chain rule and the hermiticity of the Hamiltonian we get an expression for the gradient $\bar{E}_\alpha$ (Ref.~\cite{FYS4411-CG})
+\begin{equation}\label{eq: energygradient}
+ \bar{E}_\alpha = 2 \left( \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]} E_L[\alpha] \Bigr\rangle 
+ - \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]}\Bigr\rangle \langle E_L[\alpha] \rangle   \right),
+\end{equation}
+so we need to compute
+\begin{equation}\label{eq: psiDerEn}
+    \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]} E_L[\alpha] \Bigr\rangle,
+\end{equation}
+and
+\begin{equation}\label{eq: psiDer}
+    \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]}\Bigr\rangle,
+\end{equation}
+in addition to $\langle E_L[\alpha] \rangle$. We do the same for $\beta$ as well.
+
+To optimize the parameters we first guess an initial value for each. Then, using few Monte Carlo cycles, we run the simulation and sample the expectation values Eq.(\ref{eq: psiDerEn}), Eq.(\ref{eq: psiDer}) and the expectation value for the ground state energy (as usual). Using the expectation values we calculate the gradient Eq.(\ref{eq: energygradient}) and find new parameters using Eq.(\ref{eq: SteepestDesc}). We repeat this until we have found optimal parameters to some desired precision. Finally, we do a large-scale Monte Carlo simulation (many cycles) using the optimal parameters to find a good estimate to the ground state energy. We find the absolute value of the difference between a new value and an old value for each variational parameter. We then sum up these absolute values (one for each parameter) and stop the optimization when the sum is below a chosen tolerance, or when a set number of maximum iterations has been reached.
+
+%We stop the optimization when the sum of the absolute values of the difference between a new value and an old value of the variational parameters is below a chosen tolerance, or when a set number of maximum iterations has been reached.
+
+\section{Statistical Error Estimation with Blocking}
 
 Here follows a brief explanation of the blocking method based on Ref.~\cite{FYS4411-Slides}. For a more detailed explanation consult the reference.
 At each Monte Carlo step in our simulation we sample a local energy and the mean of these samples $\langle H\rangle$ is our estimate for the ground state energy. If we assume that the $n$ samples are uncorrelated our best estimate for the standard deviation of the mean $\langle H\rangle$ is given by
@@ -350,41 +385,6 @@ if __name__ == "__main__":
     plt.show()
 \end{lstlisting}
 
-
-
-\section{The Steepest Descent Method (Gradient Descent)}\label{sec:SteepestDescent}
-We want to optimize the variational parameters to minimize the estimation of the ground state energy. To do this we use the Steepest Descent method, also called Gradient Descent\footnote{Steepest Descent and Gradient Descent are sometimes referred to as different methods in literature. We will use Steepest Descent to refer to the method used in this thesis.}. We have two variational parameters we need to optimize; $\alpha$, and $\beta$. To optimize the parameters we treat our estimate to the ground state energy as a function of the parameters. Steepest Descent is a way to minimize a function parameterized by some parameters, by updating the parameters in the opposite direction of the gradient of the function w.r.t. to the parameters.\cite{Ruder}
-%The Steepest Descent method then finds a local minimum for this function by iteratively moving in the direction given by the negative of the gradient of the function at the current point (Ref.~\cite{CG-wiki}).
-At each step the move is proportional to a chosen step length $\gamma$, and for $\alpha$, one step is then
-\begin{equation}\label{eq: SteepestDesc}
-    \alpha_{i+1} = \alpha_i - \gamma\bar{E}_\alpha,
-\end{equation}
-where
-\begin{equation}
-    \bar{E}_\alpha = \frac{d\langle E_L[\alpha]\rangle}{d\alpha}
-\end{equation}
-is the gradient. We then have that $E_L[\alpha_{i+1}]\leq E_L[\alpha_i]$. In order to find $\bar{E}_\alpha$ we also need the derivative of the trial wave function, which we define as
-\begin{equation}
-    \bar{\psi}_\alpha = \frac{d\psi[\alpha]}{d\alpha}.
-\end{equation}
-By using the chain rule and the hermiticity of the Hamiltonian we get an expression for the gradient $\bar{E}_\alpha$ (Ref.~\cite{FYS4411-CG})
-\begin{equation}\label{eq: energygradient}
- \bar{E}_\alpha = 2 \left( \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]} E_L[\alpha] \Bigr\rangle 
- - \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]}\Bigr\rangle \langle E_L[\alpha] \rangle   \right),
-\end{equation}
-so we need to compute
-\begin{equation}\label{eq: psiDerEn}
-    \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]} E_L[\alpha] \Bigr\rangle,
-\end{equation}
-and
-\begin{equation}\label{eq: psiDer}
-    \Bigr\langle \frac{\bar{\psi}_\alpha}{\psi[\alpha]}\Bigr\rangle,
-\end{equation}
-in addition to $\langle E_L[\alpha] \rangle$. We do the same for $\beta$ as well.
-
-To optimize the parameters we first guess an initial value for each. Then, using few Monte Carlo cycles, we run the simulation and sample the expectation values Eq.(\ref{eq: psiDerEn}), Eq.(\ref{eq: psiDer}) and the expectation value for the ground state energy (as usual). Using the expectation values we calculate the gradient Eq.(\ref{eq: energygradient}) and find new parameters using Eq.(\ref{eq: SteepestDesc}). We repeat this until we have found optimal parameters to some desired precision. Finally, we do a large-scale Monte Carlo simulation (many cycles) using the optimal parameters to find a good estimate to the ground state energy. We find the absolute value of the difference between a new value and an old value for each variational parameter. We then sum up these absolute values (one for each parameter) and stop the optimization when the sum is below a chosen tolerance, or when a set number of maximum iterations has been reached.
-
-%We stop the optimization when the sum of the absolute values of the difference between a new value and an old value of the variational parameters is below a chosen tolerance, or when a set number of maximum iterations has been reached.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -522,7 +522,7 @@ where the loop is over eigenstates. $\Lambda$ is the total number of eigenstates
 
 \chapter{Hartree-Fock}
 
-The Hartree-Fock method is well described in \cite{basicMB}, which this chapter is based upon. This method uses an algorithm to find an approximative expression for the ground state of a given Hamiltonian. First we need to define a single particle basis $\left\{\psi_\alpha\right\}$ (e.g. a single particle harmonic oscillator basis), so that 
+Doing Hatree-Fock calculations has not been a part of this thesis. However, it is the next step in improving the single particle wave function approximations the thesis is mainly focused on. This chapter includes an introduction to the Hartree-Fock method, and useful information for doing further work. The Hartree-Fock method is well described in \cite{basicMB}, which this chapter is based upon. This method uses an algorithm to find an approximative expression for the ground state of a given Hamiltonian. First we need to define a single particle basis $\left\{\psi_\alpha\right\}$ (e.g. a single particle harmonic oscillator basis), so that 
 \begin{equation}
     \hat{h}^{HF}\psi_\alpha = \epsilon_\alpha \psi_\alpha,
 \end{equation}
@@ -813,6 +813,11 @@ which is the non-interacting energy, similarly to the following expression for C
 \begin{equation}
     E = \hbar \omega (n_x + n_y + 1).
 \end{equation}
+
+\section{Using Hartree-Fock to Improve the Overlap Coefficients}
+The use for the Hartree-Fock method in relation to this thesis is to improve the overlap coefficients used in the single particle wave function approximations. Currently creation of the overlap coefficients is based on diagonalizing the single particle problem, and consequently the coefficients don't account for interaction between particles. The goal of using Hartree-Fock calculations to modify the coefficients is to change that. Using coefficients which do account for particle interaction should remove the need for the variational parameter $\alpha$, and would hopefully reduce the amount of harmonic oscillator basis functions needed.
+
+A simple independent Hartree-Fock program is included in the Github repository\cite{github}. This program can serve as a starting point for implementing Hartree-Fock modifications of the overlap coefficients. The VMC machinery developed in this thesis uses Cartesisan coordinates, but it is more convenient to do the Hartree-Fock calculations in polar coordinates. As a result, the implementation will need a transformation to polar coordinates in order to do the Hartree-Fock calculations, then a transformation back to Cartesian coordinates so the overlap coefficients can be used in the VMC solver. For information about these transformations see Chapter 6.4.4 of Ref. \cite{Yang}.
 
 
 \chapter{Systems}
