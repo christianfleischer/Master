@@ -2,9 +2,9 @@
  
 \begin{document}
 
-\chapter{Variational Monte Carlo}
+\chapter{Variational Monte Carlo}\label{sec: VMC}
 
-The Variational Monte Carlo method the main computational method used in this thesis. It is based on the variational principle in quantum mechanics. The variational principle states that, given a Hamiltonian $H$ and a trial wave function $\psi_T$, the expectation value $\langle H \rangle$ defined as\cite{Griffiths}
+The Variational Monte Carlo method is the main computational method used in this thesis. It is based on the variational principle in quantum mechanics. The variational principle states that, given a Hamiltonian $H$ and a trial wave function $\psi_T$, the expectation value $\langle H \rangle$ defined as\cite{Griffiths}
 \begin{equation}
  E[H] = \langle H \rangle =
  \frac{\int d {\bf R} \Psi_T^*({\bf R}, \boldsymbol{\alpha}) H({\bf R}) \Psi_T({\bf R}, \boldsymbol{\alpha})}
@@ -520,7 +520,7 @@ where the loop is over eigenstates. $\Lambda$ is the total number of eigenstates
 
 %\chapter{Many Particle Theory}
 
-\chapter{Hartree-Fock}
+\chapter{Hartree-Fock}\label{sec: HF}
 
 Doing Hatree-Fock calculations has not been a part of this thesis. However, it is the next step in improving the single particle wave function approximations the thesis is mainly focused on. This chapter includes an introduction to the Hartree-Fock method, and useful information for doing further work. The Hartree-Fock method is well described in \cite{basicMB}, which this chapter is based upon. This method uses an algorithm to find an approximative expression for the ground state of a given Hamiltonian. First we need to define a single particle basis $\left\{\psi_\alpha\right\}$ (e.g. a single particle harmonic oscillator basis), so that 
 \begin{equation}
@@ -820,7 +820,7 @@ The use for the Hartree-Fock method in relation to this thesis is to improve the
 A simple independent Hartree-Fock program is included in the Github repository\cite{github}. This program can serve as a starting point for implementing Hartree-Fock modifications of the overlap coefficients. The VMC machinery developed in this thesis uses Cartesisan coordinates, but it is more convenient to do the Hartree-Fock calculations in polar coordinates. As a result, the implementation will need a transformation to polar coordinates in order to do the Hartree-Fock calculations, then a transformation back to Cartesian coordinates so the overlap coefficients can be used in the VMC solver. For information about these transformations see Chapter 6.4.4 of Ref. \cite{Yang}.
 
 
-\chapter{Systems}
+\chapter{Systems}\label{sec: Systems}
 
 The systems we are looking at contain electrons confined in a harmonic oscillator like potentials, with the following idealized total Hamiltonian
 \begin{align}\label{eq: finalH}
@@ -873,7 +873,7 @@ where, in two dimensions, we have $\mathbf{r} = (x,y)$, and the multiple $\mathb
     &= \frac{1}{2} m_e \omega^2[\mathbf{r}^2 - 2L_x|x| + L_x^2].
 \end{split}
 \end{equation}
-Double-well potentials, and the barrier between the wells, are interesting for quantum computing and information processing. Double-well potentials are investigated as candidates for logic gates in quantum computing\cite{Multiwells}. As explained by Ref.~\cite{Logic Gate}, in regular computing a logic gate is a device implementing a Boolean function. It takes one or more binary inputs and performs a logical operation one them, producing a single binary output. In quantum computing the difference is that the gates should be able to have more varied output, i.e. it should have more output possibilities than only $0$ or $1$. Double-well potentials are also a starting point for understanding periodic multiwell potentials. The double harmonic oscillator potential is parabolic with minima in e.g. $x = \pm L_x$, $y = 0$, and the parabolic wells meet at an absolute value barrier at $x=0$. Figure \ref{fig: DW Potential} shows an example of a double-well potential, where $L_x = 5$ and $\omega = 1$.
+Double-well potentials, and the barrier between the wells, are interesting for quantum computing and information processing. Double-well potentials are investigated as candidates for logic gates in quantum computing\cite{Multiwells}. "Logic gates serve as the building blocks to digital logic circuits using combinational logic."\cite{Lin} In regular computing a logic gate is a device implementing a Boolean function. It takes one or more binary inputs and performs a logical operation one them, producing a single binary output. In quantum computing the difference is that the gates should be able to have more varied output, i.e. it should have more output possibilities than only $0$ or $1$. Double-well potentials are also a starting point for understanding periodic multiwell potentials. The double harmonic oscillator potential is parabolic with minima in e.g. $x = \pm L_x$, $y = 0$, and the parabolic wells meet at an absolute value barrier at $x=0$. Figure \ref{fig: DW Potential} shows an example of a double-well potential, where $L_x = 5$ and $\omega = 1$.
 
 \begin{figure}[!ht]
     \centering

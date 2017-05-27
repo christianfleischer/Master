@@ -2,7 +2,7 @@
  
 \begin{document}
 
-\chapter{Results}
+\chapter{Results}\label{sec: Results}
 
 Natural units ($\hbar=c=e=m_e=1$) were used to obtain all the results listed in this chapter.
 
@@ -137,7 +137,7 @@ As discussed in Section \ref{sec:Parallel}, the VMC simulation can be paralleliz
   \label{tab: Parallel1}
 \end{table}
 
-A possible reason for why the results in Table \ref{tab: Parallel1} were somewhat different than expected could be that the run times were so short that the overhead\footnote{"In computer science, overhead is any combination of excess or indirect computation time, memory, bandwidth, or other resources that are required to perform a specific task."\cite{Overhead}} was responsible for a significant fraction of the run time. If this is the case, then doing the same test for a system that requires more CPU time, should provide results closer to the near linear scaling we expect. We increase the number of particles to $4$, and the run times for this system are listed in Table \ref{tab: Parallel2}. We end up with run times which are about three times as long as for the previous system, and as expected the speed up from parallelization is indeed somewhat greater for this system than for the two-particle system.
+A possible reason for why the results in Table \ref{tab: Parallel1} were somewhat different than expected could be that the run times were so short that the parallel overhead\footnote{Parallel overhead is the amount of time required to coordinate parallel tasks, as opposed to doing useful work. This can include factors such as: start-up time, synchronizations, data communications, software overhead imposed by libraries, operating system, etc., and termination time.\cite{Blaise}} was responsible for a significant fraction of the run time. If this is the case, then doing the same test for a system that requires more CPU time, should provide results closer to the near linear scaling we expect. We increase the number of particles to $4$, and the run times for this system are listed in Table \ref{tab: Parallel2}. We end up with run times which are about three times as long as for the previous system, and as expected the speed up from parallelization is indeed somewhat greater for this system than for the two-particle system.
 
 \begin{table}[!ht]
   \centering

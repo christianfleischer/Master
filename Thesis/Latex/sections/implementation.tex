@@ -3,7 +3,7 @@
 
 \begin{document}
 
-\chapter{Program Structure}
+\chapter{Program Structure}\label{sec: ProgramStructure}
 
 
 \section{Variational Monte Carlo Simulations}
@@ -524,7 +524,114 @@ do{
 // Loop ends when requested tolerance for optimal parameters has been reached or after max iterations.
 \end{lstlisting}
 
-\subsection{Testing the Code}
+
+
+\section{Diagonalization (Overlap Coefficients)}
+
+The diagonalization program is tasked with diagonalizing the one particle problem in a given potential well, and to use the resulting eigenvectors to find the overlap coefficients required to expand the solutions of the given potential well in terms of harmonic oscillator basis functions. The potential is first discretized and set up as a tridiagonal matrix. The one particle problem is then solved as an eigenvalue problem by using the Armadillo\cite{Armadillo} function, "eig\_sym", on the tridiagonal matrix in order to find the eigenvalues and eigenvectors. The eigenvectors correspond to the single particle wave functions for a particle in a corresponding eigenstate confined in the potential well. The eigenvalues are the single particle energies for the eigenstates. The program then finds the coefficients for the overlap between the eigenvectors and the harmonic oscillator basis functions. The program also expands the solutions of the potential well in the harmonic oscillator basis in order to verify the code.
+
+\subsection{Diagonalizing}
+
+The first step is to set up the tridiagonal matrix. See section \ref{sec:Diag_SP_Problem} for an explaination of the elements in the tridiagonal matrix. In the code the tridiagonal matrix is filled by the following simple function.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential) {
+    double Constant = 1./(2*m_h*m_h);
+    mat V(N+1, m_numberOfDimensions);
+    for (int d = 0; d < m_numberOfDimensions; d++) {
+        V.col(d) = m_waveFunction->potential(r.col(d), L(d));
+        diagMat.slice(d).diag(0)  =  2.*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
+        diagMat.slice(d).diag(1)  = -1.*Constant*ones(N-2);               //Set e_i elements in A
+        diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
+    }
+
+    savePotential = V;
+    return;
+}
+\end{lstlisting}
+The only non-constant elements in the matrix are the diagonal ones which depend on the external potential. The WaveFunction class of the diagoanlization program (not the same as the class from the VMC program) has sub classes for the different external potentials each containing a simple function for the potential. These functions are used to fill in the diagonal elements of the matrix. The tridiagonal matrix eigenvalue problem is solved for each dimension separately, so one tridiagonal matrix is made for each dimension, then the "eig\_sym" function is used on each of the matrices. This is done in the following loop.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+// Finding eigenvalues and eigenvectors using armadillo:
+for (int d = 0; d < m_numberOfDimensions; d++) {
+    vec eigvalsTemp = eigvals.col(d);
+    eig_sym(eigvalsTemp, eigvecs.slice(d),  diagMat.slice(d));
+    eigvals.col(d) = eigvalsTemp;
+}
+\end{lstlisting}
+
+\subsection{Finding the Overlap Coefficients}
+
+We know from section \ref{sec:FindingCoefficients} that the overlap coefficients are given by Eq. (\ref{eq:OverlapCoefficients}), which we restate here for convenience.
+\begin{equation}\label{eq:OverlapCoefficients2}
+    C_{n^\prime,n} = \langle \psi_{n^\prime} \vert \phi_n\rangle = \sum_{i=0}^{N-1} \psi_{n^\prime}(x_i)\phi_n(x_i) \hspace{1 cm} n^\prime,n = 0,1,2,\dots,
+\end{equation}
+where the sum goes over the discretization steps used when diagonalizing the single particle problem. This equation is used to find a single general overlap coefficient. However, we need a matrix containing all of the overlap coefficients. We also want to find the coefficients separately for each dimension, so we want one such matrix for each dimension. Therefore, in addition to a loop for the sum in Eq. (\ref{eq:OverlapCoefficients2}), we need three more loops; one for $n^\prime$, one for $n$ and one for dimensions. The following function finds all the coefficients for a given dimension.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim){
+    cout << "Finding coefficients for dimension " << currentDim+1 << " of " <<  m_numberOfDimensions << endl;
+    cout.flush();
+    std::string upLine = "\033[F";
+    for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+        cout << "nPrime = " << nPrime << " of " << nPrimeMax-1 << endl;
+        for (int nx = 0; nx < nMax; nx++) {
+            cout << "[" << int(double(nx)/nMax * 100.0) << " %]\r";
+            cout.flush();
+            double innerprod = 0;
+            for (int i = 0; i < m_N-1; i++) {
+                innerprod += m_psi.slice(currentDim).col(nPrime)(i)*m_waveFunction->harmonicOscillatorBasis(x, nx)(i);
+            }
+            C(nx, nPrime) = innerprod;
+        }
+        cout << upLine;
+    }
+    cout << upLine;
+    C *= m_h;
+}
+\end{lstlisting}
+This function is called once for each dimension and the three resulting matrices are stored together in a three-dimensional matrix, which is then saved to a file. This file is the loaded in the VMC program. There the coefficients are used with harmonic oscillator basis functions to create approximate single particle wave functions which are used in the Slater determinant.
+
+\subsection{Expanding the Solutions}
+
+The main goal of this program is to find the coefficients and store them so that they can be used in the simulations in the VMC program. However, we can use the coefficients together with harmonic oscillator basis functions to recreate the eigenvectors we got from diagonalizing the single particle problem, in order to test that the coefficients are correct. We use Eq. (\ref{eq: Approximate SPWF}) from section \ref{sec:AppSPWF}, which is
+\begin{equation}\label{eq: Approximate SPWF2}
+    \psi_{n^\prime}(x) = \sum_{n_x=0}^{\Lambda} C_{n^\prime,n_x} \phi_{n_x}(x).
+\end{equation}
+We store the $\psi$'s and use the Python program "plot\_data.py" to compare them to the eigenvectors from the diagonalizing. For two dimensions we have the following loop.
+\lstset{language=c++}
+\begin{lstlisting}[caption={}]
+for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+    for (int i = 0; i < m_numberOfEigstates; i++) {
+        int nx = m_qNumbers(i, 0);
+        int ny = m_qNumbers(i, 1);
+
+        vec plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
+        vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
+
+        supPos.col(nPrime) += plusTermX%plusTermY;
+        supPosSep.slice(0).col(nPrime) += plusTermX;
+        supPosSep.slice(1).col(nPrime) += plusTermY;
+    }
+}
+\end{lstlisting}
+The "supPosSep" three-dimensional matrix stores all the $\psi_n^\prime$ for each dimension separately, while the "supPos" matrix stores the product for all dimensions.
+
+
+
+
+
+
+
+%\section{Hartree-Fock}
+
+%\subsection{Testing the Code}
+
+\chapter{Testing the Code}\label{sec: Testing}
+
+When doing large scale simulations it's important to make sure the physics are implemented properly in the simulation program. A good way to test the implementation is to run simple simulations where we know the exact results, so we can ensure that the program is able to reproduce those results. This chapter is dedicated to various tests of this type, both for the VMC solver and the diagonalization program.
+
+\section{Testing the VMC Program}
 
 %\textbf{Non-interacting Case}
 To test the code we can compare the results for systems without interaction to known benchmarks (either analytical results, or results from other types of simulation). We also want to see how many basis functions we need in order to get good results when creating the trial wave function from the basis functions. The number of Monte Carlo cycles used is $1e4$ unless otherwise is stated. Since we're using harmonic oscillator wave functions as basis function we should only need a few basis functions when the external potential of the system is also a harmonic oscillator. It turns out that we need one basis function for every eigenstate in the ground state of the system. The number of eigenstates in the ground state depends on how many particles we have and two particles can share an eigenstate if one of them is spin up and the other is spin down. Therefore the number of eigenstates in the ground state is equal to half of the total number of particles. If we try to use fewer basis functions when creating the trial wave function, the Slater matrix will be singular. Instead of setting the number of basis functions directly, we set the number of energy levels the basis functions fill up. If we set the number of energy levels to $n$, the total amount of basis functions is 
@@ -537,7 +644,7 @@ in the two dimensional case, or
 \end{equation}
 in the three dimensional case.
 
-\subsubsection{Benchmarks for Verifying the Implementation}
+\subsection{Benchmarks for Verifying the Implementation}
 In order to verify that the implementation works correctly we should compare our results with known benchmarks. In the unperturbed case the exact ground state energies are analytically known. For a two-dimensional single harmonic oscillator we have that the energy for a given electron is given by Eq.(\ref{eq: unperturbedEnergy}). Table \ref{tab: unperturbedEnergies} contains the total energy of unperturbed closed shell systems up to $N=12$ electrons in two dimensions, as well as the energy for the one particle case. We similarly have analytically known benchmarks for the three dimensional case as well, which are listed with the corresponding results. For double harmonic oscillator well we treat the two wells as independent of each other in the non-interacting case, and assume that half of the particles are in each well. Benchmarks for the double well can then be derived from the single well benchmarks. For the finite square well we don't have analytically known benchmarks, but we use benchmarks from the diagonalization of the single particle problem. This is explained in detail in Section \ref{sec: FSW_vmc_test}.
 \begin{table}[!ht]
   \centering
@@ -558,7 +665,7 @@ In order to verify that the implementation works correctly we should compare our
   \label{tab: unperturbedEnergies}
 \end{table}
 
-\subsubsection{Single Harmonic Oscillator Well}\label{sec:testSHO}
+\subsection{Single Harmonic Oscillator Well}\label{sec:testSHO}
 
 For the single harmonic oscillator well we should be able to get good results with very few basis functions. From Table \ref{tab:RegHOTest2D} and \ref{tab:RegHOTest3D} we see that in order to get results which are consistent with the benchmarks we only need the minimum amount of basis functions.
 
@@ -600,7 +707,7 @@ For the single harmonic oscillator well we should be able to get good results wi
   \label{tab:RegHOTest3D}
 \end{table}
 
-\subsubsection{Double Harmonic Oscillator Well}
+\subsection{Double Harmonic Oscillator Well}
 
 For a system with a double harmonic oscillator as the external potential, the amount of harmonic oscillator basis functions needed to create a good trial wave function is much higher than for the regular harmonic oscillator potential. Nevertheless, the code should be able to reproduce benchmark results if enough basis functions are used. So long as the number of particles is small enough to not "spill" over between the wells, the wells can be considered as two separate single harmonic oscillator wells in the non-interacting case. The potential barrier between the wells increases with the distance between the well centers. This is because an increased distance between the wells also means an increased distance between the well centers and the potential barrier. Since the well potentials increase when moving away from the center, the potentials will be greater when they meet to form the barrier. An increase in the potential barrier also means an increase in the amount of particles we can put in the wells before they start "spilling" over the potential barrier. The benchmarks in Table \ref{tab:DoubleHOTest2D} and \ref{tab:DoubleHOTest3D} assume that the wells can be treated as separate with no "spilling" between them and with the same amount of particles in each well. 
 
@@ -788,7 +895,7 @@ So the $7'$th set of indices corresponds to an eigenstate with lower energy than
   \label{tab:DoubleHOTestCorrected}
 \end{table}
 
-\subsubsection{Finite Square Well}\label{sec: FSW_vmc_test}
+\subsection{Finite Square Well}\label{sec: FSW_vmc_test}
 
 When it comes to the finite square well potential, we don't have any exact benchmarks to compare our results to. However, when diagonalizing the one particle problem, in addition to the eigenvectors we need to find the overlap coefficients, we also get eigenvalues which correspond to the single particle energies at various energy levels. Since we diagonalize separately for each dimension we get two (or three) identical sets of eigenvalues as shown in Table \ref{tab:SquareWellEigenvalues}. To find the total energy value of a given eigenstate we need to add together one eigenvalue from each dimension. The lowest eigenstate is of course the state whose energy is the sum of the lowest eigenvalues for each dimension, and since we're looking at fermions, two particles can occupy this state. The next eigenstates are those which have the second lowest eigenvalue for one of the dimensions and the lowest eigenvalue for the rest of the dimensions. This is equivalent to the $n_x$, $n_y$ and $n_z$ quantum numbers we use with the harmonic oscillator, so the lowest state is the one where $n = n_x + n_y + n_z = 0$ and $n_x=n_y=n_z=0$, while the next states are the ones where $n = 1$, which are the states $(n_x,n_y,n_z) = (1,0,0)$, $(0,1,0)$ and $(0,0,1)$.
 
@@ -955,103 +1062,9 @@ Using the two-dimensional case as an example, three states would be inside the w
 \label{fig: FSW_energy_levels}
 \end{figure}
 
-\section{Diagonalization (Overlap Coefficients)}
+\section{Testing of the Diagonalization Program}
 
-The diagonalization program is tasked with diagonalizing the one particle problem in a given potential well, and to use the resulting eigenvectors to find the overlap coefficients required to expand the solutions of the given potential well in terms of harmonic oscillator basis functions. The potential is first discretized and set up as a tridiagonal matrix. The one particle problem is then solved as an eigenvalue problem by using the Armadillo\cite{Armadillo} function, "eig\_sym", on the tridiagonal matrix in order to find the eigenvalues and eigenvectors. The eigenvectors correspond to the single particle wave functions for a particle in a corresponding eigenstate confined in the potential well. The eigenvalues are the single particle energies for the eigenstates. The program then finds the coefficients for the overlap between the eigenvectors and the harmonic oscillator basis functions. The program also expands the solutions of the potential well in the harmonic oscillator basis in order to verify the code.
-
-\subsection{Diagonalizing}
-
-The first step is to set up the tridiagonal matrix. See section \ref{sec:Diag_SP_Problem} for an explaination of the elements in the tridiagonal matrix. In the code the tridiagonal matrix is filled by the following simple function.
-\lstset{language=c++}
-\begin{lstlisting}[caption={}]
-void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential) {
-    double Constant = 1./(2*m_h*m_h);
-    mat V(N+1, m_numberOfDimensions);
-    for (int d = 0; d < m_numberOfDimensions; d++) {
-        V.col(d) = m_waveFunction->potential(r.col(d), L(d));
-        diagMat.slice(d).diag(0)  =  2.*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
-        diagMat.slice(d).diag(1)  = -1.*Constant*ones(N-2);               //Set e_i elements in A
-        diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
-    }
-
-    savePotential = V;
-    return;
-}
-\end{lstlisting}
-The only non-constant elements in the matrix are the diagonal ones which depend on the external potential. The WaveFunction class of the diagoanlization program (not the same as the class from the VMC program) has sub classes for the different external potentials each containing a simple function for the potential. These functions are used to fill in the diagonal elements of the matrix. The tridiagonal matrix eigenvalue problem is solved for each dimension separately, so one tridiagonal matrix is made for each dimension, then the "eig\_sym" function is used on each of the matrices. This is done in the following loop.
-\lstset{language=c++}
-\begin{lstlisting}[caption={}]
-// Finding eigenvalues and eigenvectors using armadillo:
-for (int d = 0; d < m_numberOfDimensions; d++) {
-    vec eigvalsTemp = eigvals.col(d);
-    eig_sym(eigvalsTemp, eigvecs.slice(d),  diagMat.slice(d));
-    eigvals.col(d) = eigvalsTemp;
-}
-\end{lstlisting}
-
-\subsection{Finding the Overlap Coefficients}
-
-We know from section \ref{sec:FindingCoefficients} that the overlap coefficients are given by Eq. (\ref{eq:OverlapCoefficients}), which we restate here for convenience.
-\begin{equation}\label{eq:OverlapCoefficients2}
-    C_{n^\prime,n} = \langle \psi_{n^\prime} \vert \phi_n\rangle = \sum_{i=0}^{N-1} \psi_{n^\prime}(x_i)\phi_n(x_i) \hspace{1 cm} n^\prime,n = 0,1,2,\dots,
-\end{equation}
-where the sum goes over the discretization steps used when diagonalizing the single particle problem. This equation is used to find a single general overlap coefficient. However, we need a matrix containing all of the overlap coefficients. We also want to find the coefficients separately for each dimension, so we want one such matrix for each dimension. Therefore, in addition to a loop for the sum in Eq. (\ref{eq:OverlapCoefficients2}), we need three more loops; one for $n^\prime$, one for $n$ and one for dimensions. The following function finds all the coefficients for a given dimension.
-\lstset{language=c++}
-\begin{lstlisting}[caption={}]
-void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int currentDim){
-    cout << "Finding coefficients for dimension " << currentDim+1 << " of " <<  m_numberOfDimensions << endl;
-    cout.flush();
-    std::string upLine = "\033[F";
-    for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
-        cout << "nPrime = " << nPrime << " of " << nPrimeMax-1 << endl;
-        for (int nx = 0; nx < nMax; nx++) {
-            cout << "[" << int(double(nx)/nMax * 100.0) << " %]\r";
-            cout.flush();
-            double innerprod = 0;
-            for (int i = 0; i < m_N-1; i++) {
-                innerprod += m_psi.slice(currentDim).col(nPrime)(i)*m_waveFunction->harmonicOscillatorBasis(x, nx)(i);
-            }
-            C(nx, nPrime) = innerprod;
-        }
-        cout << upLine;
-    }
-    cout << upLine;
-    C *= m_h;
-}
-\end{lstlisting}
-This function is called once for each dimension and the three resulting matrices are stored together in a three-dimensional matrix, which is then saved to a file. This file is the loaded in the VMC program. There the coefficients are used with harmonic oscillator basis functions to create approximate single particle wave functions which are used in the Slater determinant.
-
-\subsection{Expanding the Solutions}
-
-The main goal of this program is to find the coefficients and store them so that they can be used in the simulations in the VMC program. However, we can use the coefficients together with harmonic oscillator basis functions to recreate the eigenvectors we got from diagonalizing the single particle problem, in order to test that the coefficients are correct. We use Eq. (\ref{eq: Approximate SPWF}) from section \ref{sec:AppSPWF}, which is
-\begin{equation}\label{eq: Approximate SPWF2}
-    \psi_{n^\prime}(x) = \sum_{n_x=0}^{\Lambda} C_{n^\prime,n_x} \phi_{n_x}(x).
-\end{equation}
-We store the $\psi$'s and use the Python program "plot\_data.py" to compare them to the eigenvectors from the diagonalizing. For two dimensions we have the following loop.
-\lstset{language=c++}
-\begin{lstlisting}[caption={}]
-for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
-    for (int i = 0; i < m_numberOfEigstates; i++) {
-        int nx = m_qNumbers(i, 0);
-        int ny = m_qNumbers(i, 1);
-
-        vec plusTermX = C(nx, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), nx);
-        vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
-
-        supPos.col(nPrime) += plusTermX%plusTermY;
-        supPosSep.slice(0).col(nPrime) += plusTermX;
-        supPosSep.slice(1).col(nPrime) += plusTermY;
-    }
-}
-\end{lstlisting}
-The "supPosSep" three-dimensional matrix stores all the $\psi_n^\prime$ for each dimension separately, while the "supPos" matrix stores the product for all dimensions.
-
-
-
-
-\subsection{Testing the Code}
-
-\subsubsection{Double Harmonic Oscillator Well}
+\subsection{Double Harmonic Oscillator Well}
 There are several test we can use to validate the coefficients we've found. One thing we can check is that the $L_2$-norm is a small number:
 \begin{equation}
     ||\psi_{n^\prime}^\textrm{diag}-\psi_{n^\prime}^\textrm{exp}||_2 = \sqrt{\sum_i^N |\psi_{n^\prime}^\textrm{diag}(x_i)-\psi_{n^\prime}^\textrm{exp}(x_i)|^2} < \epsilon.
@@ -1201,7 +1214,7 @@ in the three dimensional case. For this test we will use the same system as for 
   \label{tab:Norm}
 \end{table}
 
-\subsubsection{Finite Square Well}
+\subsection{Finite Square Well}
 We now redo the above test, but for a finite square well potential instead of a double harmonic oscillator well potential. With the distance between the well center and each wall being $2$ and $V_0 = 1$, we get the results for the $L2$'norm listed in Table \ref{tab:L2-norm Square}. From the table we see that the $L2$'norm is better for $n^\prime = 0$ and worse for $n^\prime = 9$ than when we used a double well potential (Table \ref{tab:L2-norm}). The $L2$-norm for $n^\prime = 0$ is really good for both $210$ and $378$ basis functions, while for $n^\prime = 9$ it's not quite as good.
 \begin{table}[!ht]
   \centering
@@ -1408,14 +1421,7 @@ We redo the tests once more with a huge number of basis functions ($5050$), to s
 
 We've seen that the results for a square well are better than those for a double harmonic oscillator well when $n^\prime$ is small, but then much worse for large $n^\prime$. A possible explanation for this is that the harmonic oscillator basis functions are a good fit for the square well as long as the energy is small enough that the finite nature of the well isn't significant. Higher $n^\prime$ corresponds to higher energy, and when the energy is high enough that we're above the finite well, the potential is simply a straight line. At this point the harmonic oscillator basis function are probably no longer a good fit, so we need a much greater amount of them to be able to properly approximate $\psi_{n^\prime}^\textrm{diag}$.
 
-
-
-%\section{Hartree-Fock}
-
-%\subsection{Testing the Code}
-
-
-\chapter{Optimizing Performance}
+\chapter{Optimizing Performance}\label{sec: OptimizingPerformance}
 
 A VMC simulation can quickly become very time consuming as we increase the number of particles in our system. In order to maintain efficiency of computations as the number of particles increases, it is important to optimize the simulation. One fairly common trait of suboptimal code is recalculation of identical values. An expression giving a value which needs to be used multiple times, should only be calculated once and the resulting values stored for later use. Doing this for various expressions was a big part of optimizing the VMC simulation. Another important optimization of the VMC simulation is the use of polymorphism. Most of the polymorphism used was included in the code from the beginning, but some were added later when optimizing the finished code. The third major optimization used, was to make the simulation parallelized using Open MPI\cite{Open MPI}.
 
@@ -1644,7 +1650,7 @@ The listing shows two methods of calculating $x^8$, with the second method using
 
 \section{Parallelization}\label{sec:Parallel}
 
-The final optimization to discuss is the parallelization of the VMC simulation. The entire simulation is parallelized with Open MPI by dividing the number of Monte Carlo cycles among multiple nodes (processors). Each node gets its own seed for generating the random initial state of the system, and then runs its own VMC simulation with a fraction of the total amount of Monte Carlo cycles. After the nodes have finished their individual simulations, the results are brought together and averaged. When running a VMC simulation in parallel the individual simulations of nodes are completely independent of each other. This makes parallelization of VMC simulations very efficient, because the nodes only need to communicate at the very start and the very end. Thus we avoid race conditions\footnote{A race condition or race hazard is the behavior of an electronic, software, or other system where the output is dependent on the sequence or timing of other uncontrollable events.\cite{race condition}} in the middle of the simulation, where one node has to wait for other nodes to catch up, before it can continue its own simulation. The only mid-simulation communication between nodes is when we're varying the variational parameters in order to find optimal parameters. However, this is typically done with small simulations where optimization is less important. After the optimal parameters have been found, a simulation with more MC cycles is ran using those parameters, so then there's no mid-simulation communication. 
+The final optimization to discuss is the parallelization of the VMC simulation. The entire simulation is parallelized with Open MPI by dividing the number of Monte Carlo cycles among multiple nodes (processors). Each node gets its own seed for generating the random initial state of the system, and then runs its own VMC simulation with a fraction of the total amount of Monte Carlo cycles. After the nodes have finished their individual simulations, the results are brought together and averaged. When running a VMC simulation in parallel the individual simulations of nodes are completely independent of each other. This makes parallelization of VMC simulations very efficient, because the nodes only need to communicate at the very start and the very end. thus we don't have to worry about race conditions\footnote{A "race condition" can be defined as "Anomalous behavior due to unexpected critical dependence on the relative timing of events".\cite{Wheeler}} and synchronization\cite{Blaise} in the middle of the simulation. The only mid-simulation communication between nodes is when we're varying the variational parameters in order to find optimal parameters. However, this is typically done with small simulations where optimization is less important. After the optimal parameters have been found, a simulation with more MC cycles is ran using those parameters, so then there's no mid-simulation communication. 
 
 With parallelization we can run the simulation on several nodes on a single computer. Modern computers typically have 4 or 8 processors, which can give a good amount of speed-up. We can also run the simulation on a super computer cluster in order to utilize even more processors. Since we don't need any mid-simulation communication between the nodes, we can expect a scaling which is approximately linear, i.e. if we double the amount of nodes we halve the computation time. When doing VMC calculations in parallel we have to be careful not to use too many processors for a small amount of MC cycles. If we have too many processors the amount of MC cycles for each processor might be too low to give good results. In addition the amount of MC cycles could end up being a non-integer number, which wouldn't make sense.
 
