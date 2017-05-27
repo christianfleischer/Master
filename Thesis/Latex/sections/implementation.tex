@@ -200,7 +200,6 @@ The main job for the Hamiltonian class is to compute the local energy. This mean
 \begin{lstlisting}[caption={Function for calculating the kinetic energy by numerical differentiation. The function is general for all the sub classes of the Hamiltonian class, and is therefore implemented once, in the super class "hamiltonian.cpp".}]
 double Hamiltonian::computeKineticEnergy(std::vector<Particle*> particles){
     // Compute the kinetic energy using numerical differentiation.
-
     double numberOfParticles = m_system->getNumberOfParticles();
     double numberOfDimensions = m_system->getNumberOfDimensions();
     double h = 1e-4;
@@ -211,7 +210,7 @@ double Hamiltonian::computeKineticEnergy(std::vector<Particle*> particles){
 
     for (int i=0; i < numberOfParticles; i++){
         for (int j=0; j < numberOfDimensions; j++){
-
+        
             // Evaluate wave function at forward step
             particles[i]->adjustPosition(h, j);
             m_system->getWaveFunction()->updateDistances(i);
@@ -236,8 +235,7 @@ double Hamiltonian::computeKineticEnergy(std::vector<Particle*> particles){
             m_system->getWaveFunction()->updateJastrow(i);
         }
     }
-    // Other part of numerical diff. Also divide by evaluation of current wave function
-    // and multiply by 0.5 to get the actual kinetic energy.
+    // Other part of numerical diff. Also divide by evaluation of current wave function and multiply by 0.5 to get the actual kinetic energy.
     kineticEnergy = 0.5*kineticEnergy / (waveFunctionCurrent*h*h);
     return kineticEnergy;
 }
@@ -351,7 +349,7 @@ else {
             ratioSlaterDet += m_spinDownSlaterInverse(j, i-m_halfNumberOfParticles)*m_SPWFMat(i,j);
     }
 }
-    
+
 double exponent = 0;
 if (m_Jastrow) {
     for (int j=0; j < i; j++) {
@@ -503,9 +501,7 @@ do{
         parametersNew[i] = parameters[i] - derivative[i]*m_stepLengthSD;
         diff += abs(parametersNew[i] - parameters[i]);
     }
-    //m_stepLengthSD *= 0.8;
 
-    //parametersNew = parameters - derivative*m_stepLengthSD;
     parameters = parametersNew;   // Update parameters
     iteration++;
     std::string upLine = "\e[A";

@@ -826,7 +826,7 @@ The systems we are looking at contain electrons confined in a harmonic oscillato
 \begin{align}\label{eq: finalH}
     H=\sum_{i=1}^{N} \left(  -\frac{1}{2} \nabla_i^2 + V_c(\mathbf{r}_i)  \right)+\sum_{i<j}\frac{1}{r_{ij}},
 \end{align}
-where we have used natural units ($\hbar=c=e=m_e=1$) and all energies are in so-called atomic units a.u. $V_c(\mathbf{r}_i)$ is the external confinement potential at position $\mathbf{r}_i$. Using the above Hamiltonian we will study systems of many electrons $N$ as functions of the oscillator frequency  $\omega$. The unperturbed part of the Hamiltonian is
+where we have used natural units ($\hbar=c=e=m_e=1$) and all energies are in so-called atomic units a.u. $V_c(\mathbf{r}_i)$ is the external confinement potential at position $\mathbf{r}_i$. Using the above Hamiltonian we will study systems of many electrons $N$ as functions of the oscillator frequency  $\omega$. $\omega$ is not a part of the finite square well confinement potential, but it is still used in the harmonic oscillator basis functions when simulating finite square well systems. The unperturbed part of the Hamiltonian is
 \begin{align}
     H_0=\sum_{i=1}^{N} \left(  -\frac{1}{2} \nabla_i^2 + V_c(\mathbf{r}_i)  \right),
 \end{align}
@@ -915,7 +915,7 @@ For two electrons in a two-dimensional harmonic oscillator potential without int
 \end{align}
 For the ground state we have $n_x=n_y=0$, and since there are two electrons the total (unperturbed) ground state energy is then $\epsilon_0 = 2\omega$. Since electrons are spin-$\frac{1}{2}$ particles they have two possible spin states, which means that both electrons can be in the ground state ($n_x=n_y=0$) as long as they have different spin. One electron will have spin $+\frac{1}{2}$ and the other will have spin $-\frac{1}{2}$, so the total spin of the system will be zero. It makes sense for the ground state to have total spin zero, since the total spin contributes to the energy of the state, and the ground state is the state with lowest energy.
 
-The perturbed trial wave function we will use for the two-body quantum dot has the form 
+The perturbed trial wave function for a two-body quantum dot in a two-dimensional single harmonic oscillator potential has the form \cite{FYS4411-LectureNotes}
 \begin{align}
     \psi_{T}({\bf r_1},{\bf r_2}) = 
    C\exp{\left(-\alpha\omega(r_1^2+r_2^2)/2\right)}
@@ -924,26 +924,25 @@ The perturbed trial wave function we will use for the two-body quantum dot has t
 where $a=1$ when the electrons have anti-parallel spins and $a=1/3$ when they have parallel spins. For the two-body quantum dot we are interested in the ground state for only two electrons, meaning the electrons will always have anti-parallel spins and $a=1$ in this case. $\alpha$ and $\beta$ are the variational parameters.
 
 \section{Many-body Quantum Dot}
-A closed shell system is a system where all used energy levels are filled. This is the case when our number of electrons equal a so-called magic number, i.e. $N=2,6,12,20,\dots$. For a closed shell system with more than two electrons, we use the trial wave function 
+A closed shell system is a system where all used energy levels are filled. This is the case when our number of electrons equal a so-called magic number (e.g. $N=2,6,12,20,\dots$ for a single harmonic oscillator potential). For a closed shell system with more than two electrons, we use the trial wave function \cite{FYS4411-LectureNotes}
 \begin{align}
     \psi_{T}({\bf r_1},{\bf r_2},\dots, {\bf r_N}) = 
    Det\left(\phi_{1}({\bf r_1}),\phi_{2}({\bf r_2}),
    \dots,\phi_{N}({\bf r_N})\right)
    \prod_{i<j}^{N}\exp{\left(\frac{a r_{ij}}{(1+\beta r_{ij})}\right)}, 
 \end{align}
-where $Det$ is a Slater determinant. The single particle wave functions
-are harmonic oscillator wave functions with the following form
+where $Det$ is a Slater determinant. In our case the single particle wave functions are expanded in a basis of harmonic oscillator wave functions with the following form\cite{FYS4411-LectureNotes}
 \begin{align}\label{eq: HO SPWF}
     \phi_{n_x,n_y}(x,y) = A H_{n_x}(\sqrt{\omega}x)H_{n_y}(\sqrt{\omega}y)\exp{(-\omega(x^2+y^2)/2}.
 \end{align}
 The functions $H_{n_x}(\sqrt{\omega}x)$ are Hermite polynomials \cite{Hermite}, and $A$ is a normalization constant. In this case, two chosen electrons can have either anti-parallel or parallel spins, so the value of $a$ depends on which two electrons we are looking at.
 
 \section{Closed Form Expressions}\label{sec:CF}
-We want to find the expectation value of the local energy, and having a closed form expression for this energy is convenient. The local energy is given by 
+We want to find the expectation value of the local energy, and having a closed form expression for this energy is convenient. The local energy is given by \cite{FYS4411-LectureNotes}
 \begin{align}\label{eq: E_L}
     E_L({\bf R})=\frac{1}{\Psi_T({\bf R})}H\Psi_T({\bf R}).
 \end{align}
-By finding the local energy using two different methods, one using the closed form expression and the other using a purely numerical approach, we can compare the results of the methods to each other to verify that the program works properly. Using the closed form expression is also computationally faster than the numerical approach, which is convenient when doing large simulations. We can also use closed form expressions for the drift term in importance sampling 
+By finding the local energy using two different methods, one using the closed form expression and the other using a purely numerical approach, we can compare the results of the methods to each other to verify that the program works properly. Using the closed form expression is also computationally faster than the numerical approach, which is convenient when doing large simulations. We can also use closed form expressions for the drift term in importance sampling \cite{FYS4411-LectureNotes}
 \begin{align}
     F = \frac{2\nabla \Psi_T}{\Psi_T}.    
 \end{align}
