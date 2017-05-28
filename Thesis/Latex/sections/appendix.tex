@@ -87,7 +87,7 @@ The complete expression for the local energy is then
 \end{align}
 
 \section{Many-body quantum dots}\label{sec:ClosedFormMany}
-These calculations follow Ref.~\cite{FYS4411-Slides}.
+These calculations follow Ref.~\cite{FYS4411-LectureNotes}.
 In the many-body case we have the trial wave function 
 \begin{align}
     \psi_{T}({\bf r_1},{\bf r_2},\dots, {\bf r_N}) = 
@@ -198,7 +198,7 @@ To find the Laplacian we need to calculate
 \begin{align}
     \frac{\nabla^2_k \Psi_C}{\Psi_C } = \frac{1}{ \Psi_C }\nabla_k\sum_{j\ne k}\frac{{\bf r}_{kj}}{r_{kj}} f'(r_{kj}) \Psi_C.
 \end{align}
-We follow the calculations from Ref.~\cite{FYS4411-Slides} and Ref.~\cite{FYS4411-LectureNotes}. Using the product rule we get
+We follow the calculations from Ref.~\cite{FYS4411-LectureNotes}. Using the product rule we get
 \begin{align}
     \frac{\nabla^2_k \Psi_C}{\Psi_C } = &\frac{1}{ \Psi_C }\sum_{j\ne k}\left(\frac{{\bf r}_{kj}}{r_{kj}} f'(r_{kj}) \nabla_k\Psi_C + \frac{{\bf r}_{kj}}{r_{kj}} \Psi_C \nabla_k f'(r_{kj}) + f'(r_{kj}) \Psi_C \nabla_k\frac{{\bf r}_{kj}}{r_{kj}}\right)\\
     = &\sum_{ij\ne k}\frac{({\bf r}_k-{\bf r}_i)({\bf r}_k-{\bf r}_j)}{r_{ki}r_{kj}}f'(r_{ki})f'(r_{kj})+
@@ -254,6 +254,8 @@ The other program used is the diagonalization program, which is responsible for 
 \end{itemize}
 
 Here as well, there is a main program which sets the necessary parameters, and gets the "System" class started. It also saves necessary data to files (e.g. the overlap coefficients). The data analysis is done in Python, with the programs {\bf blocking.py} and {\bf density.py}. Testing of the diagonalization program was done by the Python program \textbf{plot\_data.py}, and plots of the potentials were created using \textbf{potential.py}. Finally, the code for the Hermite polynomial subclasses in the VMC solver was generated automatically with SymPy in the program \textbf{hermitePolynomialGenerator.py}. For the C++ programs the library Armadillo\cite{Armadillo} was used extensively for matrix operations etc. Open MPI\cite{Open MPI} was used for parallel computing. For the Python programs the following packages were used: Matplotlib\cite{Matplotlib}, NumPy\cite{NumPy}, and SymPy\cite{SymPy}.
+
+
 
 \chapter{Code Generation with SymPy}
 
@@ -367,4 +369,5 @@ double lapl_HermitePolynomial_%i::eval(double x) {
 We also use this approach to auto-generate the class constructors and declarations, as well as the code to store the "HermitePolynomials" objects in arrays.
 
 \end{appendices}
+
 \end{document}

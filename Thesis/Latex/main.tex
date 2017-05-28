@@ -27,6 +27,7 @@
 \newcolumntype{Y}{>{\centering\arraybackslash}X}
 %\usepackage[cm]{fullpage}		% Smalere marger.
 %\captionsetup[subfigure]{labelformat = parens, labelsep = space, font = small}
+%\usepackage{fancyhdr}
 
 \setcounter{tocdepth}{3}
 \setcounter{secnumdepth}{3}
@@ -70,6 +71,14 @@
     basicstyle=\small\color{white}\ttfamily
 }
 
+\let\origdoublepage\cleardoublepage
+\newcommand{\clearemptydoublepage}{%
+  \clearpage
+  {\pagestyle{empty}\origdoublepage}%
+}
+
+\let\cleardoublepage\clearemptydoublepage
+
  
 \usepackage{subfiles}
  
@@ -84,8 +93,20 @@
 \begin{document}
  
 \includepdf{sections/front-page.pdf}
-\cleardoublepage
+\clearemptydoublepage
 %\maketitle
+
+%\chapter*{Abstract}
+\vspace*{\fill}
+\thispagestyle{empty}
+\begin{center}
+\textbf{Abstract}
+\end{center}
+\subfile{sections/abstract}
+\vspace*{\fill}
+
+\chapter*{Preface}
+\subfile{sections/preface}
 
 \doublespacing
 \tableofcontents
@@ -110,8 +131,10 @@
 \subfile{sections/appendix}
 
 %\chapter{Bibliography}
+\newpage\thispagestyle{empty}
 \begin{changemargin}{0 cm}{4 cm}
 \subfile{sections/bibliography}
 \end{changemargin}
+
  
 \end{document}
