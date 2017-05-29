@@ -6,7 +6,8 @@
 #include "../WaveFunctions/wavefunction.h"
 #include "finiteharmonicoscillator.h"
 
-FiniteHarmonicOscillator::FiniteHarmonicOscillator(System *system, double distToWall, double omega, bool analyticalKinetic, bool repulsion) : Hamiltonian(system, analyticalKinetic){
+FiniteHarmonicOscillator::FiniteHarmonicOscillator(System *system, double distToWall, double alpha, double omega, bool analyticalKinetic, bool repulsion)
+    : Hamiltonian(system, analyticalKinetic, alpha, omega){
     assert(omega > 0);
     m_omega = omega;
     m_repulsion = repulsion;
@@ -81,7 +82,8 @@ double FiniteHarmonicOscillator::evaluateSingleParticleWF(vec n, std::vector<dou
     double waveFunction = m_expFactor;
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
-        waveFunction *= computeHermitePolynomial(n[d], r[d]);
+        int nd = n[d];
+        waveFunction *= m_hermitePolynomials[nd]->eval(r[d]);//computeHermitePolynomial(n[d], r[d]);
     }
 
 //    double waveFunction = computeHermitePolynomial(nx, x)
@@ -97,10 +99,17 @@ std::vector<double> FiniteHarmonicOscillator::computeSPWFDerivative(vec n, std::
     //double r2 = x*x + y*y;
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
-        derivative[d] = (computeHermitePolynomialDerivative(n[d], r[d]) - m_alpha*m_omega*r[d]*computeHermitePolynomial(n[d], r[d]))
+        int nd = n[d];
+
+//        derivative[d] = (computeHermitePolynomialDerivative(n[d], r[d]) - m_alpha*m_omega*r[d]*computeHermitePolynomial(n[d], r[d]))
+//                       *m_expFactor;
+
+        derivative[d] = (m_hermitePolynomialsDerivative[nd]->eval(r[d]) - m_alpha*m_omega*r[d]*m_hermitePolynomials[nd]->eval(r[d]))
                        *m_expFactor;
+
         for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-            if (d != dim) derivative[d] *= computeHermitePolynomial(n[dim], r[dim]);
+            int ndim = n[dim];
+            if (d != dim) derivative[d] *= m_hermitePolynomials[ndim]->eval(r[dim]);//computeHermitePolynomial(n[dim], r[dim]);
         }
     }
 
@@ -121,13 +130,21 @@ double FiniteHarmonicOscillator::computeSPWFDoubleDerivative(vec n, std::vector<
 
     for (int d = 0; d < m_numberOfDimensions; d++) {
 
-        double term =  computeHermitePolynomialDoubleDerivative(n[d], r[d])
-                     - m_alpha*m_omega*computeHermitePolynomial(n[d], r[d])
-                     - 2*m_alpha*m_omega*r[d]*computeHermitePolynomialDerivative(n[d], r[d])
-                     + m_alpha*m_omega*m_alpha*m_omega*r[d]*r[d]*computeHermitePolynomial(n[d], r[d]);
+        int nd = n[d];
+
+//        double term =  computeHermitePolynomialDoubleDerivative(n[d], r[d])
+//                     - m_alpha*m_omega*computeHermitePolynomial(n[d], r[d])
+//                     - 2*m_alpha*m_omega*r[d]*computeHermitePolynomialDerivative(n[d], r[d])
+//                     + m_alpha*m_omega*m_alpha*m_omega*r[d]*r[d]*computeHermitePolynomial(n[d], r[d]);
+
+        double term =  m_hermitePolynomialsDoubleDerivative[nd]->eval(r[d])
+                     - m_alpha*m_omega*m_hermitePolynomials[nd]->eval(r[d])
+                     - 2*m_alpha*m_omega*r[d]*m_hermitePolynomialsDerivative[nd]->eval(r[d])
+                     + m_alpha*m_omega*m_alpha*m_omega*r[d]*r[d]*m_hermitePolynomials[nd]->eval(r[d]);
 
         for (int dim = 0; dim < m_numberOfDimensions; dim++) {
-            if (d != dim) term *= computeHermitePolynomial(n[dim], r[dim]);
+            int ndim = n[dim];
+            if (d != dim) term *= m_hermitePolynomials[ndim]->eval(r[dim]);//computeHermitePolynomial(n[dim], r[dim]);
         }
 
         doubleDerivative += term;

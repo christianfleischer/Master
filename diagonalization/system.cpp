@@ -2,23 +2,25 @@
 #include "WaveFunctions/wavefunction.h"
 
 
-System::System(double omega, int numberOfDimensions, double h, int N) {
+System::System(double omega, int numberOfDimensions, double h, int N, bool createSupPos) {
     m_omega = omega;
     setNumberOfDimensions(numberOfDimensions);
     setN(N);
     setStepLength(h);
+    m_createSupPos = createSupPos;
 }
 
-void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat) {
-    double Constant = 1./(m_h*m_h);
+void System::diagonalizeMatrix(mat r, vec L, int N, cube &diagMat, mat &savePotential) {
+    double Constant = 1./(2*m_h*m_h);
     mat V(N+1, m_numberOfDimensions);
     for (int d = 0; d < m_numberOfDimensions; d++) {
         V.col(d) = m_waveFunction->potential(r.col(d), L(d));
-        diagMat.slice(d).diag(0)  =  2*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
-        diagMat.slice(d).diag(1)  = -Constant*ones(N-2);               //Set e_i elements in A
+        diagMat.slice(d).diag(0)  =  2.*Constant + V.col(d).subvec(1,N-1);     //Set d_i elements in A
+        diagMat.slice(d).diag(1)  = -1.*Constant*ones(N-2);               //Set e_i elements in A
         diagMat.slice(d).diag(-1) = diagMat.slice(d).diag(1);                         //Set e_i elements in A
     }
 
+    savePotential = V;
     return;
 }
 
@@ -36,7 +38,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
         eigvals.col(d) = eigvalsTemp;
     }
 
-    cube eigVecsTemp = zeros(m_N-1, numberOfEigstates, m_numberOfDimensions);
+    cube eigVecsTemp = zeros(m_N-1, m_N-1/*numberOfEigstates*/, m_numberOfDimensions);
     m_qNumbers = zeros(numberOfEigstates, m_numberOfDimensions);
     m_numberOfEigstates = numberOfEigstates;
 
@@ -45,7 +47,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
             m_qNumbers(i, 0) = i;
         }
         int d = 0;
-        eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+        eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
         saveEigenvector = eigVecsTemp.slice(d);
         saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
     }
@@ -58,7 +60,7 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
         int i 	= 0;
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+            eigVecsTemp.slice(d) = eigvecs.slice(d);//.submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
             saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
         }
 
@@ -117,9 +119,10 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
 //        }
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,numberOfEigstates-1);
+            eigVecsTemp.slice(d) = eigvecs.slice(d).submat(0,0,m_N-2,m_N-2/*numberOfEigstates-1*/);
             saveSepEigenvector.slice(d) = eigVecsTemp.slice(d);
         }
+
 
         for (int i = 0; i < numberOfEigstates; i++) {
             int nx = m_qNumbers(i, 0);
@@ -135,6 +138,19 @@ void System::findEigenstate(mat &eigvals, cube eigvecs, cube diagMat,
     else {
         cout << "Number of dimensions must be 1, 2 or 3." << endl;
     }
+
+//    mat temp = zeros(numberOfEigstates, m_numberOfDimensions);
+//    for (int p = 0; p < numberOfEigstates; p+=2) {
+//        for (int d = 0; d < m_numberOfDimensions; d++) {
+//            temp(p, d) = m_qNumbers(p/2, d);
+//            if (p+1 < numberOfEigstates) {
+//                temp(p+1, d) = m_qNumbers(p/2, d);
+//            }
+//        }
+//    }
+//    m_qNumbers = temp;
+//    cout << m_qNumbers << endl;
+
 
 
     m_psi = saveSepEigenvector;
@@ -166,10 +182,50 @@ void System::findCoefficients(int nMax, int nPrimeMax, vec x, mat &C, int curren
         //nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
     }
     cout << upLine;
+
+//    for	(int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+//        for (int nx = 0; nx < nMax; nx+=2) {
+//            C(nx, nPrime) = C(nx/2, nPrime);
+//            if (nx+1 < nMax) {
+//                C(nx+1, nPrime) = C(nx/2, nPrime);
+//            }
+//        }
+//    }
+
     C *= m_h;
+
+//    cout << endl << endl << endl;
+//    double test = 0;
+//    for (int i = 0; i < m_N-1; i++) {
+//        test += (m_psi.slice(currentDim).col(0)(i) - C(0,0)*m_waveFunction->harmonicOscillatorBasis(x, 0)(i))
+//               *(m_psi.slice(currentDim).col(0)(i) - C(0,0)*m_waveFunction->harmonicOscillatorBasis(x, 0)(i));
+//    }
+//    cout << sqrt(test) << endl;
+
+//    double p = 0;
+//    for (int nx = 0; nx < nMax; nx++) {
+//        p += C(nx, 0)*C(nx, 0);
+//    }
+//    cout << p << endl;
+
+//    double a = 1;
+//    while (a > 0) {
+//        double b = 0;
+//    }
 }
 
 mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &saveC) {
+
+
+//    for (int i = 0; i < m_N-10; i++) {
+//    cout << m_psi.slice(0).col(0)(i) << "    " << r(i) << endl;
+//    }
+
+//    int i = 1;
+//    while (i > 0) {
+//        int a = 0;
+//    }
+
     mat rCut = zeros(m_N-1, m_numberOfDimensions);
 
     for (int d=0; d < m_numberOfDimensions; d++) {
@@ -185,6 +241,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
     //This is wrong!:
     for (int d = 0; d < m_numberOfDimensions; d++) {
         findCoefficients(nMax, nPrimeMax, rCut.col(d), C.slice(d), d);
+        //C.slice(d) = C.slice(d)%C.slice(d)/dot(C.slice(d),C.slice(d));
         //saveC %= C.slice(d);
     }
     saveC = C;
@@ -200,6 +257,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
 //        nPrime++;   //Only need even nPrimes due to double well (degeneracy = 2).
 //    }
 
+    if (m_createSupPos) {
     if (m_numberOfDimensions == 1) {
         for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
             for (int i = 0; i < m_numberOfEigstates; i++) {
@@ -228,6 +286,7 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
     else if (m_numberOfDimensions == 2) {
 
         for (int nPrime = 0; nPrime < nPrimeMax; nPrime++) {
+
             for (int i = 0; i < m_numberOfEigstates; i++) {
                 int nx = m_qNumbers(i, 0);
                 int ny = m_qNumbers(i, 1);
@@ -236,8 +295,18 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
                 vec plusTermY = C(ny, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), ny);
 
                 supPos.col(nPrime) += plusTermX%plusTermY;
-                supPosSep.slice(0).col(nPrime) += plusTermX;
-                supPosSep.slice(1).col(nPrime) += plusTermY;
+                //supPosSep.slice(0).col(nPrime) += plusTermX;
+                //supPosSep.slice(1).col(nPrime) += plusTermY;
+            }
+
+            for (int n = 0; n < nMax; n++) {
+
+                vec plusTermXSep = C(n, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), n);
+                vec plusTermYSep = C(n, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), n);
+
+                supPosSep.slice(0).col(nPrime) += plusTermXSep;
+                supPosSep.slice(1).col(nPrime) += plusTermYSep;
+
             }
         }
 
@@ -289,9 +358,21 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
                 vec plusTermZ = C(nz, nPrime, 2)*m_waveFunction->harmonicOscillatorBasis(rCut.col(2), nz);
 
                 supPos.col(nPrime) += plusTermX%plusTermY%plusTermZ;
-                supPosSep.slice(0).col(nPrime) += plusTermX;
-                supPosSep.slice(1).col(nPrime) += plusTermY;
-                supPosSep.slice(2).col(nPrime) += plusTermZ;
+                //supPosSep.slice(0).col(nPrime) += plusTermX;
+                //supPosSep.slice(1).col(nPrime) += plusTermY;
+                //supPosSep.slice(2).col(nPrime) += plusTermZ;
+            }
+
+            for (int n = 0; n < nMax; n++) {
+
+                vec plusTermXSep = C(n, nPrime, 0)*m_waveFunction->harmonicOscillatorBasis(rCut.col(0), n);
+                vec plusTermYSep = C(n, nPrime, 1)*m_waveFunction->harmonicOscillatorBasis(rCut.col(1), n);
+                vec plusTermZSep = C(n, nPrime, 2)*m_waveFunction->harmonicOscillatorBasis(rCut.col(2), n);
+
+                supPosSep.slice(0).col(nPrime) += plusTermXSep;
+                supPosSep.slice(1).col(nPrime) += plusTermYSep;
+                supPosSep.slice(2).col(nPrime) += plusTermZSep;
+
             }
         }
     }
@@ -299,8 +380,9 @@ mat System::findSuperPos(mat r, int nMax, int nPrimeMax, cube &supPosSep, cube &
     else {
         cout << "Number of dimensions must be 1, 2 or 3." << endl;
     }
-
+    }
     return supPos;
+
 }
 
 

@@ -8,7 +8,7 @@ using namespace arma;
 
 class SquareWell : public Hamiltonian {
 public:
-    SquareWell(System* system, double V0, double distToWall, double omega, bool analyticalKinetic, bool repulsion);
+    SquareWell(System* system, double V0, double distToWall, double alpha, double omega, bool analyticalKinetic, bool repulsion);
     std::vector<double> computeLocalEnergy(std::vector<Particle*> particles);
     double evaluateSingleParticleWF(vec n, std::vector<double> r, int j);
     std::vector<double> computeSPWFDerivative(vec n, std::vector<double> r, int j);

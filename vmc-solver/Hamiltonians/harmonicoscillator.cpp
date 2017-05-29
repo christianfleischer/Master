@@ -8,8 +8,8 @@
 
 using namespace std;
 
-HarmonicOscillator::HarmonicOscillator(System* system, double omega, bool analyticalKinetic) :
-        Hamiltonian(system, analyticalKinetic) {
+HarmonicOscillator::HarmonicOscillator(System* system, double alpha, double omega, bool analyticalKinetic) :
+        Hamiltonian(system, analyticalKinetic, alpha, omega) {
     assert(omega > 0);
     m_omega = omega;
 }

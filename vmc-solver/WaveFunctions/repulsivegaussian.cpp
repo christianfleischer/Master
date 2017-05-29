@@ -224,7 +224,7 @@ std::vector<double> RepulsiveGaussian::computeDerivativeWrtParameters(std::vecto
 }
 
 double RepulsiveGaussian::computeMetropolisRatio(std::vector<Particle *> particles,
-                                            int randomParticle, std::vector<double> positionChange) {
+                                            int currentParticle, std::vector<double> positionChange) {
     int numberOfDimensions = m_system->getNumberOfDimensions();
 
     // Evaluate the wave function for current positions
@@ -232,7 +232,7 @@ double RepulsiveGaussian::computeMetropolisRatio(std::vector<Particle *> particl
 
     // Change position to trial state
     for (int i=0; i<numberOfDimensions; i++){
-        particles[randomParticle]->adjustPosition(positionChange[i], i);
+        particles[currentParticle]->adjustPosition(positionChange[i], i);
     }
 
     // Evaluate the wave function for the trial state

@@ -3,6 +3,10 @@ CONFIG += console c++11
 CONFIG -= app_bundle
 CONFIG -= qt
 
+QMAKE_CXXFLAGS_RELEASE += -O3
+
+QMAKE_CXXFLAGS_RELEASE += -ffast-math
+
 SOURCES += main.cpp \
     system.cpp \
     WaveFunctions/wavefunction.cpp \
@@ -12,7 +16,7 @@ SOURCES += main.cpp \
     WaveFunctions/finitewell.cpp \
     WaveFunctions/squarewell.cpp
 
-LIBS += -llapack -lblas -larmadillo
+LIBS += -llapack -lopenblas -larmadillo
 
 HEADERS += system.h \
     WaveFunctions/wavefunction.h \

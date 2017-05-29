@@ -6,7 +6,7 @@ class BasisFunctions
 {
 public:
     BasisFunctions();
-    virtual double evaluate(std::vector<class Particle*> particles, int randomParticle) = 0;
+    virtual double evaluate(std::vector<class Particle*> particles, int currentParticle) = 0;
 };
 
 #endif // BASISFUNCTIONS_H

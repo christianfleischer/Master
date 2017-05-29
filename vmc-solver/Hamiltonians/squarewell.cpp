@@ -8,7 +8,8 @@
 
 using namespace std;
 
-SquareWell::SquareWell(System* system, double V0, double distToWall, double omega, bool analyticalKinetic, bool repulsion) : Hamiltonian(system, analyticalKinetic){
+SquareWell::SquareWell(System* system, double V0, double distToWall, double alpha, double omega, bool analyticalKinetic, bool repulsion)
+    : Hamiltonian(system, analyticalKinetic, alpha, omega){
     assert(omega > 0);
     m_omega = omega;
     m_repulsion = repulsion;
@@ -39,7 +40,7 @@ std::vector<double> SquareWell::computeLocalEnergy(std::vector<Particle*> partic
         bool isOutside = false;
 
         for (int d = 0; d < m_numberOfDimensions; d++) {
-            if (abs(r_i[d]) > m_distToWall) { //MAKE SURE ABS RETURNS FLOAT!!!
+            if (abs(r_i[d]) >= m_distToWall) { //MAKE SURE ABS RETURNS FLOAT!!!
                 isOutside = true;
             }
         }

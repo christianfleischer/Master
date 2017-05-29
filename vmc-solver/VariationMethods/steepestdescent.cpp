@@ -31,13 +31,15 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
 
     do{
 
-        // Run Monte Carlo simulation to find expectation values
+        // Set up an initial state with the updated parameters
         m_system->getInitialState()->setupInitialState();
         for (int i=0; i < numberOfParameters; i++) {
             m_system->getWaveFunction()->adjustParameter(parameters[i], i);
         }
         m_system->getHamiltonian()->setAlpha(parameters[0]);
+        //m_system->getHamiltonian()->setUpHermitePolynomials();
 
+        // Run Monte Carlo simulation to find expectation values
         m_system->runMetropolisSteps(numberOfMetropolisSteps, importanceSampling, false, false);
 
         std::vector<double> derivative(numberOfParameters);  //derivative of local energy.
@@ -51,6 +53,9 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
             waveFuncDerivative[i] = m_system->getSampler()->getWaveFuncDerivativeParameters()[i];
             derivative[i] = 2*(waveFuncEnergy[i] - energy*waveFuncDerivative[i]);
         }
+        //cout << "WFE: " << waveFuncEnergy[0] << endl;
+        //cout << "WFD: " << waveFuncDerivative[0] << endl;
+        //cout << "d: " << derivative[0] << endl;
 
         for (int i=0; i < numberOfParameters; i++) {
             MPI_Reduce(&derivative[i], &m_derivativeAvg[i], 1, MPI_DOUBLE, MPI_SUM, 0, MPI_COMM_WORLD);
@@ -60,7 +65,7 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
             MPI_Bcast(&derivative[i], 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
         }
 
-        // Find new parameter
+        // Find new parameters
         diff = 0;
         for (int i=0; i < numberOfParameters; i++) {
             parametersNew[i] = parameters[i] - derivative[i]*m_stepLengthSD;
@@ -69,6 +74,9 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
         //m_stepLengthSD *= 0.8;
 
         //parametersNew = parameters - derivative*m_stepLengthSD;
+        //cout << parametersNew[0] << endl;
+        //int a = 0;
+        //while(a < 1)
         parameters = parametersNew;   // Update parameters
         iteration++;
         std::string upLine = "\e[A";
@@ -102,9 +110,9 @@ void SteepestDescent::obtainOptimalParameter(std::vector<double> parameters, dou
         }
     }
     // Performing large MC simulation with optimal parameter:
-    //m_system->getInitialState()->setupInitialState();
-    for (int i=0; i < numberOfParameters; i++) {
-        m_system->getWaveFunction()->adjustParameter(parameters[i], i);
-    }
-    //m_system->runMetropolisSteps((int) 1e6, importanceSampling, true, true);
+//    m_system->getInitialState()->setupInitialState();
+//    for (int i=0; i < numberOfParameters; i++) {
+//        m_system->getWaveFunction()->adjustParameter(parameters[i], i);
+//    }
+//    m_system->runMetropolisSteps((int) 1e6, importanceSampling, true, true);
 }

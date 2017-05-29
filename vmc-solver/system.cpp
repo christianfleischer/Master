@@ -17,16 +17,15 @@
 using namespace std;
 using namespace arma;
 
-bool System::metropolisStep() {
-    /* Perform the actual Metropolis step: Choose a particle at random and
+bool System::metropolisStep(int currentParticle) {
+    /* Perform the actual Metropolis step: Take the current particle and
      * change it's position by a random amount, and check if the step is
      * accepted by the Metropolis test (compare the wave function evaluated
      * at this new position with the one at the old position).
      */
 
-    // Choose a random particle and change its position by a random amount creating a trial state
-    int randomParticle = Random::nextInt(m_numberOfParticles);
-    setRandomParticle(randomParticle);
+    // Change position of current particle by a random amount creating a trial state
+    setCurrentParticle(currentParticle);
     std::vector<double> positionChange(m_numberOfDimensions);
 
     for (int i=0; i<m_numberOfDimensions; i++){
@@ -34,52 +33,53 @@ bool System::metropolisStep() {
     }
 
     // Metropolis ratio
-    double qratio = m_waveFunction->computeMetropolisRatio(m_particles, randomParticle, positionChange);
+    double qratio = m_waveFunction->computeMetropolisRatio(m_particles, currentParticle, positionChange);
 
     // Check if trial state is accepted
     if (Random::nextDouble() <= qratio){
-        m_waveFunction->updateSlaterDet(randomParticle);
+        m_waveFunction->updateSlaterDet(currentParticle);
         return true;
     }
 
     for (int i=0; i<m_numberOfDimensions; i++){
         // If trial state is not accepted, revert to old position for chosen particle (revert to old state)
-        m_particles[randomParticle]->adjustPosition(-positionChange[i], i);
-        m_waveFunction->updateDistances(randomParticle);
-        m_waveFunction->updateSPWFMat(randomParticle);
-        m_waveFunction->updateJastrow(randomParticle);
+        m_particles[currentParticle]->adjustPosition(-positionChange[i], i);
+        m_waveFunction->updateDistances(currentParticle);
+        m_waveFunction->updateSPWFMat(currentParticle);
+        m_waveFunction->updateJastrow(currentParticle);
     }
 
     return false;
 }
 
-bool System::metropolisStepImpSampling(){
+bool System::metropolisStepImpSampling(int currentParticle){
 
-    // Choose a random particle to change the position of
-    int randomParticle = Random::nextInt(m_numberOfParticles);
-    setRandomParticle(randomParticle);
+//    // Choose a random particle to change the position of
+//    int randomParticle = Random::nextInt(m_numberOfParticles);
+//    setRandomParticle(randomParticle);
+    setCurrentParticle(currentParticle);
 
     std::vector<double> positionChange(m_numberOfDimensions);
     double D = 0.5;
 
     // Keep old position for Greens function
-    std::vector<double> positionOld = m_particles[randomParticle]->getPosition();
+    std::vector<double> positionOld = m_particles[currentParticle/*randomParticle*/]->getPosition();
 
-    // Change position of random particle
+    // Change position of current particle
     for (int i=0; i < m_numberOfDimensions; i++){
         positionChange[i] = Random::nextGaussian(0., sqrt(m_dt)) + D*m_dt*quantumForce()[i];
     }
 
-    double qratio = m_waveFunction->computeMetropolisRatio(m_particles, randomParticle, positionChange);
+    double qratio = m_waveFunction->computeMetropolisRatio(m_particles, currentParticle/*randomParticle*/, positionChange);
 
     // Keep new position for Greens function
-    std::vector<double> positionNew = m_particles[randomParticle]->getPosition();
+    std::vector<double> positionNew = m_particles[currentParticle/*randomParticle*/]->getPosition();
 
     // Evaluate Greens functions and find Metropolis-Hastings ratio:
     double GreensFunctionNew = calculateGreensFunction(positionNew, positionOld);
 
     for (int i=0; i < m_numberOfDimensions; i++){
-        m_particles[randomParticle]->adjustPosition(-positionChange[i], i);
+        m_particles[currentParticle/*randomParticle*/]->adjustPosition(-positionChange[i], i);
     }
 
     double GreensFunctionOld = calculateGreensFunction(positionOld, positionNew);
@@ -89,15 +89,15 @@ bool System::metropolisStepImpSampling(){
     // If move is accepted give the random particle the new position, otherwise keep the old position
     if (Random::nextDouble() <= qratio){
         for (int i=0; i<m_numberOfDimensions; i++){
-            m_particles[randomParticle]->adjustPosition(positionChange[i], i);
+            m_particles[currentParticle/*randomParticle*/]->adjustPosition(positionChange[i], i);
         }
-        m_waveFunction->updateSlaterDet(randomParticle);
+        m_waveFunction->updateSlaterDet(currentParticle/*randomParticle*/);
         return true;
     }
 
-    m_waveFunction->updateDistances(randomParticle);
-    m_waveFunction->updateSPWFMat(randomParticle);
-    m_waveFunction->updateJastrow(randomParticle);
+    m_waveFunction->updateDistances(currentParticle/*randomParticle*/);
+    m_waveFunction->updateSPWFMat(currentParticle/*randomParticle*/);
+    m_waveFunction->updateJastrow(currentParticle/*randomParticle*/);
 
     return false;
 }
@@ -109,7 +109,7 @@ std::vector<double> System::quantumForce(){
 
     for (int i=0; i < m_numberOfDimensions; i++){
         qForce.push_back(
-             2*m_waveFunction->computeDerivative(m_particles)[m_randomParticle*m_numberOfDimensions + i]);
+             2*m_waveFunction->computeDerivative(m_particles)[m_currentParticle*m_numberOfDimensions + i]);
     }
     return qForce;
 }
@@ -132,7 +132,7 @@ double System::calculateGreensFunction(std::vector<double> positionOld, std::vec
 void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSampling,
                                 bool showProgress, bool printToTerminal) {
     // Initialize Monte Carlo simulation
-    m_particles                 = m_initialState->getParticles();
+    //m_particles                 = m_initialState->getParticles();
     m_sampler                   = new Sampler(this);
     m_numberOfMetropolisSteps   = numberOfMetropolisSteps;
     m_sampler->setNumberOfMetropolisSteps(numberOfMetropolisSteps);
@@ -144,8 +144,7 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
     int progress = 0;
     double equilibrationSteps = m_equilibrationFraction*numberOfMetropolisSteps;
 
-    for (int i=0; i < numberOfMetropolisSteps; i++) {
-
+    for (int i = 0; i < numberOfMetropolisSteps; i++) {
         // Update progress
         if (showProgress && m_my_rank == 0) {
             if (i%percent==0){
@@ -153,22 +152,23 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
                 cout << progress << "%" << "\n\033[F";
             }
         }
+        for (int currentParticle = 0; currentParticle < m_numberOfParticles; currentParticle++){
+            bool acceptedStep;
+            // Ask Metropolis step functions whether the step was accepted or not
+            if (importanceSampling)  acceptedStep = metropolisStepImpSampling(currentParticle);
+            else                     acceptedStep = metropolisStep(currentParticle);
 
-        bool acceptedStep;
-        // Ask Metropolis step functions whether the step was accepted or not
-        if (importanceSampling)  acceptedStep = metropolisStepImpSampling();
-        else                     acceptedStep = metropolisStep();
+            /* Here you should sample the energy (and maybe other things using
+             * the m_sampler instance of the Sampler class. Make sure, though,
+             * to only begin sampling after you have let the system equilibrate
+             * for a while. You may handle this using the fraction of steps which
+             * are equilibration steps; m_equilibrationFraction.
+             */
 
-        /* Here you should sample the energy (and maybe other things using
-         * the m_sampler instance of the Sampler class. Make sure, though,
-         * to only begin sampling after you have let the system equilibrate
-         * for a while. You may handle this using the fraction of steps which
-         * are equilibration steps; m_equilibrationFraction.
-         */
-
-        if (i>=equilibrationSteps){
-            // Sample energy etc.
-            m_sampler->sample(acceptedStep);
+            if (i>=equilibrationSteps){
+                // Sample energy etc.
+                m_sampler->sample(acceptedStep);
+            }
         }
     }
 
@@ -182,14 +182,14 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
 
 void System::optimizeParameters(System* system, double alpha, double beta) {
     // Steepest descent:
-    int maxIterations             = 100;
-    int numberOfStepsSD           = (int) 1e5;
+    int maxIterations             = 1000;
+    int numberOfStepsSD           = (int) 1e3;
     double stepLengthSD           = 0.01;
     std::vector<double> initialParameters(2);
     initialParameters[0] = alpha;
     initialParameters[1] = beta;
     //double initialAlpha           = alpha;//0.7;
-    double tol                    = 1e-6;//0.001;
+    double tol                    = 1e-5;//0.001;
     bool importanceSamplingSD     = false;
     //std::string parameterAlpha    = "alpha";
 
@@ -261,7 +261,7 @@ void System::MPI_CleanUp(double &totalE, double &totalKE, double &totalPE,
 
 void System::mergeOutputFiles(int numprocs) {
     if (m_saveEnergies){
-        std::ofstream outfile("energies.dat", std::ios_base::binary);
+        std::ofstream outfile("../vmc-solver/AnalyseData/Data/energies.dat", std::ios_base::binary);
         for (int i=0; i < numprocs; i++){
             char nodeFileName[100];
             sprintf(nodeFileName, "energiesNode%i.dat", i);
@@ -269,13 +269,13 @@ void System::mergeOutputFiles(int numprocs) {
 
             outfile << nodeFile.rdbuf();
             nodeFile.close();
-            remove(nodeFileName);
+            //remove(nodeFileName);
         }
         outfile.close();
     }
 
     if (m_savePositions){
-        std::ofstream outfile("positions.dat", std::ios_base::binary);
+        std::ofstream outfile("../vmc-solver/AnalyseData/Data/positions.dat", std::ios_base::binary);
         for (int i=0; i < numprocs; i++){
             char nodeFileName[100];
             sprintf(nodeFileName, "positionsNode%i.dat", i);
@@ -283,10 +283,20 @@ void System::mergeOutputFiles(int numprocs) {
 
             outfile << nodeFile.rdbuf();
             nodeFile.close();
-            remove(nodeFileName);
+            //remove(nodeFileName);
         }
         outfile.close();
     }
+
+//    sleep(1);
+//    for (int i=0; i < numprocs; i++){
+//        char nodeFileNameE[100];
+//        sprintf(nodeFileNameE, "energiesNode%i.dat", i);
+//        char nodeFileNameP[100];
+//        sprintf(nodeFileNameP, "positionsNode%i.dat", i);
+//        remove(nodeFileNameE);
+//        remove(nodeFileNameP);
+//    }
 }
 
 void System::setNumberOfParticles(int numberOfParticles) {
@@ -329,8 +339,8 @@ void System::setNumberOfMetropolisSteps(int numberOfMetropolisSteps) {
     m_numberOfMetropolisSteps = numberOfMetropolisSteps;
 }
 
-void System::setRandomParticle(int randomParticle) {
-    m_randomParticle = randomParticle;
+void System::setCurrentParticle(int currentParticle) {
+    m_currentParticle = currentParticle;
 }
 
 void System::setMyRank(int my_rank) {
@@ -349,11 +359,12 @@ void System::setSaveEnergies(bool saveEnergies) {
     m_saveEnergies = saveEnergies;
     if (saveEnergies){
         if (m_my_rank == 0){
-            system("rm energies.dat");
+            system("rm ../vmc-solver/AnalyseData/Data/energies.dat");
         }
         char outfileName[100];
         //char removeCommand[100];
         sprintf(outfileName, "energiesNode%i.dat", m_my_rank);
+        remove(outfileName);
         //sprintf(removeCommand, "rm %s", outfileName);
         //system(removeCommand);
         m_outfileE = fopen(outfileName, "ab");
@@ -364,11 +375,12 @@ void System::setSavePositions(bool savePositions) {
     m_savePositions = savePositions;
     if (savePositions){
         if (m_my_rank == 0){
-            system("rm positions.dat");
+            system("rm ../vmc-solver/AnalyseData/Data/positions.dat");
         }
         char outfileName[100];
         //char removeCommand[100];
         sprintf(outfileName, "positionsNode%i.dat", m_my_rank);
+        remove(outfileName);
         //sprintf(removeCommand, "rm %s", outfileName);
         //system(removeCommand);
         m_outfileP = fopen(outfileName, "ab");
@@ -376,7 +388,12 @@ void System::setSavePositions(bool savePositions) {
 }
 
 
-void System::retrieveFromFile(string fileName, cube &loadCoefficients) {
+void System::retrieveCoefficientsFromFile(string fileName, cube &loadCoefficients) {
     loadCoefficients.load(fileName, arma_ascii);
+    return;
+}
+
+void System::retrieveConstantsFromFile(string fileName, vec &loadConstants) {
+    loadConstants.load(fileName, raw_ascii);
     return;
 }

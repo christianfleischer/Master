@@ -90,7 +90,7 @@ vec SquareWell::potential (vec r, double L) {
     vec V(N+1);
 
     for (int i = 0; i < N+1; i++) {
-        if (abs(r[i]) > m_distanceToWall) { V[i] = m_V0; }
+        if (abs(r[i]) >= m_distanceToWall) { V[i] = m_V0; }
         else { V[i] = 0; }
     }
 

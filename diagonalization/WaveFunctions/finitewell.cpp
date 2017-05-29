@@ -38,5 +38,5 @@ vec FiniteWell::potential (vec r, double L) {
         else { V[i] = r_i2; }
     }
 
-    return m_omega*m_omega*V;
+    return 0.5*m_omega*m_omega*V;
 }

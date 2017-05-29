@@ -3,6 +3,8 @@
 #include "../Math/factorial.h"
 #include <cmath>
 
+using namespace std;
+
 DoubleWell::DoubleWell(System *system, double omega)
     : WaveFunction(system, omega) {
 
@@ -26,5 +28,5 @@ vec DoubleWell::harmonicOscillatorBasis(mat x, int n) {
 }
 
 vec DoubleWell::potential (vec r, double L) {
-    return m_omega*m_omega*(r%r - 2*abs(r)*L + L*L);
+    return 0.5*m_omega*m_omega*(r%r - 2*abs(r)*L + L*L);
 }

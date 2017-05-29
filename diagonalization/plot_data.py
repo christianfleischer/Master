@@ -7,10 +7,16 @@ import sys
 
 eigenvectors = np.loadtxt('PlotAndData/Eigenvectors.dat')
 
+eigX = np.loadtxt('PlotAndData/SeparateEigenvectorsX.dat')
+eigY = np.loadtxt('PlotAndData/SeparateEigenvectorsY.dat')
+#eigZ = np.loadtxt('PlotAndData/SeparateEigenvectorsZ.dat')
+
 constants = np.loadtxt('PlotAndData/Constants.dat')
 positionvectors = np.loadtxt('PlotAndData/Positionvectors.dat')
 
 supCpp = np.loadtxt('PlotAndData/Superpositions.dat', skiprows=0)
+supX = np.loadtxt('PlotAndData/SeparateSuperpositionsX.dat')
+supY = np.loadtxt('PlotAndData/SeparateSuperpositionsY.dat')
 
 omega, nDim, Lx, Ly, Lz, N, numEigFunctions, h = constants
 
@@ -28,8 +34,8 @@ psi = np.zeros((numEigFunctions,N))
 if numEigFunctions == 1:
     psi[0] = eigenvectors
 else:
-    for i in range(numEigFunctions):
-        psi[i] = eigenvectors[:,i]
+    for i in range(min([N, numEigFunctions])):
+        psi[i] = eigX[:,i]*eigY[:,i]#*eigZ[:,i]#eigenvectors[:,i]
 
 
 def H(r, n_r):
@@ -103,29 +109,76 @@ def cOld(r,n):
 #    a.append(np.sqrt(np.dot(tmp1, tmp1)))
 
 # When we set psi = psix*psiy*psiz, we must normalize manually:
-print("<psi0|psi0>:   ", np.dot(psi[0],psi[0]))
-print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
+vec = zeros(15)
+for i in range(15):
+	vec[i] = np.dot(psi[i], psi[i])
+	#print("<psi%i|psi%i>:   " % (i, i), np.dot(psi[i],psi[i]))
+for i in range(len(supCpp[0,:])):
+	print("<supCpp%i|supCpp%i>:   " % (i, i), np.dot(supCpp[:,i],supCpp[:,i]))
+#print("<supCpp0|supCpp0>:   ", np.dot(supCpp[:,0],supCpp[:,0]))
+
+#vec = np.sort(vec, axis=None)
+for i in range(15):
+	print vec[i]
 
 # plot(r[0], supCpp**2/np.dot(supCpp,supCpp), r[0], psi[0]**2/np.dot(psi[0],psi[0]), '+')
 
 
 # plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]), '+')
-plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]))
+
+#plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], supCpp[:,0]**2/np.dot(supCpp[:,0],supCpp[:,0]))
+#plot(r[0], psi[1], r[0], supCpp[:,0])
+
+
+nPrime = 0
+
+plot(r[0], psi[nPrime]/sqrt(np.dot(psi[nPrime],psi[nPrime])))
+plot(r[0], supCpp[:,nPrime]/sqrt(np.dot(supCpp[:,nPrime],supCpp[:,nPrime])))
+	
+print("")
+print(np.sqrt(sum(abs(psi[nPrime]/sqrt(np.dot(psi[nPrime],psi[nPrime])) \
+             -supCpp[:,nPrime]/sqrt(np.dot(supCpp[:,nPrime],supCpp[:,nPrime])))**2)))
+
+print("")
+for i in range(2):
+    print("||supX%i||:  %s" %(i, np.sqrt(np.dot(supX[:,i], supX[:,i]))))
+
+print("")
+for i in range(2):
+    print("||supY%i||:  %s" %(i, np.sqrt(np.dot(supY[:,i], supY[:,i]))))
 
 nVec = range(nMax)
 
 # plot(nVec, a)
 
-
 # hold('on')
 # plot(r[0], psi[0]**2/np.dot(psi[0],psi[0]), r[0], sup**2/np.dot(sup,sup))
 # plot(r[0], psi[0,:]**2, r[0], phi(r,[0]))
 
-title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
-        $L_, = %.1f$ and $x_{max/min}=\pm %d$. ''' 
-        %(N+1, Lx, Ly, r[0,-1]+1))
-ylabel(r'$|u(\rho)|^2$')
-legend([r'Analytical solution', r'Numerical solution', r'Basis function solution'] 
-        ,prop={'size':10})
+#title(r'''Probability density $|\psi(x)|^2$ with N=%d, $L_x = %.1f$,
+#        $L_, = %.1f$ and $x_{max/min}=\pm %d$. ''' 
+#        %(N+1, Lx, Ly, r[0,-1]+1))
+#ylabel(r'$|u(\rho)|^2$')
+#legend([r'Analytical solution', r'Numerical solution', r'Basis function solution'] 
+#        ,prop={'size':10})
+
+#title(r'''$\psi_{n^\prime}^{diag}$ vs. $\psi_{n^\prime}^{exp}$ for $n^\prime = %i$ with N=%d, $L_x = %.1f$,
+# $L_y = %.1f$, $x_{max/min}=\pm %d$ and %i basis functions. ''' 
+#        %(nPrime, N+1, Lx, Ly, r[0,-1]+1, numEigFunctions))
+title(r'''$\psi_{n^\prime}^{diag}$ vs. $\psi_{n^\prime}^{exp}$ for $n^\prime = %i$.''' 
+        %nPrime, fontsize=30, y=1.01)
+
+xlabel(r'$x$', fontsize=25)
+tick_params(axis='x', labelsize=14)
+
+ylabel(r'$\psi_{n^\prime}$', fontsize=25)
+#ylim([-0.1, 0.04])
+#ylim([-0.1, 0.15])
+#ylim([-0.02, 0.1])
+ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+tick_params(axis='y', labelsize=14)
+
+legend([r'$\psi_{n^\prime}^{diag}$', r'$\psi_{n^\prime}^{exp}$'] 
+        ,prop={'size':20})
 
 show()

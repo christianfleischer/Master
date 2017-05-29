@@ -24,25 +24,29 @@ def readData(filename):
     
 def plotData(dataFile):
     positions = readData(dataFile)#"positionsN10e6Int.dat")
-    #x = positions[0]
-    #y = positions[1]
+    x = positions[0]
+    y = positions[1]
     #z = positions[2]
     p = positions
     r = 0.
     
     for i in range(len(p)):
         r += p[i]**2
+    
     r = np.sqrt(r)
+    #r = x
+    #r = y
     #r = np.sqrt(x**2 + y**2 + z**2)
+    #r = np.sqrt(r**2)
     rMean = sum(r)/len(r)
     
-    plt.figure()
+    #plt.figure()
     n, bins, patches = plt.hist(r, bins=100, normed=1)
-    plt.axvline(rMean, color="r", label="Mean r = %f" %rMean)
-    plt.legend()
-    plt.title("N=10, MC cycles=1e6, Alpha=0.5, D=3")
-    plt.xlabel(r"$r/a_{ho}$")
-    plt.ylabel("Number of Samples (Normalized)")
+    #plt.axvline(rMean, color="r", label="Mean r = %f" %rMean)
+    #plt.legend()
+    #plt.title("N=10, MC cycles=1e6, Alpha=0.5, D=3")
+    #plt.xlabel(r"$r/a_{ho}$")
+    #plt.ylabel("Number of Samples (Normalized)")
     
     return n, bins, rMean
     
@@ -58,9 +62,11 @@ if __name__ == "__main__":
         plt.close()    
 
     plt.figure()
-    plt.hold("on")
-    lab = ["Harmonic Oscillator", "No Jastrow", "All interactions"]
-    lab2 = ["HO", "NJ", "Ai"]
+    #plt.hold("on")
+    lab = ["Double Harmonic Oscillator"]
+    lab2 = ["DHO"]
+    #lab = ["Harmonic Oscillator", "No Jastrow", "All interactions"]
+    #lab2 = ["HO", "NJ", "Ai"]
     style = ["", "--", ""]
     clr = ["b", "g", "r"]
     for i in range(len(n)):
@@ -69,7 +75,7 @@ if __name__ == "__main__":
         plt.axvline(rMean[i], color= clr[i], label=lab2[i])
     plt.xlabel("r")
     plt.ylabel("Number of Samples (Normalized)")
-    plt.title("N=20, MC cycles=1e6")
+    #plt.title("N=20, MC cycles=1e6")
     plt.legend()
     plt.show()
 
