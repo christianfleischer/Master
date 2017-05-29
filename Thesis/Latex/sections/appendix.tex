@@ -100,7 +100,7 @@ are the harmonic oscillator wave functions given by
 \begin{align}
     \phi_{n_x,n_y}(x,y) = A H_{n_x}(\sqrt{\omega}x)H_{n_y}(\sqrt{\omega}y)\exp{(-\omega(x^2+y^2)/2}.
 \end{align}
-$A$ is a normalization constant, while the functions $H_{n_x}(\sqrt{\omega}x)$ are Hermite polynomials. For $N=6$ electrons we need the Hermite polynomials for $n_x = 0,1$ and $n_y = 0,1$, for $N=12$ we need to include the $n_x,n_y = 2$ Hermite polynomials, and for $N=20$ we also need the Hermite polynomials for $n_x,n_y = 3$. When evaluating the trial wave function, the calculation of the gradient and the Laplacian of an $N$-particle Slater determinant is likely to be most time-consuming. This is because we have to differentiate with respect to all spatial coordinates of all electrons. We can improve the efficiency of the calculation by moving only one electron at the time. When we then differentiate the Slater determinant with respect to a given coordinate of that electron, only one row in the corresponding Slater matrix is changed. This means that we don't have to recalculate the entire determinant at every Metropolis step. Instead we use an algorithm which requires us to keep track of the inverse of the Slater matrix. 
+$A$ is a normalization constant, while the functions $H_{n_x}(\sqrt{\omega}x)$ are Hermite polynomials. For $N=6$ electrons we need the Hermite polynomials for $n_x = 0,1$ and $n_y = 0,1$, for $N=12$ we need to include the $n_x,n_y = 2$ Hermite polynomials, and for $N=20$ we also need the Hermite polynomials for $n_x,n_y = 3$. When evaluating the trial wave function, the calculation of the gradient and the Laplacian of an $N$-particle Slater determinant is likely to be most time-consuming. This is because we have to differentiate with respect to all spatial coordinates of all electrons. We can improve the efficiency of the calculation by moving only one electron at the time. When we then differentiate the Slater determinant with respect to a given coordinate of that electron, only one row in the corresponding Slater matrix is changed. This means that we do not have to recalculate the entire determinant at every Metropolis step. Instead we use an algorithm which requires us to keep track of the inverse of the Slater matrix. 
 
 The matrix elements of the Slater matrix $\hat{D}$ are given by 
 \begin{align}
@@ -124,12 +124,12 @@ If we move only one electron at a time, ${\bf r}^{\textrm{new}}$ and ${\bf r}^{\
 \begin{align}\label{eq: equalC}
     C_{ij}({\bf r}^{\textrm{new}}) = C_{ij}({\bf r}^{\textrm{old}})\quad \forall \ j \in \{1, \dots, N\}.
 \end{align}
-We use eq. (\ref{eq: invdet}) and eq. (\ref{eq: equalC}) with eq. (\ref{eq: R1}) in order to obtain
+We use Eq.~(\ref{eq: invdet}) and Eq.~(\ref{eq: equalC}) with Eq.~(\ref{eq: R1}) in order to obtain
 \begin{align}
     R = \frac{\sum_{j=1}^N d_{ij}({\bf r}^{\textrm{new}}) C_{ij}({\bf r}^{\textrm{old}})}{\sum_{j=1}^N d_{ij}({\bf r}^{\textrm{old}}) C_{ij}({\bf r}^{\textrm{old}})} 
     = \frac{\sum_{j=1}^N d_{ij}({\bf r}^{\textrm{new}}) d_{ji}^{-1}({\bf r}^{\textrm{old}})}{\sum_{j=1}^N d_{ij}({\bf r}^{\textrm{old}}) d_{ji}^{-1}({\bf r}^{\textrm{old}})},
 \end{align}
-where, by eq. (\ref{eq: unity}), the denominator of the rightmost expression is unity, and we end up with
+where, by Eq.~(\ref{eq: unity}), the denominator of the rightmost expression is unity, and we end up with
 \begin{align}
     R = \sum_{j=1}^N d_{ij}({\bf r}^{\textrm{new}}) d_{ji}^{-1}({\bf r}^{\textrm{old}}) = \sum_{j=1}^N \phi_j({\bf r}_i^{\textrm{new}}) d_{ji}^{-1}({\bf r}^{\textrm{old}}).
 \end{align}
@@ -182,11 +182,11 @@ To find the kinetic energy we need the Laplacian of the wave function. We define
     & =  \frac{\nabla^2 \Psi_{D}}{\Psi_{D}} + \frac{\nabla^2  \Psi_C}{ \Psi_C} + 2 \frac{\nabla  \Psi_{D}}{\Psi_{D}}\cdot\frac{\nabla   \Psi_C}{ \Psi_C}.
 \end{split}
 \end{align}
-From eq. (\ref{eq: TotalLaplacian}) we see that we need the gradient and Laplacian of both $\Psi_D$ and $\Psi_C$. For $\Psi_D$ the necessary expression are given by eq. (\ref{eq: gradSlater}) and eq. (\ref{eq: lapSlater}). We have that 
+From Eq.~(\ref{eq: TotalLaplacian}) we see that we need the gradient and Laplacian of both $\Psi_D$ and $\Psi_C$. For $\Psi_D$ the necessary expression are given by Eq.~(\ref{eq: gradSlater}) and Eq.~(\ref{eq: lapSlater}). We have that 
 \begin{align}
     \Psi_{C}=\prod_{i< j}\exp{f(r_{ij})}= \exp{\left\{\sum_{i<j}\frac{ar_{ij}}{1+\beta r_{ij}}\right\}},
 \end{align}
-and by differentiating with the chain rule similarly to what we did in eq. (\ref{eq: chainDeriv}), we find that the gradient is 
+and by differentiating with the chain rule similarly to what we did in Eq.~(\ref{eq: chainDeriv}), we find that the gradient is 
 \begin{align}
     \frac{ \nabla_k \Psi_C}{ \Psi_C }= \sum_{j\ne k}\frac{{\bf r}_{kj}}{r_{kj}} \frac{\partial f(r_{kj})}{\partial r_{kj}} = \sum_{j\ne k}\frac{{\bf r}_{kj}}{r_{kj}} f'(r_{kj}) = \sum_{j\ne k}\frac{{\bf r}_{kj}}{r_{kj}}\frac{a}{(1+\beta r_{kj})^2},
 \end{align}
@@ -213,10 +213,10 @@ where $d$ is the number of dimensions. We end up with the following expression
 \end{align}
 
 
-\chapter{Program Structure}
+\chapter{Program Structure}\label{sec: Program Structure Appendix}
 
 The simulations in this thesis were done by two programs implemented in C++ using object-orientation. 
-The VMC simulation program consists of several classes responsible for different parts of the simulations. The following classes are responsible for the VMC simulations in this thesis. Any other classes from the vmc-solver folder in the Github repository \cite{github} are outside the scope of this thesis.
+The variational Monte Carlo (VMC) simulation program consists of several classes responsible for different parts of the simulations. The following classes are responsible for the VMC simulations in this thesis. Any other classes from the vmc-solver folder in the Github repository \cite{github} are outside the scope of this thesis.
 \begin{itemize}
     \item {\bf Hamiltonian:} A super-class for different Hamiltonians. The subclasses calculate the local energy for their specific Hamiltonian. They also calculate the single particle wave functions if these are not approximated by expanding in a basis of single harmonic oscillator functions (not implemented for the square well). Since calculating the kinetic energy with numerical differentiation is done the same for all Hamiltonians, this super-class is responsible for that. The subclasses are:
     \begin{itemize}
@@ -259,7 +259,7 @@ Here as well, there is a main program which sets the necessary parameters, and g
 
 \chapter{Code Generation with SymPy}
 
-In order to optimize the VMc solver we wanted to have explicit expressions for a lot of Hermite polynomials and corresponding derivatives and double derivatives. Not only would it be an extensive amount of work to calculate the expressions by hand, but writing the code to implement the expressions would also be a lot of work. In addition the risk of committing error during the implementation would be great. Instead we can use SymPy\cite{SymPy} for this task, which is a Python library for symbolic mathematics. This means that we can for example do symbolic differentiation with a Python program. This is extremely useful in our case since we need to symbolically differentiate a lot of expressions. We also use SymPy to symbolically calculating new Hermite polynomials using the recursive relation of Hermite polynomials. First we specify what variables SymPy should treat as symbols with the "symbols" function:
+In order to optimize the variational Monte Carlo (VMC) solver, we wanted to have explicit expressions for a lot of Hermite polynomials and corresponding derivatives and double derivatives. Not only would it be an extensive amount of work to calculate the expressions by hand, but writing the code to implement the expressions would also be a lot of work. In addition the risk of committing error during the implementation would be great. Instead we can use SymPy\cite{SymPy} for this task, which is a Python library for symbolic mathematics. This means that we can for example do symbolic differentiation with a Python program. This is extremely useful in our case since we need to symbolically differentiate a lot of expressions. We also use SymPy to symbolically calculating new Hermite polynomials using the recursive relation of Hermite polynomials. First we specify what variables SymPy should treat as symbols with the "symbols" function:
 \lstset{language=python}
 \begin{lstlisting}[caption={}]
 x, a, w, aw = symbols('x, m_alpha, m_omega, m_alphaomega')
@@ -328,7 +328,7 @@ double lapl_HermitePolynomial_0::eval() {
 }
 
 \end{lstlisting}
-This output still needs some modifications before it can be used in the VMC solver. SymPy has a lot more advanced functionality which could get us the exact output we want, but since the generated code we need is fairly general the modifications can be easily done with the find/replace option of a text editor. The first thing we do is replace all the "\#include" lines with nothing, since we copy all the functions into the same file which we have set up beforehand. Next we replace the name of the variable in each function with something simple. To do this we replace the phrase "ermitePolynomial\_0::eval\_result" with nothing and do this again with the $0$ changed to the numbers needed. In our case this involves $50$ find/replace commands, but since the only thing we need to change in between is one number it's quickly done. Our variables then end up as simply "H", "dell\_H" and "lapl\_H".
+This output still needs some modifications before it can be used in the VMC solver. SymPy has a lot more advanced functionality which could get us the exact output we want, but since the generated code we need is fairly general the modifications can be easily done with the find/replace option of a text editor. The first thing we do is replace all the "\#include" lines with nothing, since we copy all the functions into the same file which we have set up beforehand. Next we replace the name of the variable in each function with something simple. To do this we replace the phrase "ermitePolynomial\_0::eval\_result" with nothing and do this again with the $0$ changed to the numbers needed. In our case this involves $50$ find/replace commands, but since the only thing we need to change in between is one number, it is quickly done. Our variables then end up as simply "H", "dell\_H" and "lapl\_H".
 
 The modifications done so far are not strictly necessary, but was done to clean up the code somewhat. The next two modifications are needed for the VMC simulation to work properly. First we need to add an argument to the functions, since we want to send in the position $x$. This is done by replacing "eval()" with "eval(double x)". The final modification is needed due to an issue we run into with the int type in C++ when we have larger Hermite polynomials. For Hermite polynomial number $50$, the expressions involve large integers, e.g. $12699589412983995191626304930774935142400000$. Since SymPy simply prints the numbers like this, they are considered as int type when copied into the C++ program. However, the number is too large to be an int type in C++, so we need to change the type. This is done by simply adding a period to the end of the these numbers. These large numbers are always a constant in front of a pow function in our auto-generated code, so the code looks like "i*pow(", where "i" is the integer. We can then simply replace "0*pow(" with "0.*pow", and do this for $0,\dots,9$ so that the change is done to all relevant integers regardless of what the last digit is.
 

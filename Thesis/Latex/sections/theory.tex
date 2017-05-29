@@ -4,7 +4,7 @@
 
 \chapter{Variational Monte Carlo}\label{sec: VMC}
 
-The Variational Monte Carlo method is the main computational method used in this thesis. It is based on the variational principle in quantum mechanics. The variational principle states that, given a Hamiltonian $H$ and a trial wave function $\psi_T$, the expectation value $\langle H \rangle$ defined as\cite{Griffiths}
+The variational Monte Carlo (VMC) method is the main computational method used in this thesis. It is based on the variational principle in quantum mechanics. The variational principle states that, given a Hamiltonian $H$ and a trial wave function $\psi_T$, the expectation value $\langle H \rangle$ defined as\cite{Griffiths}
 \begin{equation}
  E[H] = \langle H \rangle =
  \frac{\int d {\bf R} \Psi_T^*({\bf R}, \boldsymbol{\alpha}) H({\bf R}) \Psi_T({\bf R}, \boldsymbol{\alpha})}
@@ -15,7 +15,7 @@ is an upper bound to the ground state energy $E_0$ of the Hamiltonian, i.e.
 \begin{equation}
 E_0 \leq \langle H \rangle.
 \end{equation}
-Here our trial wave function is dependant on some variational parameters $\boldsymbol{\alpha}$, and the goal of the VMC method is to vary these parameters until we find the lowest possible value of $\langle H\rangle$ in order to get an estimate for the ground state energy $E_0$. In general, the integrals we have to compute to find $\langle H\rangle$ are multi-dimensional ones, so using traditional integration methods like Gauss-Legendre is too computationally expensive. Therefore we turn to Monte Carlo methods.
+Here our trial wave function is dependent on some variational parameters $\boldsymbol{\alpha}$, and the goal of the VMC method is to vary these parameters until we find the lowest possible value of $\langle H\rangle$ in order to get an estimate for the ground state energy $E_0$. In general, the integrals we have to compute to find $\langle H\rangle$ are multi-dimensional ones, so using traditional integration methods like Gauss-Legendre is too computationally expensive. Therefore we turn to Monte Carlo methods.
 
 \section{Metropolis Sampling}
 
@@ -25,7 +25,7 @@ For a given trial wave function we define a probability distribution function (P
 \begin{equation}
  P({\bf R}) = \frac{|\Psi_T({\bf R})|^2}{\int |\Psi_T({\bf R})|^2 d{\bf R}}
 \end{equation}
-Together with the local energy given in Eq.(\ref{eq: E_L}) we have that the approximation to the expectation value of the Hamiltonian is
+Together with the local energy given in Eq.~(\ref{eq: E_L}) we have that the approximation to the expectation value of the Hamiltonian is
 \begin{align}
 \begin{split}
 E[H(\mathbf{\alpha})] =& \int P({\bf R}) E_L({\bf R}) d{\bf R}\\
@@ -39,7 +39,7 @@ The Metropolis algorithm is used to sample the probability distribution by a sto
  \item Sample a possible new state $j$ with some probability $T_{i\rightarrow j}$
  \item Accept the new state with probability $A_{i\rightarrow j}$ and use it as the next sample, or with probability $1 - A_{i\rightarrow j}$, reject the move and use the original state $i$ as sample again.
 \end{itemize}
-We want to ensure that ${\bf P}_i^{(n\rightarrow \infty)} \rightarrow p_i$, so that regardless of the initial distribution, the method converges to the correct distribution. To ensure this we demand that the transition probability $T$ and the acceptance probability $A$, fulfill the detailed balance requirement
+We want to ensure that ${\bf P}_i^{(n\rightarrow \infty)} \rightarrow p_i$, so that regardless of the initial distribution, the method converges to the correct distribution. To ensure this we demand that the transition probability $T$ and the acceptance probability $A$, fulfill the detailed balance requirement\cite{Gardiner}
 \begin{equation}\label{eq: DB}
  \frac{A_{i\rightarrow j}}{A_{j\rightarrow i}} = \frac{p_i T_{i\rightarrow j}}{p_j T_{j\rightarrow i}},
 \end{equation}
@@ -48,7 +48,7 @@ The Metropolis algorithm then uses the following ratio of probabilities to deter
 \begin{equation}\label{eq: ratio}
  \frac{p_j}{p_i} = \frac{T_{i\rightarrow j} A_{i\rightarrow j}}{T_{j\rightarrow i} A_{j\rightarrow i}}
 \end{equation}
-When using the Metropolis algorithm we can either use brute force or importance sampling. If we use the brute force Metropolis algorithm, we assume that $T_{i\rightarrow j} = T_{j\rightarrow i}$. Then the ratio used by the Metropolis algorithm is only dependant on the acceptance probabilities, i.e. the ratio is given by
+When using the Metropolis algorithm we can either use brute force or importance sampling. If we use the brute force Metropolis algorithm, we assume that $T_{i\rightarrow j} = T_{j\rightarrow i}$. Then the ratio used by the Metropolis algorithm is only dependent on the acceptance probabilities, i.e. the ratio is given by
 \begin{equation}\label{ratio2}
  w = \frac{p_j}{p_i} = \frac{A_{i\rightarrow j}}{ A_{j\rightarrow i}} = \frac{|\Psi_T({\bf R}_j)|^2}{|\Psi_T({\bf R}_i)|^2}
 \end{equation}
@@ -75,10 +75,10 @@ The algorithm for estimating the ground state energy given a set of variational 
     \label{fig: Metropolis_Flowchart}
 \end{figure}
 
-\subsection{Metropolis-Hastings Algorithm (Importance Sampling)}
+\subsection{Metropolis-Hastings Algorithm (Importance Sampling)}\label{sec: ImportanceSampling}
 
 For the description of the Metropolis-Hastings Algorithm we again refer to Ref.~\cite{FYS4411-LectureNotes}.
-When using importance sampling the walk in coordinate space is biased by the trial wave function, so the walker is more likely to move towards regions where the trial wave function is large. The trajectory in coordinate space is generated by the Fokker-Planck equation and the Langevin equation. To find the new positions in coordinate space we solve the Langevin equation using Euler's method. The Langevin equation
+When using importance sampling the walk in coordinate space is biased by the trial wave function, so the walker is more likely to move towards regions where the trial wave function is large. The trajectory in coordinate space is generated by the Fokker-Planck equation\cite{Gardiner} and the Langevin equation. To find the new positions in coordinate space we solve the Langevin equation using Euler's method. The Langevin equation\cite{Gardiner}
 \begin{equation}\label{Langevin}
  \frac{\partial x(t)}{\partial t} = D F(x(t)) + \eta,
 \end{equation}
@@ -86,7 +86,7 @@ where $\eta$ is a random variable and $D$ is the diffusion coefficient, gives th
 \begin{equation}\label{eq: LangevinSolution}
  y = x + DF(x)\Delta t + \xi \sqrt{\Delta t},
 \end{equation}
-where $\xi$ is gaussian random variable, $\Delta t$ is a chosen time step and $F(x)$ is the function responsible for drifting the walker towards regions where the wave function is large. $\Delta t$ is treated as a parameter and $\Delta t \in [0.001, 0.01]$ generally yields fairly stable values of the ground state energy. The diffusion coefficient $D$ is equal to $1/2$ and comes from the $1/2$ factor in the kinetic energy operator. The Fokker-Planck equation describes the process of isotropic diffusion characterized by a time-dependent probability density $P(x, t)$ and is given by
+where $\xi$ is gaussian random variable, $\Delta t$ is a chosen time step and $F(x)$ is the function responsible for drifting the walker towards regions where the wave function is large. The variable $\Delta t$ is treated as a parameter and $\Delta t \in [0.001, 0.01]$ generally yields fairly stable values of the ground state energy. The diffusion coefficient $D$ is equal to $1/2$ and comes from the $1/2$ factor in the kinetic energy operator. The Fokker-Planck equation describes the process of isotropic diffusion characterized by a time-dependent probability density $P(x, t)$ and is given by
 \begin{equation}
  \frac{\partial P}{\partial t} = \sum_i D \frac{\partial}{\partial {\bf x}_i}\left( \frac{\partial}{\partial {\bf x}_i} - {\bf F}_i \right) P({\bf x}, t),
 \end{equation}
@@ -118,7 +118,7 @@ is now replaced by
 \begin{equation}\label{ratio4}
     q(y, x) = \frac{G(x, y, \Delta t)|\Psi_T(y)|^2}{G(y, x, \Delta t)|\Psi_T(x)|^2}.
 \end{equation}
-Using this ratio and Eq.(\ref{eq: LangevinSolution}), the algorithm is called the Metropolis-Hastings algorithm.
+Using this ratio and Eq.~(\ref{eq: LangevinSolution}), the algorithm is called the Metropolis-Hastings algorithm.
 
 
 \subsection{Metropolis Sampling with a Slater Determinant}
@@ -158,7 +158,7 @@ For $i,j \neq k$, where $k$ is the index of the moved electron, we get $f_{ij}^{
 \end{align}
 
 \subsection{Slater Determinant and Quantum Force}
-As described in (importance sampling section), when using importance sampling, we need to find the \textit{quantum force} $F$, which is given by
+As described in Section \ref{sec: ImportanceSampling}, when using importance sampling, we need to find the \textit{quantum force} $F$, which is given by
 \begin{align}
     {\bf F} = 2 \frac{1}{\Psi_T} \nabla \Psi_T.
 \end{align}
@@ -199,7 +199,7 @@ and
     \det\downarrow(3,4)=\frac{1}{\sqrt{2}}\left| \begin{array}{cc} \psi_{100\downarrow}(\mathbf{r}_3)& \psi_{100\downarrow}(\mathbf{r}_4)\\
     \psi_{200\downarrow}(\mathbf{r}_3)& \psi_{200\downarrow}(\mathbf{r}_4) \end{array} \right|.
 \end{align}
-This still gives a total determinant equal to zero, which is a problem for our variational Monte Carlo calculations. However, with regards to the variational energy we can use the following approximation to this Slater determinant\cite{Kalos} 
+This still gives a total determinant equal to zero when we ignore the spin coordinates, which is a problem for our variational Monte Carlo calculations. However, with regards to the variational energy we can use the following approximation to this Slater determinant\cite{Kalos} 
 \begin{align}
     \Phi(\mathbf{r}_1,\mathbf{r}_2,,\mathbf{r}_3,\mathbf{r}_4, \alpha,\beta,\gamma,\delta) \propto \det\uparrow(1,2)\det\downarrow(3,4), 
 \end{align}
@@ -207,7 +207,7 @@ and in general we can use the approximation
 \begin{align}
     \Phi(\mathbf{r}_1,\mathbf{r}_2,\dots \mathbf{r}_N) \propto \det\uparrow \det\downarrow, 
 \end{align}
-where the approximation to the Slater determinant is the product of a spin up part with the electrons with spin up only and a spin down part with the electrons with spin down. This ansatz is not antisymmetric when exchanging electrons with opposite spins, however the expectation value we get for the energy is the same as we get for the full Slater determinant, provided that the Hamiltonian is independent of spin. By factorizing the full determinant $\vert\hat{D}\vert$ into two smaller ones we can reduce the computation time. We identify the two determinants with an $\uparrow$ and a $\downarrow$
+where the approximation to the Slater determinant is the product of a spin up part with the electrons with spin up only and a spin down part with the electrons with spin down. This ansatz is not antisymmetric when exchanging electrons with opposite spins, however the expectation value we get for the energy is the same as we get for the full Slater determinant, provided that the Hamiltonian is independent of spin. By factorizing the full determinant $\vert\hat{D}\vert$ into two smaller ones we can reduce the computation time. We identify the two determinants with an up-arrow and a down-arrow
 \begin{align}
     \vert\hat{D}\vert = \vert\hat{D}\vert_\uparrow\cdot \vert\hat{D}\vert_\downarrow
 \end{align}
@@ -274,7 +274,7 @@ void ManyElectrons::setUpSlaterDet() {
 \end{comment}
 
 \section{The Steepest Descent Method (Gradient Descent)}\label{sec:SteepestDescent}
-We want to optimize the variational parameters to minimize the estimation of the ground state energy. To do this we use the Steepest Descent method, also called Gradient Descent\footnote{Steepest Descent and Gradient Descent are sometimes referred to as different methods in literature. We will use Steepest Descent to refer to the method used in this thesis.}. We have two variational parameters we need to optimize; $\alpha$, and $\beta$. To optimize the parameters we treat our estimate to the ground state energy as a function of the parameters. Steepest Descent is a way to minimize a function parameterized by some parameters, by updating the parameters in the opposite direction of the gradient of the function w.r.t. to the parameters.\cite{Ruder}
+We want to optimize the variational parameters to minimize the estimation of the ground state energy. To do this we use the Steepest Descent method, also called Gradient Descent\footnote{Steepest Descent and Gradient Descent are sometimes referred to as different methods in literature. We will use Steepest Descent to refer to the method used in this thesis.}. We have two variational parameters we need to optimize; $\alpha$, and $\beta$. To optimize the parameters we treat our estimate to the ground state energy as a function of the parameters. Steepest Descent is a way to minimize a function parameterized by some parameters, by updating the parameters in the opposite direction of the gradient of the function w.r.t. to the parameters\cite{Ruder}.
 %The Steepest Descent method then finds a local minimum for this function by iteratively moving in the direction given by the negative of the gradient of the function at the current point (Ref.~\cite{CG-wiki}).
 At each step the move is proportional to a chosen step length $\gamma$, and for $\alpha$, one step is then
 \begin{equation}\label{eq: SteepestDesc}
@@ -303,13 +303,13 @@ and
 \end{equation}
 in addition to $\langle E_L[\alpha] \rangle$. We do the same for $\beta$ as well.
 
-To optimize the parameters we first guess an initial value for each. Then, using few Monte Carlo cycles, we run the simulation and sample the expectation values Eq.(\ref{eq: psiDerEn}), Eq.(\ref{eq: psiDer}) and the expectation value for the ground state energy (as usual). Using the expectation values we calculate the gradient Eq.(\ref{eq: energygradient}) and find new parameters using Eq.(\ref{eq: SteepestDesc}). We repeat this until we have found optimal parameters to some desired precision. Finally, we do a large-scale Monte Carlo simulation (many cycles) using the optimal parameters to find a good estimate to the ground state energy. We find the absolute value of the difference between a new value and an old value for each variational parameter. We then sum up these absolute values (one for each parameter) and stop the optimization when the sum is below a chosen tolerance, or when a set number of maximum iterations has been reached.
+To optimize the parameters we first guess an initial value for each. Then, using few Monte Carlo cycles, we run the simulation and sample the expectation values Eq.~(\ref{eq: psiDerEn}), Eq.~(\ref{eq: psiDer}) and the expectation value for the ground state energy (as usual). Using the expectation values we calculate the gradient Eq.~(\ref{eq: energygradient}) and find new parameters using Eq.~(\ref{eq: SteepestDesc}). We repeat this until we have found optimal parameters to some desired precision. Finally, we do a large-scale Monte Carlo simulation (many cycles) using the optimal parameters to find a good estimate to the ground state energy. We find the absolute value of the difference between a new value and an old value for each variational parameter. We then sum up these absolute values (one for each parameter) and stop the optimization when the sum is below a chosen tolerance, or when a set number of maximum iterations has been reached.
 
 %We stop the optimization when the sum of the absolute values of the difference between a new value and an old value of the variational parameters is below a chosen tolerance, or when a set number of maximum iterations has been reached.
 
 \section{Statistical Error Estimation with Blocking}
 
-Here follows a brief explanation of the blocking method based on Ref.~\cite{FYS4411-LectureNotes}. For a more detailed explanation consult the reference.
+Here follows a brief explanation of the blocking method based on Ref.~\cite{Flyvbjerg} and Ref.~\cite{FYS4411-LectureNotes}. For a more detailed explanation consult the references.
 At each Monte Carlo step in our simulation we sample a local energy and the mean of these samples $\langle H\rangle$ is our estimate for the ground state energy. If we assume that the $n$ samples are uncorrelated our best estimate for the standard deviation of the mean $\langle H\rangle$ is given by
 \begin{equation}\label{eq: std}
     \sigma = \sqrt{\frac{1}{n}(\langle H^2\rangle - \langle H\rangle^2)}.
@@ -318,7 +318,7 @@ However, this is a too optimistic estimate of the error in our calculations beca
 \begin{equation}
     \sigma = \sqrt{\frac{1+2\tau/\Delta t}{n}(\langle H^2\rangle - \langle H\rangle^2)},
 \end{equation}
-where $\tau$ is the correlation time, i.e. the time between a given sample and the next uncorrelated sample. $\Delta t$ is the time between each sample. If $\Delta t \gg \tau$ the estimate in Eq.(\ref{eq: std}) still holds, however, usually $\Delta t < \tau$. When using the blocking method we divide the sequence of samples into blocks, and then calculate the mean and variance of each block separately. Finally we calculate the total mean and variance of all of the blocks. The size of the blocks has to be large enough that sample $j$ of block $i$ is not correlated with sample $j$ of block $i+1$. For this, the correlation time $\tau$ would be a good choice, however, $\tau$ is too expensive to compute. 
+where $\tau$ is the correlation time, i.e. the time between a given sample and the next uncorrelated sample. The variable $\Delta t$ is the time between each sample. If $\Delta t \gg \tau$ the estimate in Eq.~(\ref{eq: std}) still holds, however, usually $\Delta t < \tau$. When using the blocking method we divide the sequence of samples into blocks, and then calculate the mean and variance of each block separately. Finally we calculate the total mean and variance of all of the blocks. The size of the blocks has to be large enough that sample $j$ of block $i$ is not correlated with sample $j$ of block $i+1$. For this, the correlation time $\tau$ would be a good choice, however, $\tau$ is too expensive to compute. 
 
 Instead we can plot the standard deviation as a function of block size. As long as the block size is so small that the blocks are correlated the standard deviation will increase with increasing block size. However, once the block size is large enough that the blocks are uncorrelated, we reach a plateau. Therefore, when the standard deviation stops increasing, the plateau value of the standard deviation will be a good estimate of the statistical error in our results.
 
@@ -394,7 +394,7 @@ if __name__ == "__main__":
 
 \chapter{Basis Functions}\label{sec: Basis Functions}
 
-When we do Quantum Monte Carlo simulations we need a wave function for the system. A part of this wave function is made up by the single particle wave functions, i.e. the wave function we have if the system only has one particle and thus no particle-particle interactions. For the harmonic oscillator potential we have the fairly simple harmonic oscillator wave functions given in Eq. (\ref{eq: HO SPWF}). However, for other potentials the single particle wave functions may not be as simple to implement. Instead we can approximate the single particle wave functions by using a linear combination with the simple harmonic oscillator functions as basis functions. We do this by first diagonalizing the single particle system for the given potential. This provides us with eigenvalues and eigenvectors for the single particle problem. We then take the inner product of the eigenvectors and the harmonic oscillator basis functions to find the overlap coefficients. Finally, in the QMC simulation we use the overlap coefficients and the harmonic oscillator basis functions to approximate the single particle wave functions for each particle.
+When we do Quantum Monte Carlo (QMC) simulations we need a wave function for the system. A part of this wave function is made up by the single particle wave functions, i.e. the wave function we have if the system only has one particle and thus no particle-particle interactions. For the harmonic oscillator potential we have the fairly simple harmonic oscillator wave functions given in Eq.~(\ref{eq: HO SPWF}). However, for other potentials the single particle wave functions may not be as simple to implement. Instead we can approximate the single particle wave functions by using a linear combination with the simple harmonic oscillator functions as basis functions. We do this by first diagonalizing the single particle system for the given potential. This provides us with eigenvalues and eigenvectors for the single particle problem. We then take the inner product of the eigenvectors and the harmonic oscillator basis functions to find the overlap coefficients. Finally, in the QMC simulation we use the overlap coefficients and the harmonic oscillator basis functions to approximate the single particle wave functions for each particle.
 
 \section{Diagonalizing the Single Particle Problem}\label{sec:Diag_SP_Problem}
 
@@ -418,7 +418,7 @@ We then have that an arbitrary value of $x$ is
 \begin{equation}
     x_i = x_{\mathrm{min}} + ih \hspace{1cm} i = 0,1,2,\dots,N.
 \end{equation}
-Inserting this into Eq.(\ref{eq: SEq Natural}) we get the following Schr\"odinger equation for $x_i$
+Inserting this into Eq.~(\ref{eq: SEq Natural}) we get the following Schr\"odinger equation for $x_i$
 \begin{equation}
     -\frac{\psi(x_i+h) - 2\psi(x_i) + \psi(x_i-h)}{2h^2} + V(x_i)\psi(x_i) = E\psi(x_i),
 \end{equation}
@@ -469,7 +469,7 @@ Now that we have found the eigenvectors $\psi_n(x)$ through diagonalization, we 
 \begin{equation}\label{eq:OverlapCoefficients}
     C_{n^\prime,n} = \langle \psi_{n^\prime} \vert \phi_n\rangle = \sum_{i=0}^{N-1} \psi_{n^\prime}(x_i)\phi_n(x_i) \hspace{1 cm} n^\prime,n = 0,1,2,\dots,
 \end{equation}
-where $\phi_n(x)$ are the basis functions. For the eigenvectors, $\psi_{n^\prime}(x)$, we refer to the quantum number as $n^\prime$, while for the basis functions we use $n$. Since they do not always have the same value we need to differentiate between them. $N$ is the number of steps we chose when discretizing and $x_i$ are the corresponding discretized positions. We use harmonic oscillator functions as the basis functions, which are on the form
+where $\phi_n(x)$ are the basis functions. For the eigenvectors, $\psi_{n^\prime}(x)$, we refer to the quantum number as $n^\prime$, while for the basis functions we use $n$. Since they do not always have the same value we need to differentiate between them. The variable $N$ is the number of steps we chose when discretizing and $x_i$ are the corresponding discretized positions. We use harmonic oscillator functions as the basis functions, which are on the form
 \begin{equation}
     \phi_n(x) = \frac{1}{\sqrt{2^n n!}} \left(\frac{m\omega}{\pi\hbar}\right)^{1/4} e^{-\frac{m\omega x^2}{2\hbar}} H_n\left(\sqrt{\frac{m\omega}{\hbar}}x\right),
 \end{equation}
@@ -501,7 +501,7 @@ When approximating the single particle wave function during the quantum Monte Ca
 \begin{equation}\label{eq: Approximate SPWF}
     \psi_{n^\prime}(x) = \sum_{n_x=0}^{\Lambda} C_{n^\prime,n_x} \phi_{n_x}(x),
 \end{equation}
-where the loop is over eigenstates. $\Lambda$ is the total number of eigenstates we're using, and the approximation improves with increasing $\Lambda$. $n$ are the quantum numbers corresponding to the eigenstate and for one dimension $n = n_x$. However, when we have more dimensions, each eigenstate will have multiple quantum numbers, $n = (n_x,n_y,n_z)$ (one for each dimension). $\phi_{n_x}(x)$ are the basis functions given in Eq. (\ref{eq: Basis Functions}). $n^\prime$ is here the quantum number of the particle whose single particle wave function we are approximating, and $x$ is the position of the particle. When we look at more than one dimension, each term, $T$, of the sum in Eq. (\ref{eq: Approximate SPWF}) is a product on the form
+where the loop is over eigenstates. $\Lambda$ is the total number of eigenstates we are using, and the approximation improves with increasing $\Lambda$. The quantum numbers corresponding to the eigenstate are denoted $n$ and for one dimension $n = n_x$. However, when we have more dimensions, each eigenstate will have multiple quantum numbers, $n = (n_x,n_y,n_z)$ (one for each dimension). The functions $\phi_{n_x}(x)$ are the basis functions given in Eq.~(\ref{eq: Basis Functions}). The variable $n^\prime$ is here the quantum number of the particle whose single particle wave function we are approximating, and $x$ is the position of the particle. When we look at more than one dimension, each term, $T$, of the sum in Eq.~(\ref{eq: Approximate SPWF}) is a product on the form
 \begin{equation}
     T = C_{n^\prime,n_x} \phi_{n_x}(x)C_{n^\prime,n_y} \phi_{n_y}(y)C_{n^\prime,n_z} \phi_{n_z}(z).
 \end{equation}
@@ -540,7 +540,7 @@ where we have a Slater determinant, $\Phi_0$, as the ansatz for the ground state
 \begin{equation}
     E^{HF} \geq E_0.
 \end{equation}
-We use Hartree-Fock to get coefficients for a self-consistent single particle basis, which we can then use in the VMC calculations instead of the coefficients we got from diagonalizing simple potentials (as described in \ref{sec: Basis Functions}).
+We use Hartree-Fock to get coefficients for a self-consistent single particle basis, which we can then use in the VMC calculations instead of the coefficients we got from diagonalizing simple potentials (as described in Chapter \ref{sec: Basis Functions}).
 
 \section{Hamiltonian}
 
@@ -556,7 +556,7 @@ is the non-interacting part, and
 \begin{equation}
     \hat{H}_1 = \sum_{i<j}^N V(r_{ij})
 \end{equation}
-is the interacting part. $\hat{t(x_i)}$ represents the kinetic energy of particle $i$, while $\hat{u}_{\textrm{ext}}(x_i)$ represents the one-body part of the potential energy, which can be approximated by a harmonic oscillator potential. $V(r_{ij})$ is the two-body potential between particles $i$ and $j$.
+is the interacting part. The function $\hat{t(x_i)}$ represents the kinetic energy of particle $i$, while $\hat{u}_{\textrm{ext}}(x_i)$ represents the one-body part of the potential energy, which can be approximated by a harmonic oscillator potential. The function $V(r_{ij})$ is the two-body potential between particles $i$ and $j$.
 
 Our Hamiltonian is invariant under permutation of two particles. If we define $\hat{P}$ as an operator which interchanges two particles, due to symmetries in our Hamiltonian, this operator will commute with the total Hamiltonian,
 \begin{equation}
@@ -566,7 +566,7 @@ This means that the eigenfunction $\Psi_\lambda(x_1,x_2,\dots,x_N)$ of our Hamil
 \begin{equation}
     \hat{P}_{ij}\Psi_\lambda(x_1,x_2,\dots,x_i,\dots,x_j,\dots,x_N) = \beta\Psi_\lambda(x_1,x_2,\dots,x_i,\dots,x_j,\dots,x_N),
 \end{equation}
-where $\beta$ is the eigenvalue of $\hat{P}$ and the $ij$ suffix indicates that we permute particles $i$ and $j$. Since we're looking at fermions, the Pauli principle states that the total wave function has to be antisymmetric, which yields the eigenvaule $\beta = -1$.
+where $\beta$ is the eigenvalue of $\hat{P}$ and the $ij$ suffix indicates that we permute particles $i$ and $j$. Since we are looking at fermions, the Pauli principle states that the total wave function has to be antisymmetric, which yields the eigenvaule $\beta = -1$.
 
 We approxiamte the exact eigenfunction with a Slater determinant,
 \begin{equation}
@@ -607,7 +607,7 @@ which can also be written as
 \end{equation}
 where $\hat{P}_i$ is the permutation operator permuting the column indices, and the sum runs over all $n!$ permutations. The quantity $p_i$ is the number of transpositions of column indices needed to bring a given permutation back to its original ordering.
 
-The Slater determinant from Eq.(\ref{eq:SlaterDet}) is the trial function for the Hartree-Fock method, and we can now rewrite the determinant as
+The Slater determinant from Eq.~(\ref{eq:SlaterDet}) is the trial function for the Hartree-Fock method, and we can now rewrite the determinant as
 \begin{equation}
     \Phi(x_1,x_2,\dots,x_N,\alpha,\beta,\dots,\nu) = \frac{1}{\sqrt{N!}}\sum_p (-1)^p \hat{P} \psi_\alpha(x_1) \psi_\beta(x_2) \dots \psi_\nu(x_N) = \sqrt{N!} \hat{A} \Phi_H,
 \end{equation}
@@ -647,7 +647,7 @@ The expectation value of $\hat{H}_0$ is given by
 \begin{equation}
     \int \Phi^* \hat{H}_0 \Phi d\tau = N! \int \Phi_H^* \hat{A} \hat{H}_0 \hat{A} \Phi_H d\tau,
 \end{equation}
-and using Eq.(\ref{eq:HA commute}) and (\ref{eq:A2=A}), we can reduce it to
+and using Eq.~(\ref{eq:HA commute}) and (\ref{eq:A2=A}), we can reduce it to
 \begin{equation}
     \int \Phi^* \hat{H}_0 \Phi d\tau = N! \int \Phi_H^* \hat{H}_0 \hat{A} \Phi_H d\tau.
 \end{equation}
@@ -667,7 +667,7 @@ We introduce the following, more compact, notation for the integral
 \begin{equation}
     \langle \mu \vert \hat{h}_0 \vert \mu \rangle = \int \psi_\mu^*(\mathbf{r}) \hat{h}_0 \psi_\mu(\mathbf{r}) d\mathbf{r},
 \end{equation}
-and rewrite Eq.(\ref{eq:one-body EV HF}) as 
+and rewrite Eq.~(\ref{eq:one-body EV HF}) as 
 \begin{equation}\label{eq:one-body EV HF 2}
     \int \Phi^* \hat{H}_0 \Phi d\tau = \sum_{\mu=1}^N \langle \mu \vert \hat{h}_0 \vert \mu \rangle
 \end{equation}
@@ -682,7 +682,7 @@ and by the same arguments as for the one-body Hamiltonian, we can reduce this to
 \begin{equation}
     \int \Phi^* \hat{H}_1 \Phi d\tau = \sum_{i \leq j= 1}^N \sum_p (-1)^p \int \Phi_H^* V(r_{ij}) \hat{P} \Phi_H d\tau.
 \end{equation}
-Unlike the one-body case, permutations of any two particles doesn't vanish in the two-body case. This is due to the dependence on the inter-particle distance $r_{ij}$. For the two-body case we get
+Unlike the one-body case, permutations of any two particles does not vanish in the two-body case. This is due to the dependence on the inter-particle distance $r_{ij}$. For the two-body case we get
 \begin{equation}
     \int \Phi^* \hat{H}_1 \Phi d\tau = \sum_{i \leq j= 1}^N \int \Phi_H^* V(r_{ij}) (1-P_{ij}) \Phi_H d\tau,
 \end{equation}
@@ -721,11 +721,11 @@ and it is hermitian, which implies that
 \begin{equation}
     \langle \mu \nu \vert \hat{v} \vert \sigma \tau \rangle_{\textrm{AS}} = \langle \sigma \tau \vert \hat{v} \vert \mu \nu \rangle_{\textrm{AS}}.
 \end{equation}
-We can now rewrite Eq.(\ref{eq:two-body EV HF}) as 
+We can now rewrite Eq.~(\ref{eq:two-body EV HF}) as 
 \begin{equation}\label{eq:two-body EV HF 2}
     \int \Phi^* \hat{H}_1 \Phi d\tau = \frac{1}{2} \sum_{\mu=1}^N \sum_{\nu=1}^N \langle \mu \nu \vert \hat{v} \vert \mu \nu \rangle_{\textrm{AS}}.
 \end{equation}
-By combining Eq.(\ref{eq:one-body EV HF 2}) and (\ref{eq:two-body EV HF 2}) we end up with the energy functional 
+By combining Eq.~(\ref{eq:one-body EV HF 2}) and (\ref{eq:two-body EV HF 2}) we end up with the energy functional 
 \begin{equation}
     E\left[ \Phi \right] = \sum_{\mu=1}^N \langle \mu \vert \hat{h}_0 \vert \mu \rangle + \frac{1}{2} \sum_{\mu=1}^N \sum_{\nu=1}^N \langle \mu \nu \vert \hat{v} \vert \mu \nu \rangle_{\textrm{AS}}.
 \end{equation}
@@ -770,7 +770,7 @@ where $n$ is the principal quantum number
 \begin{equation}
     n = 0, 1, 2, 3, \dots
 \end{equation}
-and $m$ is the angular momentum quantum number given in Eq.(\ref{eq:m quantum number}). $\beta$ is defined as 
+and $m$ is the angular momentum quantum number given in Eq.~(\ref{eq:m quantum number}). $\beta$ is defined as 
 \begin{equation}
     \beta = \frac{m_e \omega}{\hbar},
 \end{equation}
@@ -817,9 +817,9 @@ which is the non-interacting energy, similarly to the following expression for C
 \end{equation}
 
 \section{Using Hartree-Fock to Improve the Overlap Coefficients}
-The use for the Hartree-Fock method in relation to this thesis is to improve the overlap coefficients used in the single particle wave function approximations. Currently creation of the overlap coefficients is based on diagonalizing the single particle problem, and consequently the coefficients don't account for interaction between particles. The goal of using Hartree-Fock calculations to modify the coefficients is to change that. Using coefficients which do account for particle interaction should remove the need for the variational parameter $\alpha$, and would hopefully reduce the amount of harmonic oscillator basis functions needed.
+The use for the Hartree-Fock method in relation to this thesis is to improve the overlap coefficients used in the single particle wave function approximations. Currently creation of the overlap coefficients is based on diagonalizing the single particle problem, and consequently the coefficients do not account for interaction between particles. The goal of using Hartree-Fock calculations to modify the coefficients is to change that. Using coefficients which do account for particle interaction should remove the need for the variational parameter $\alpha$, and would hopefully reduce the amount of harmonic oscillator basis functions needed.
 
-A simple independent Hartree-Fock program is included in the Github repository\cite{github}. This program can serve as a starting point for implementing Hartree-Fock modifications of the overlap coefficients. The VMC machinery developed in this thesis uses Cartesisan coordinates, but it is more convenient to do the Hartree-Fock calculations in polar coordinates. As a result, the implementation will need a transformation to polar coordinates in order to do the Hartree-Fock calculations, then a transformation back to Cartesian coordinates so the overlap coefficients can be used in the VMC solver. For information about these transformations see Chapter 6.4.4 of Ref. \cite{Yang}.
+A simple independent Hartree-Fock program is included in the Github repository\cite{github}. This program can serve as a starting point for implementing Hartree-Fock modifications of the overlap coefficients. The variational Monte Carlo (VMC) machinery developed in this thesis uses Cartesisan coordinates, but it is more convenient to do the Hartree-Fock calculations in polar coordinates. As a result, the implementation will need a transformation to polar coordinates in order to do the Hartree-Fock calculations, then a transformation back to Cartesian coordinates so the overlap coefficients can be used in the VMC solver. For information about these transformations see Chapter 6.4.4 of Ref. \cite{Yang}.
 
 
 \chapter{Systems}\label{sec: Systems}
@@ -828,7 +828,7 @@ The systems we are looking at contain electrons confined in a harmonic oscillato
 \begin{align}\label{eq: finalH}
     H=\sum_{i=1}^{N} \left(  -\frac{1}{2} \nabla_i^2 + V_c(\mathbf{r}_i)  \right)+\sum_{i<j}\frac{1}{r_{ij}},
 \end{align}
-where we have used natural units ($\hbar=c=e=m_e=1$) and all energies are in so-called atomic units a.u. $V_c(\mathbf{r}_i)$ is the external confinement potential at position $\mathbf{r}_i$. Using the above Hamiltonian we will study systems of many electrons $N$ as functions of the oscillator frequency  $\omega$. $\omega$ is not a part of the finite square well confinement potential, but it is still used in the harmonic oscillator basis functions when simulating finite square well systems. The unperturbed part of the Hamiltonian is
+where we have used natural units ($\hbar=c=e=m_e=1$) and all energies are in so-called atomic units a.u. The function $V_c(\mathbf{r}_i)$ is the external confinement potential at position $\mathbf{r}_i$. Using the above Hamiltonian we will study systems of many electrons $N$ as functions of the oscillator frequency  $\omega$. The frequency $\omega$ is not a part of the finite square well confinement potential, but it is still used in the harmonic oscillator basis functions when simulating finite square well systems. The unperturbed part of the Hamiltonian is
 \begin{align}
     H_0=\sum_{i=1}^{N} \left(  -\frac{1}{2} \nabla_i^2 + V_c(\mathbf{r}_i)  \right),
 \end{align}
@@ -856,7 +856,7 @@ where $\mathbf{r}$ is the distance from the center of the well. The potential is
 \begin{figure}[!ht]
     \centering
     \includegraphics[scale=0.7]{figures/HO_Potential}
-    \caption{Standard Harmonic Oscillator Well Potential as described by Eq.(\ref{eq: HO Potential}), with $\omega = 1$.}
+    \caption{Standard Harmonic Oscillator Well Potential as described by Eq.~(\ref{eq: HO Potential}), with $\omega = 1$.}
     \label{fig: HO Potential}
 \end{figure}
 
@@ -868,19 +868,19 @@ When we have a harmonic oscillator potential with multiple minima, the confineme
 \begin{equation}
     V_c(\mathbf{r}) = \frac{1}{2} m_e \omega^2 \textrm{min}\left[\sum_j^M (\mathbf{r}-\mathbf{L}_j)^2\right],
 \end{equation}
-where, in two dimensions, we have $\mathbf{r} = (x,y)$, and the multiple $\mathbf{L}_j = (\pm L_x, \pm L_y)$ give the positions of the minima. $M$ is the total number of minima in the potential. When $M=1$ and $\mathbf{L}_1 = (0,0)$ we have the standard harmonic oscillator well, while if $M=2$ and $\mathbf{L}_{1,2} = (\pm L_x, 0)$ we get the double-well potential. We can also write the confinement potential using the absolute values of the coordinates. For a double-well in two dimensions ($\mathbf{L}_{1,2} = (\pm L_x, 0)$) we then get
+where, in two dimensions, we have $\mathbf{r} = (x,y)$, and the multiple $\mathbf{L}_j = (\pm L_x, \pm L_y)$ give the positions of the minima. The variable $M$ is the total number of minima in the potential. When $M=1$ and $\mathbf{L}_1 = (0,0)$ we have the standard harmonic oscillator well, while if $M=2$ and $\mathbf{L}_{1,2} = (\pm L_x, 0)$ we get the double-well potential. We can also write the confinement potential using the absolute values of the coordinates. For a double-well in two dimensions ($\mathbf{L}_{1,2} = (\pm L_x, 0)$) we then get
 \begin{equation}\label{eq: DW Potential}
 \begin{split}
     V_c(x,y) &= \frac{1}{2} m_e \omega^2[\mathbf{r}^2 - 2L_x|x| - 2L_y|y| + L_x^2 + L_y^2]\\
     &= \frac{1}{2} m_e \omega^2[\mathbf{r}^2 - 2L_x|x| + L_x^2].
 \end{split}
 \end{equation}
-Double-well potentials, and the barrier between the wells, are interesting for quantum computing and information processing. Double-well potentials are investigated as candidates for logic gates in quantum computing\cite{Multiwells}. "Logic gates serve as the building blocks to digital logic circuits using combinational logic."\cite{Lin} In regular computing a logic gate is a device implementing a Boolean function. It takes one or more binary inputs and performs a logical operation one them, producing a single binary output. In quantum computing the difference is that the gates should be able to have more varied output, i.e. it should have more output possibilities than only $0$ or $1$. Double-well potentials are also a starting point for understanding periodic multiwell potentials. The double harmonic oscillator potential is parabolic with minima in e.g. $x = \pm L_x$, $y = 0$, and the parabolic wells meet at an absolute value barrier at $x=0$. Figure \ref{fig: DW Potential} shows an example of a double-well potential, where $L_x = 5$ and $\omega = 1$.
+Double-well potentials, and the barrier between the wells, are interesting for quantum computing and information processing. Double-well potentials are investigated as candidates for logic gates in quantum computing\cite{Multiwells}. "Logic gates serve as the building blocks to digital logic circuits using combinational logic"\cite{Lin}. In regular computing a logic gate is a device implementing a Boolean function. It takes one or more binary inputs and performs a logical operation one them, producing a single binary output. In quantum computing the difference is that the gates should be able to have more varied output, i.e. it should have more output possibilities than only $0$ or $1$. Double-well potentials are also a starting point for understanding periodic multiwell potentials. The double harmonic oscillator potential is parabolic with minima in e.g. $x = \pm L_x$, $y = 0$, and the parabolic wells meet at an absolute value barrier at $x=0$. Figure \ref{fig: DW Potential} shows an example of a double-well potential, where $L_x = 5$ and $\omega = 1$.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[scale=0.7]{figures/DW_Potential}
-    \caption{Double Harmonic Oscillator Well Potential as described by Eq.(\ref{eq: DW Potential}), with $L_x = 5$, $L_y = 0$, and $\omega = 1$.}
+    \caption{Double Harmonic Oscillator Well Potential as described by Eq.~(\ref{eq: DW Potential}), with $L_x = 5$, $L_y = 0$, and $\omega = 1$.}
     \label{fig: DW Potential}
 \end{figure}
 
@@ -900,12 +900,12 @@ where $L$ is the distance from the center of the well to the walls, and we have 
   V_0, & \mbox{otherwise}
 \end{cases}.
 \end{equation}
-This potential has a shape that is somewhat similar to a harmonic oscillator well, and it is also fairly simple since it's either a set constant value or zero, everywhere. Due to it's simplicity this type of potential can more easily be produced in laboratory experiments. Figure \ref{fig: FSW Potential} shows a finite square well potential with $V_0 = 1$ and $L = 3$.
+This potential has a shape that is somewhat similar to a harmonic oscillator well, and it is also fairly simple since it is either a set constant value or zero, everywhere. Due to its simplicity this type of potential can more easily be produced in laboratory experiments. Figure \ref{fig: FSW Potential} shows a finite square well potential with $V_0 = 1$ and $L = 3$.
 
 \begin{figure}[!ht]
     \centering
     \includegraphics[scale=0.7]{figures/FSW_Potential}
-    \caption{Finite Square Well Potential as described by Eq.(\ref{eq: FSW Potential}), with $L = 3$ and $V_0 = 1$.}
+    \caption{Finite Square Well Potential as described by Eq.~(\ref{eq: FSW Potential}), with $L = 3$ and $V_0 = 1$.}
     \label{fig: FSW Potential}
 \end{figure}
 
@@ -915,7 +915,7 @@ For two electrons in a two-dimensional harmonic oscillator potential without int
 \begin{align}\label{eq: unperturbedEnergy}
     \epsilon_n = \omega(n_x + n_y + 1).
 \end{align}
-For the ground state we have $n_x=n_y=0$, and since there are two electrons the total (unperturbed) ground state energy is then $\epsilon_0 = 2\omega$. Since electrons are spin-$\frac{1}{2}$ particles they have two possible spin states, which means that both electrons can be in the ground state ($n_x=n_y=0$) as long as they have different spin. One electron will have spin $+\frac{1}{2}$ and the other will have spin $-\frac{1}{2}$, so the total spin of the system will be zero. It makes sense for the ground state to have total spin zero, since the total spin contributes to the energy of the state, and the ground state is the state with lowest energy.
+For the ground state we have $n_x=n_y=0$, and since there are two electrons the total (unperturbed) ground state energy is then $\epsilon_0 = 2\omega$. Since electrons are spin-$\frac{1}{2}$ particles they have two possible spin states, which means that both electrons can be in the ground state ($n_x=n_y=0$) as long as they have different spin. One electron will have spin projection $+\frac{1}{2}$ and the other will have spin projection $-\frac{1}{2}$, so the total spin of the system will be zero. It makes sense for the ground state to have total spin zero, since the total spin contributes to the energy of the state, and the ground state is the state with lowest energy.
 
 The perturbed trial wave function for a two-body quantum dot in a two-dimensional single harmonic oscillator potential has the form \cite{FYS4411-LectureNotes}
 \begin{align}
@@ -923,7 +923,7 @@ The perturbed trial wave function for a two-body quantum dot in a two-dimensiona
    C\exp{\left(-\alpha\omega(r_1^2+r_2^2)/2\right)}
    \exp{\left(\frac{ar_{12}}{(1+\beta r_{12})}\right)},
 \end{align}
-where $a=1$ when the electrons have anti-parallel spins and $a=1/3$ when they have parallel spins. For the two-body quantum dot we are interested in the ground state for only two electrons, meaning the electrons will always have anti-parallel spins and $a=1$ in this case. $\alpha$ and $\beta$ are the variational parameters.
+where $a=1$ when the electrons have anti-parallel spins and $a=1/3$ when they have parallel spins, in the two-dimensional case. For three dimensions, $a=1/2$ for anti-parallel spins and $a=1/4$ for parallel spins. For the two-body quantum dot we are interested in the ground state for only two electrons, meaning the electrons will always have anti-parallel spins and $a=1$ in this case. The variables $\alpha$ and $\beta$ are the variational parameters.
 
 \section{Many-body Quantum Dot}
 A closed shell system is a system where all used energy levels are filled. This is the case when our number of electrons equal a so-called magic number (e.g. $N=2,6,12,20,\dots$ for a single harmonic oscillator potential). For a closed shell system with more than two electrons, we use the trial wave function \cite{FYS4411-LectureNotes}
@@ -952,7 +952,7 @@ The necessary closed form expressions for the two-body quantum dot and the many-
 
 \begin{comment}
 \section{Benchmarks for Verifying the Implementation}
-In order to verify that the implementation works correctly we should compare our results with known benchmarks. In the unperturbed case the exact ground state energies are analytically known. We have that the energy for a given electron is given by Eq.(\ref{eq: unperturbedEnergy}). Table \ref{tab: unperturbedEnergies} contains the total energy of unperturbed closed shell systems up to $N=20$ electrons.
+In order to verify that the implementation works correctly we should compare our results with known benchmarks. In the unperturbed case the exact ground state energies are analytically known. We have that the energy for a given electron is given by Eq.~(\ref{eq: unperturbedEnergy}). Table \ref{tab: unperturbedEnergies} contains the total energy of unperturbed closed shell systems up to $N=20$ electrons.
 \begin{table}[!ht]
   \centering
   \begin{tabular}{ | c | c | }
