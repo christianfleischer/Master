@@ -152,7 +152,7 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
     for (int i = 0; i < numberOfMetropolisSteps; i++) {
         // Update progress
         if (showProgress && m_my_rank == 0) {
-            if (i%percent==0){
+            if (i%percent==0) {
                 progress += 1;
                 cout << progress << "%" << "\n\033[F";
             }
@@ -175,8 +175,6 @@ void System::runMetropolisSteps(int numberOfMetropolisSteps, bool importanceSamp
                 m_sampler->sample(acceptedStep);
             }
         }
-
-
 
         if (!(i%(m_numberOfMetropolisSteps/m_numberOfDMCWalkers))) {
             cout << "k, " << k << " energy : " << m_sampler->getKineticEnergy() << endl;
