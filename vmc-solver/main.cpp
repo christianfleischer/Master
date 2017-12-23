@@ -124,11 +124,11 @@ int main(int nargs, char* args[]) {
     bool showProgress       = true;
     bool printToTerminal    = true;
 
-    bool useCoeff 		    = true;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
+    bool useCoeff 		    = false;				  // Coefficients c_ij = <ψ_i|φ_j> from the double well potential.
 
-    bool doubleWell         = false;
+    bool doubleWell         = true;
     bool finiteWell         = false;
-    bool squareWell         = true;
+    bool squareWell         = false;
 
     bool runTests           = false;
 

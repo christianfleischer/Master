@@ -52,9 +52,21 @@ if __name__ == "__main__":
         variances[i] = variance
     
     standardDeviation = np.sqrt(abs(variances)/(blockAmounts-1.))
-    plt.plot(blockSizes, standardDeviation)
-    plt.xlabel("Block Size")
-    plt.ylabel(r"Standard Deviation $\sigma$")
-    plt.title("N=%i" %N)
-    plt.ticklabel_format(style='sci', axis='y', scilimits=(0,0))
+
+    font = {'family' : 'serif',
+            'size'   : 15}
+
+    plt.rc('font',**font)
+
+    fig, ax = plt.subplots()
+
+    ax.plot(blockSizes, standardDeviation,'b')
+
+    ax.set_ylabel(r"Standard Deviation $\sigma$")
+    ax.set_xlabel(r'Block size')
+
+    ax.grid('on')
+    ax.spines['right'].set_visible(False)
+    ax.spines['top'].set_visible(False)
+    plt.savefig('/home/alexanfl/uio/masterthesis/doc/part2/figures/blocking-example.eps')
     plt.show()
