@@ -62,6 +62,11 @@ void DMC::copyWalker(Walker* originalWalker, Walker* newWalker) {
     newWalker->getWaveFunction()->setSPWFDDMat(SPWFDDMatOld);
 }
 
+double getBranchingFunction(double E, double EOld, double E_T)
+{
+    return exp(-(0.5*(E + EOld) - E_T));
+}
+
 void DMC::moveWalker(int currentWalker) {
     copyWalker(m_setOfWalkers[currentWalker], m_trialWalker);
 
@@ -71,19 +76,9 @@ void DMC::moveWalker(int currentWalker) {
         double localEnergy = energies[0];
         m_setOfWalkers[currentWalker]->setLocalE(localEnergy);
 
+        double E_T = 0;
+        double GB = getBranchingFunction(localEnergy, localEOld, E_T);
 
-        for (int currentParticle = 0; currentParticle < m_numberOfParticles; currentParticle++){
-            bool acceptedStep;
-            // Ask Metropolis step functions whether the step was accepted or not
-            acceptedStep = m_system->metropolisStepImpSamplingDMC(currentParticle, m_trialWalker);
-
-            //This is the sampling part of the iteration:
-
-            //if (i >= m_trialWalker->getSystem()->getNumberOfMetropolisSteps()){
-            //    // Sample energy etc.
-            //    m_trialWalker->getSystem()->m_sampler->sample(acceptedStep);
-            //}
-        }
     }
 }
 
@@ -102,3 +97,4 @@ void DMC::setParameters(double alpha, double beta, double omega, double C, bool 
     m_C = C;
     m_Jastrow = Jastrow;
 }
+
