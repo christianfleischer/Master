@@ -197,3 +197,72 @@ void Sampler::saveToFile(double localEnergy){
         //fclose(outfile);
     }
 }
+
+
+void Sampler::sampleDMC(bool acceptedStep, Walker* currentWalker) {
+    // Make sure the sampling variable(s) are initialized at the first step.
+    if (m_stepNumber == 0) {
+        m_cumulativeEnergy =             0;
+        m_cumulativeSquaredEnergy =      0;
+        m_cumulativeAcceptedSteps =      0;
+        for (int i=0; i < currentWalker->getWaveFunction()->getNumberOfParameters(); i++) {
+            m_cumulativeWFuncDerivativeParameters.push_back(0);
+            m_cumulativeWFuncEnergyParameters.push_back(0);
+        }
+    }
+
+    // Sample local energy
+    std::vector<double> energies = m_system->getHamiltonian()->
+                                 computeLocalEnergy(m_system->getParticles());
+    double localEnergy = energies[0];
+    double kineticEnergy = energies[1];
+    double potentialEnergy = energies[2];
+
+    m_cumulativeEnergy  += localEnergy;
+    m_cumulativeSquaredEnergy += localEnergy*localEnergy;
+    m_cumulativeKineticEnergy += kineticEnergy;
+    m_cumulativePotentialEnergy += potentialEnergy;
+
+    std::vector<Particle*> particles = currentWalker->getParticles();
+
+    // Sample mean distance
+    int numberOfParticles = currentWalker->getNumberOfParticles();
+    int numberOfDimensions = currentWalker->getNumberOfDimensions();
+    if (numberOfParticles==2) {
+        int counter = 0;
+        double avgDistance = 0;
+        for (int i=0 ; i < numberOfParticles; i++) {
+            double r_ij = 0;
+            std::vector<double> r_i = particles[i]->getPosition();
+            for (int j=i+1; j < numberOfParticles; j++) {
+                std::vector<double> r_j = particles[j]->getPosition();
+                for (int k=0; k < numberOfDimensions; k++) {
+                    r_ij += (r_i[k]-r_j[k])*(r_i[k]-r_j[k]);
+                }
+                r_ij = sqrt(r_ij);
+                avgDistance += r_ij;
+                counter ++;
+            }
+        }
+        avgDistance /= counter;
+        m_cumulativeDistance += avgDistance;
+//        cout << particles[0]->getPosition()[0] << "   " << particles[0]->getPosition()[1] << endl;
+//        cout << particles[1]->getPosition()[0] << "   " << particles[1]->getPosition()[1] << endl;
+    }
+
+    // Sample things needed for the steepest descent method:
+    double waveFunction = currentWalker->getWaveFunction()->evaluate(particles);
+    std::vector<double> waveFuncDerivativeParameters = currentWalker->getWaveFunction()->computeDerivativeWrtParameters(particles);
+    int numberOfParameters = currentWalker->getWaveFunction()->getNumberOfParameters();
+    for (int i=0; i < numberOfParameters; i++) {
+        waveFuncDerivativeParameters[i] /= waveFunction;
+        m_cumulativeWFuncDerivativeParameters[i] += waveFuncDerivativeParameters[i];
+        m_cumulativeWFuncEnergyParameters[i] += waveFuncDerivativeParameters[i]*localEnergy;
+    }
+
+    // Sample whether the step is accepted or not in order to find total acceptance ratio
+    m_cumulativeAcceptedSteps += acceptedStep;
+
+    saveToFile(localEnergy);
+    m_stepNumber++;
+}

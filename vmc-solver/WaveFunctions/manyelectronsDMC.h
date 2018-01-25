@@ -1,12 +1,12 @@
-#ifndef PROJECT2_MANYELECTRONS_H
-#define PROJECT2_MANYELECTRONS_H
+#ifndef PROJECT2_MANYELECTRONSDMC_H
+#define PROJECT2_MANYELECTRONSDMC_H
 #include "wavefunction.h"
 #include <armadillo>
 using namespace arma;
 
-class ManyElectrons : public WaveFunction {
+class ManyElectronsDMC : public WaveFunction {
 public:
-    ManyElectrons(class System* system, double alpha, double beta, double omega, double C, bool Jastrow);
+    ManyElectronsDMC(class System* system, double alpha, double beta, double omega, double C, bool Jastrow);
     double evaluate(std::vector<class Particle*> particles);
     double computeDoubleDerivative(std::vector<class Particle*> particles);
     double computeMetropolisRatio(std::vector<Particle *> particles, int currentParticle,
@@ -55,14 +55,12 @@ private:
     field<vec> m_SPWFDMat;
     mat m_SPWFDDMat;
     double m_cDeterminant;
-    mat m_JastrowMat;
-    mat m_JastrowMatOld;
-    cube m_dJastrowMat;
-    cube m_dJastrowMatOld;
+    cube m_JastrowMat;
+    cube m_JastrowMatOld;
     mat m_JastrowGrad;
     mat m_JastrowGradOld;
     mat m_a;
     bool m_Jastrow = false;
 };
 
-#endif // PROJECT2_MANYELECTRONS_H
+#endif // PROJECT2_MANYELECTRONSDMC_H

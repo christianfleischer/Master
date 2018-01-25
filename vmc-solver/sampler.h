@@ -1,6 +1,7 @@
 #ifndef PROJECT2_SAMPLER_H
 #define PROJECT2_SAMPLER_H
 #include <vector>
+#include "DMC/walker.h"
 
 class Sampler {
 public:
@@ -13,6 +14,7 @@ public:
     void setAcceptanceRate(double acceptanceRate);
     void setMeanDistance(double meanDistance);
     void sample(bool acceptedStep);
+    void sampleDMC(bool acceptedStep, Walker* currentWalker);
     void printOutputToTerminal();
     void computeAverages();
     void saveToFile(double localEnergy);

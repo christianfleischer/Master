@@ -9,6 +9,8 @@
 #include "WaveFunctions/repulsivegaussian.h"
 #include "WaveFunctions/twoelectrons.h"
 #include "WaveFunctions/manyelectrons.h"
+#include "WaveFunctions/manyelectronsDMC.h"
+#include "DMC/dmc.h"
 #include "WaveFunctions/manyelectrons_coefficients.h"
 #include "Hamiltonians/hamiltonian.h"
 #include "Hamiltonians/harmonicoscillator.h"
@@ -23,6 +25,8 @@
 #include "Math/random.h"
 #include <mpi.h>
 #include <cassert>
+
+
 
 using namespace std;
 using namespace UnitTest;
@@ -139,8 +143,11 @@ int main(int nargs, char* args[]) {
 //    cout << " Importance Sampling : " << importanceSampling << endl;
 //    cout << " Repulsion : " << repulsion << endl;
 
+
     // Initiate System
     System* system = new System();
+
+
     // RandomUniform creates a random initial state
     system->setL                        (L);
     system->setDoubleWellFlag           (doubleWell);
@@ -194,13 +201,39 @@ int main(int nargs, char* args[]) {
     }
     system->setSaveEnergies             (saveEnergies);
     system->setSavePositions            (savePositions);
+
+
+
+    // Set the set of walkers
+    int numberOfDMCWalkers = 10; // Number of VMC configurations to save.
+    system->setNumberOfDMCWalkers(numberOfDMCWalkers);
+    std::vector<class Walker*> setOfWalkers(numberOfDMCWalkers);
+    for (int k = 0; k < numberOfDMCWalkers; k++) {
+        setOfWalkers[k] = new Walker(numberOfParticles, numberOfDimensions);
+        setOfWalkers[k]->setWaveFunction(new ManyElectronsDMC(system, alpha, beta, omega, C, Jastrow));
+    }
+    system->setWalkers(setOfWalkers);
+
+
+    //Initiate the system walker. The VMC walker.
+    system->setSystemWalker(new Walker(numberOfParticles, numberOfDimensions));
+
     // Start Monte Carlo simulation
     system->runMetropolisSteps          (numMyCycles, importanceSampling, showProgress, printToTerminal);
+
     // Compute MPI averages etc.
     system->MPI_CleanUp                 (totalE, totalKE, totalPE, totalVariance, totalAcceptanceRate, finalMeanDistance,
                                          timeStart, timeEnd, totalTime, numprocs, numberOfSteps);
+
     // Merge the files from the nodes into one data file
     system->mergeOutputFiles            (numprocs);
+
+
+    DMC* dmcrun = new DMC(system, numberOfDMCWalkers);
+    dmcrun->setEquilibrationSteps(equilibration);
+    dmcrun->setParameters(alpha, beta, omega, C, Jastrow);
+    dmcrun->runDMC();
+
 
     if (runTests) { return RunAllTests(); }
     else { return 0; }
