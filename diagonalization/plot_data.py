@@ -130,21 +130,19 @@ for i in range(15):
 #plot(r[0], psi[1], r[0], supCpp[:,0])
 
 
-nPrime = 0
+nPrime = 4
 
-plot(r[0], psi[nPrime]/sqrt(np.dot(psi[nPrime],psi[nPrime])))
-plot(r[0], supCpp[:,nPrime]/sqrt(np.dot(supCpp[:,nPrime],supCpp[:,nPrime])))
 	
 print("")
 print(np.sqrt(sum(abs(psi[nPrime]/sqrt(np.dot(psi[nPrime],psi[nPrime])) \
              -supCpp[:,nPrime]/sqrt(np.dot(supCpp[:,nPrime],supCpp[:,nPrime])))**2)))
 
 print("")
-for i in range(2):
+for i in range(8):
     print("||supX%i||:  %s" %(i, np.sqrt(np.dot(supX[:,i], supX[:,i]))))
 
 print("")
-for i in range(2):
+for i in range(8):
     print("||supY%i||:  %s" %(i, np.sqrt(np.dot(supY[:,i], supY[:,i]))))
 
 nVec = range(nMax)
@@ -165,20 +163,29 @@ nVec = range(nMax)
 #title(r'''$\psi_{n^\prime}^{diag}$ vs. $\psi_{n^\prime}^{exp}$ for $n^\prime = %i$ with N=%d, $L_x = %.1f$,
 # $L_y = %.1f$, $x_{max/min}=\pm %d$ and %i basis functions. ''' 
 #        %(nPrime, N+1, Lx, Ly, r[0,-1]+1, numEigFunctions))
-title(r'''$\psi_{n^\prime}^{diag}$ vs. $\psi_{n^\prime}^{exp}$ for $n^\prime = %i$.''' 
-        %nPrime, fontsize=30, y=1.01)
+rc('font',**{'family':'serif','serif':['Times']})
+rc('text', usetex=True)
+rc('grid', linestyle='--')
+rcParams['axes.titlepad'] = 16
+grid(True)
 
-xlabel(r'$x$', fontsize=25)
-tick_params(axis='x', labelsize=14)
+title(r'''Comparing $\psi_{n^\prime}$ and the expansion in the HO basis for $n^\prime = %i$.''' 
+        %nPrime, fontsize=16, y=1.01)
 
-ylabel(r'$\psi_{n^\prime}$', fontsize=25)
+
+xlabel(r'$x$', fontsize=16)
+tick_params(axis='x', labelsize=16)
+
+ylabel(r'$\psi_{n^\prime}$', fontsize=16)
 #ylim([-0.1, 0.04])
 #ylim([-0.1, 0.15])
 #ylim([-0.02, 0.1])
 ticklabel_format(style='sci', axis='y', scilimits=(0,0))
-tick_params(axis='y', labelsize=14)
+tick_params(axis='y', labelsize=16)
 
-legend([r'$\psi_{n^\prime}^{diag}$', r'$\psi_{n^\prime}^{exp}$'] 
-        ,prop={'size':20})
-
+plot(r[0], psi[nPrime]/sqrt(np.dot(psi[nPrime],psi[nPrime])))
+plot(r[0], supCpp[:,nPrime]/sqrt(np.dot(supCpp[:,nPrime],supCpp[:,nPrime])))
+legend([r'$\psi_{n^\prime}$', r'$\sum c_{n^\prime n} \varphi_n^\mathrm{ho}$'] 
+        ,prop={'size':14})
+savefig('/home/alexanfl/masterthesis/doc/part2/figures/doublewell-nPrime=%d-171bfs.eps' % nPrime)
 show()
